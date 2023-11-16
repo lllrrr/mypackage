@@ -27,7 +27,10 @@ DEFAULT_PACKAGES:=\
 	urandom-seed \
 	urngd \
 	luci \
-	default-settings
+	default-settings \
+	kmod-ipt-raw \
+	kmod-nf-nathelper \
+	kmod-nf-nathelper-extra
 
 ifneq ($(CONFIG_SELINUX),)
 DEFAULT_PACKAGES+=busybox-selinux procd-selinux

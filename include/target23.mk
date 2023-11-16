@@ -17,7 +17,7 @@ DEFAULT_PACKAGES:=\
 	fstools \
 	libc \
 	libgcc \
-	libustream-mbedtls \
+	libustream-wolfssl \
 	logd \
 	mtd \
 	netifd \
@@ -25,11 +25,12 @@ DEFAULT_PACKAGES:=\
 	uci \
 	uclient-fetch \
 	urandom-seed \
-	luci luci-compat wget-ssl curl ca-certificates htop \
-	default-settings luci-app-upnp luci-app-wol luci-app-vlmcsd luci-app-ramfree \
-	luci-app-ddns ddns-scripts-cloudflare ddns-scripts_aliyun ddns-scripts_dnspod \
-	luci-app-timecontrol luci-app-control-timewol luci-app-control-webrestriction luci-app-control-weburl \
-	urngd
+	urngd \
+	luci \
+	default-settings \
+	kmod-ipt-raw \
+	kmod-nf-nathelper \
+	kmod-nf-nathelper-extra
 
 ifneq ($(CONFIG_SELINUX),)
 DEFAULT_PACKAGES+=busybox-selinux procd-selinux
@@ -58,9 +59,10 @@ DEFAULT_PACKAGES.nas:=\
 # For router targets
 DEFAULT_PACKAGES.router:=\
 	dnsmasq \
-	firewall4 \
-	nftables \
-	kmod-nft-offload \
+	firewall \
+	ip6tables \
+	iptables \
+	kmod-ipt-offload \
 	odhcp6c \
 	odhcpd-ipv6only \
 	ppp \
