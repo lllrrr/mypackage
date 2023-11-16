@@ -18,8 +18,6 @@ m = SimpleForm("dockerd",
 	translate("An overview with the relevant data is displayed here with which the LuCI docker client is connected.")
 ..
 	" " ..
-	[[<a href="https://github.com/lisaac/luci-app-dockerman" target="_blank">]] ..
-	translate("Github") ..
 	[[</a>]])
 m.submit=false
 m.reset=false
