@@ -5,7 +5,7 @@ local m, s, o
 
 m = Map("frps")
 m.title = translate("Frps - Common Settings")
-m.description = translate("Frp is a fast reverse proxy to help you expose a local server behind a NAT or firewall to the internet.<br/><a href=\"https://github.com/fatedier/frp\" target=\"_blank\">Project GitHub URL</a>")
+m.description = translate("Frp is a fast reverse proxy to help you expose a local server behind a NAT or firewall to the internet.")
 
 m:section(SimpleSection).template  = "frps/frps_status"
 

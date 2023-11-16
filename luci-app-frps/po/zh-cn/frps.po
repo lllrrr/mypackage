@@ -70,8 +70,8 @@ msgid "FRPS Server Settings"
 msgstr "Frps 服务器设定"
 
 #: luasrc/model/cbi/frps/common.lua:32
-msgid "Frp is a fast reverse proxy to help you expose a local server behind a NAT or firewall to the internet.<br/><a href=\"https://github.com/fatedier/frp\" target=\"_blank\">Project GitHub URL</a>"
-msgstr "Frp 是一个可用于内网穿透的高性能的反向代理应用。<br/><a href=\"https://github.com/fatedier/frp\" target=\"_blank\">Github 项目地址</a>"
+msgid "Frp is a fast reverse proxy to help you expose a local server behind a NAT or firewall to the internet."
+msgstr "Frp 是一个可用于内网穿透的高性能的反向代理应用。"
 
 #: luasrc/model/cbi/frps/common.lua:43
 msgid "General Options"
