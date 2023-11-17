@@ -15,7 +15,7 @@ define Package/$(PKG_NAME)
   CATEGORY:=LuCI
   TITLE:=LuCI support for Default Settings
   PKGARCH:=all
-  DEPENDS:=+luci-base +luci +@LUCI_LANG_zh-cn
+  DEPENDS:=+kmod-ipt-raw +kmod-nf-nathelper +kmod-nf-nathelper-extra +luci-base +luci +@LUCI_LANG_zh-cn
 endef
 
 define Package/$(PKG_NAME)/description
