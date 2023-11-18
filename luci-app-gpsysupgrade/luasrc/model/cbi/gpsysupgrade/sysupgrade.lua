@@ -21,6 +21,7 @@ function check_update()
 		updatelogs = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/release.txt) | tr -d '\n'")
 		remoteformat = remote_version
 		fnotice = remote_version
+		md5 = luci.sys.exec("echo \"" ..remote_version.. "\" | tr '\r\n' ',' | awk -F, '{printf $2}'")
 		dateyr = remote_version
 		if remoteformat > sysverformat then
 			needs_update = true
@@ -35,20 +36,29 @@ function to_check()
 	system_version = get_system_version()
 	sysverformat = system_version
 	currentTimeStamp = os.date("%Y%m%d")
-	if model == "x86_64" then
+	if board_name == "x86_64" then
+		model = "x86_64"
 		check_update()
 		if fs.access("/sys/firmware/efi") then
 			download_url = "https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-generic-squashfs-combined-efi.img.gz"
 		else
 			download_url = "https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-generic-squashfs-combined-efi.img.gz"
 		end
-	else
+    elseif board_name:match("xy%-c5$") then
+		model = "ramips_mt7621/xiaoyu_xy-c5"
+		check_update()
+		download_url = "https://dl.openwrt.ai/firmware/" ..model.. "/" ..remote_version.. "-openwrt-ramips-mt7621-xiaoyu_xy-c5-squashfs-sysupgrade.bin"
+    elseif board_name:match("newifi%-d2$") then
+		model = "ramips_mt7621/d-team_newifi-d2"
+		check_update()
+		download_url = "https://dl.openwrt.ai/firmware/" ..model.. "/" ..remote_version.. "-openwrt-ramips-mt7621-d-team_newifi-d2-squashfs-sysupgrade.bin"
+    else
 		local needs_update = false
 		return {
             code = 1,
             error = i18n.translate("Can't determine MODEL, or MODEL not supported.")
 			}
-	end
+    end
 	
 
     if needs_update and not download_url then
@@ -64,15 +74,16 @@ function to_check()
     return {
         code = 0,
         update = needs_update,
-		notice = notice,
+        notice = notice,
         now_version = system_version,
         version = remote_version,
-	logs = updatelogs,
+        md5 = md5,
+        logs = updatelogs,
         url = download_url
     }
 end
 
-function to_download(url)
+function to_download(url,md5)
     if not url or url == "" then
         return {code = 1, error = i18n.translate("Download url is required.")}
     end
@@ -88,6 +99,16 @@ function to_download(url)
         return {
             code = 1,
             error = i18n.translatef("File download failed or timed out: %s", url)
+        }
+    end
+
+	local md5local = sys.exec("echo -n $(md5sum " .. tmp_file .. " | awk '{print $1}')")
+
+	if md5 ~= "" and md5local ~= md5 then
+		api.exec("/bin/rm", {"-f", tmp_file})
+		return {
+            code = 1,
+            error = i18n.translatef("Md5 check failed: %s", url)
         }
     end
 
