@@ -63,15 +63,15 @@ function exec(cmd, args, writer, timeout)
     end
 end
 
-function auto_get_board_name()
+function auto_get_model()
     local arch = nixio.uname().machine or ""
     if fs.access("/etc/openwrt_release") then
 		if arch == "x86_64" then
-		board_name = "x86_64"
+		model = "x86_64"
 		else
         local boardinfo = luci.util.ubus("system", "board") or { }
-		board_name = boardinfo.board_name
+		model = boardinfo.model
 		end
     end
-    return util.trim(board_name)
+    return util.trim(model)
 end
