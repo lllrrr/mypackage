@@ -53,6 +53,8 @@ LUCI_LANG.uk=Українська (Ukrainian)
 LUCI_LANG.vi=Tiếng Việt (Vietnamese)
 LUCI_LANG.zh_Hans=简体中文 (Chinese Simplified)
 LUCI_LANG.zh_Hant=繁體中文 (Chinese Traditional)
+LUCI_LANG.zh-cn=$(LUCI_LANG.zh_Hans)
+LUCI_LANG.zh-tw=$(LUCI_LANG.zh_Hant)
 
 # Submenu titles
 LUCI_MENU.col=1. Collections
@@ -68,6 +70,8 @@ LUCI_LC_ALIAS.nb_NO=no
 LUCI_LC_ALIAS.pt_BR=pt-br
 LUCI_LC_ALIAS.zh_Hans=zh-cn
 LUCI_LC_ALIAS.zh_Hant=zh-tw
+LUCI_LC_ALIAS.zh-cn=zh-cn
+LUCI_LC_ALIAS.zh-tw=zh-tw
 
 # Default locations
 HTDOCS = /www
@@ -114,7 +118,7 @@ PKG_SRC_VERSION?=$(if $(DUMP),x,$(strip $(call findrev,1)))
 PKG_GITBRANCH?=$(if $(DUMP),x,$(strip $(shell \
 	variant="LuCI"; \
 	if git log -1 >/dev/null 2>/dev/null; then \
-		branch="22.03"; \
+		branch="21.02"; \
 		if [ "$$branch" != "master" ]; then \
 			variant="LuCI $$branch"; \
 		else \
@@ -126,11 +130,11 @@ PKG_GITBRANCH?=$(if $(DUMP),x,$(strip $(shell \
 
 include $(INCLUDE_DIR)/package.mk
 
-# LUCI_SUBMENU: the submenu-item below the LuCI top-level menu inside OpenWrt menuconfig
+# LUCI_SUBMENU: the submenu-item below the LuCI top-level menu inside OpoenWrt menuconfig
 #               usually one of the LUCI_MENU.* definitions
 # LUCI_SUBMENU_DEFAULT: the regular SUBMENU defined by LUCI_TYPE or derrived from the packagename
 # LUCI_SUBMENU_FORCED: manually forced value SUBMENU to set to by explicit definiton
-#                      can be any string, "none" disables the creation of a submenu
+#                      can be any string, "none" disables the creation of a submenu 
 #                      most usefull in combination with LUCI_CATEGORY, to make the package appear
 #                      anywhere in the menu structure
 LUCI_SUBMENU_DEFAULT=$(if $(LUCI_MENU.$(LUCI_TYPE)),$(LUCI_MENU.$(LUCI_TYPE)),$(LUCI_MENU.app))
@@ -184,34 +188,34 @@ else
 endif
 
 define Package/$(PKG_NAME)/install
-
- ifneq ($(wildcard ${CURDIR}/luasrc),)
-	$(INSTALL_DIR) $(1)$(LUCI_LIBRARYDIR)
-	cp -pR $(PKG_BUILD_DIR)/luasrc/* $(1)$(LUCI_LIBRARYDIR)/
-	$(FIND) $(1)$(LUCI_LIBRARYDIR)/ -type f -name '*.luadoc' | $(XARGS) rm
-	$(if $(CONFIG_LUCI_SRCDIET),$(call SrcDiet,$(1)$(LUCI_LIBRARYDIR)/),true)
-	$(call SubstituteVersion,$(1)$(LUCI_LIBRARYDIR)/)
- endif
- ifneq ($(wildcard ${CURDIR}/htdocs),)
-	$(INSTALL_DIR) $(1)$(HTDOCS)
-	cp -pR $(PKG_BUILD_DIR)/htdocs/* $(1)$(HTDOCS)/
-	$(if $(CONFIG_LUCI_JSMIN),$(call JsMin,$(1)$(HTDOCS)/),true)
-	$(if $(CONFIG_LUCI_CSSTIDY),$(call CssTidy,$(1)$(HTDOCS)/),true)
- endif
- ifneq ($(wildcard ${CURDIR}/root),)
-	$(INSTALL_DIR) $(1)/
-	cp -pR $(PKG_BUILD_DIR)/root/* $(1)/
- endif
- ifneq ($(wildcard ${CURDIR}/src),)
-	$(call Build/Install/Default)
-	$(CP) $(PKG_INSTALL_DIR)/* $(1)/
- endif
+	if [ -d $(PKG_BUILD_DIR)/luasrc ]; then \
+	  $(INSTALL_DIR) $(1)$(LUCI_LIBRARYDIR); \
+	  cp -pR $(PKG_BUILD_DIR)/luasrc/* $(1)$(LUCI_LIBRARYDIR)/; \
+	  $(FIND) $(1)$(LUCI_LIBRARYDIR)/ -type f -name '*.luadoc' | $(XARGS) rm; \
+	  $(if $(CONFIG_LUCI_SRCDIET),$(call SrcDiet,$(1)$(LUCI_LIBRARYDIR)/),true); \
+	  $(call SubstituteVersion,$(1)$(LUCI_LIBRARYDIR)/); \
+	else true; fi
+	if [ -d $(PKG_BUILD_DIR)/htdocs ]; then \
+	  $(INSTALL_DIR) $(1)$(HTDOCS); \
+	  cp -pR $(PKG_BUILD_DIR)/htdocs/* $(1)$(HTDOCS)/; \
+	  $(if $(CONFIG_LUCI_JSMIN),$(call JsMin,$(1)$(HTDOCS)/),true); \
+	  $(if $(CONFIG_LUCI_CSSTIDY),$(call CssTidy,$(1)$(HTDOCS)/),true); \
+	else true; fi
+	if [ -d $(PKG_BUILD_DIR)/root ]; then \
+	  $(INSTALL_DIR) $(1)/; \
+	  cp -pR $(PKG_BUILD_DIR)/root/* $(1)/; \
+	else true; fi
+	if [ -d $(PKG_BUILD_DIR)/src ]; then \
+	  $(call Build/Install/Default) \
+	  $(CP) $(PKG_INSTALL_DIR)/* $(1)/; \
+	else true; fi
 endef
 
 ifndef Package/$(PKG_NAME)/postinst
 define Package/$(PKG_NAME)/postinst
-[ -n "$${IPKG_INSTROOT}" ] || { \
-	rm -f /tmp/luci-indexcache.*
+[ -n "$${IPKG_INSTROOT}" ] || {$(foreach script,$(LUCI_DEFAULTS),
+	(. /etc/uci-defaults/$(script)) && rm -f /etc/uci-defaults/$(script))
+	rm -f /tmp/luci-indexcache
 	rm -rf /tmp/luci-modulecache/
 	killall -HUP rpcd 2>/dev/null
 	exit 0
@@ -220,7 +224,7 @@ endef
 endif
 
 # some generic macros that can be used by all packages
-ifeq ($(LUCI_MINIFY_LUA),1)
+ifeq ($(LUCI_MINIFY_JS),1)
   define SrcDiet
 	$(FIND) $(1) -type f -name '*.lua' | while read src; do \
 		if LUA_PATH="$(STAGING_DIR_HOSTPKG)/lib/lua/5.1/?.lua" luasrcdiet --noopt-binequiv -o "$$$$src.o" "$$$$src"; \
@@ -279,13 +283,13 @@ ifeq ($(PKG_NAME),luci-base)
 	default y
 
    config LUCI_CSSTIDY
-	bool "Minify CSS files"
-	default y
+        bool "Minify CSS files"
+        default y
 
-   menu "Translations"$(foreach lang,$(LUCI_LANGUAGES),$(if $(LUCI_LANG.$(lang)),
+   menu "Translations"$(foreach lang,$(LUCI_LANGUAGES),
 
      config LUCI_LANG_$(lang)
-	   tristate "$(shell echo '$(LUCI_LANG.$(lang))' | sed -e 's/^.* (\(.*\))$$/\1/') ($(lang))"))
+	   tristate "$(shell echo '$(LUCI_LANG.$(lang))' | sed -e 's/^.* (\(.*\))$$/\1/') ($(lang))")
 
    endmenu
  endef
@@ -302,7 +306,13 @@ define LuciTranslation
     CATEGORY:=LuCI
     TITLE:=$(PKG_NAME) - $(1) translation
     HIDDEN:=1
-    DEFAULT:=LUCI_LANG_$(2)||(ALL&&m)
+	ifeq ($(2),zh-cn)
+		DEFAULT:=LUCI_LANG_zh_Hans||(ALL&&m)
+	else ifeq ($(2),zh-tw)
+		DEFAULT:=LUCI_LANG_zh_Hant||(ALL&&m)
+	else
+		DEFAULT:=LUCI_LANG_$(2)||(ALL&&m)
+	endif
     DEPENDS:=$(PKG_NAME)
     VERSION:=$(PKG_PO_VERSION)
     PKGARCH:=all
@@ -333,5 +343,5 @@ define LuciTranslation
 
 endef
 
-$(foreach lang,$(LUCI_LANGUAGES),$(if $(LUCI_LANG.$(lang)),$(eval $(call LuciTranslation,$(firstword $(LUCI_LC_ALIAS.$(lang)) $(lang)),$(lang)))))
+$(foreach lang,$(LUCI_LANGUAGES),$(eval $(call LuciTranslation,$(firstword $(LUCI_LC_ALIAS.$(lang)) $(lang)),$(lang))))
 $(foreach pkg,$(LUCI_BUILD_PACKAGES),$(eval $(call BuildPackage,$(pkg))))
