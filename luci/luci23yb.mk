@@ -84,7 +84,7 @@ define findrev
       if [ -n "$$1" ]; then
         secs="$$(($$1 % 86400))"; \
         yday="$$(date --utc --date="@$$1" "+%y.%j")"; \
-        printf 'git-%s.%05d-%s' "$$yday" "$$secs" "$$2"; \
+        printf 'git-%s' "$$2"; \
       else \
         echo "unknown"; \
       fi; \
@@ -115,10 +115,9 @@ PKG_SRC_VERSION?=$(if $(DUMP),x,$(strip $(call findrev,1)))
 PKG_GITBRANCH?=$(if $(DUMP),x,$(strip $(shell \
 	variant="LuCI"; \
 	if git log -1 >/dev/null 2>/dev/null; then \
-		branch=$$(git branch --format='%(refname:strip=3)' --remote --no-abbrev --contains 2>/dev/null | tail -n1); \
-		branch=$${branch:-$$(git branch --format='%(refname:strip=2)' --no-abbrev --contains 2>/dev/null | tail -n1)}; \
+		branch="23.05"; \
 		if [ "$$branch" != "master" ]; then \
-			variant="LuCI $${branch:-unknown} branch"; \
+			variant="LuCI $$branch"; \
 		else \
 			variant="LuCI Master"; \
 		fi; \
