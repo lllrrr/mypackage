@@ -6,7 +6,7 @@ local util = require "luci.util"
 local i18n = require "luci.i18n"
 local ipkg = require("luci.model.ipkg")
 local api = require "luci.model.cbi.gpsysupgrade.api"
-local Variable1 = "ywt114"
+local Variable1 = "192.168.123.199"
 local Variable2 = "OpenWrt"
 local Variable3 = "x86_64"
 local Variable4 = "6.1"
@@ -59,18 +59,32 @@ end
 	local version_file = "/tmp/version.txt"
 	system_version = get_system_version()
 	sysverformat = system_version
-	currentTimeStamp = os.date("%Y%m%d")
+	currentTimeStamp = os.date("%Y%m%d%H")
 	if model == "x86_64" then
-		api.exec(api.wget, {api._unpack(api.wget_args), "-O", version_file, "https://github.com/" ..Variable2.. "/" ..Variable3.. "/version.txt"}, nil, api.command_timeout)
-		remote_version = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable2.. "/" ..Variable3.. "/version.txt) | tr -d '\n'")
+		api.exec(api.wget, {api._unpack(api.wget_args), "-O", version_file, "http://" ..Variable1.. "/" ..Variable2.. "/x86_64/version.txt"}, nil, api.command_timeout)
+		remote_version = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/x86_64/version.txt) | tr -d '\n'")
 		dateyr = remote_version
 		remoteformat = remote_version
 		if remoteformat > sysverformat and currentTimeStamp > remoteformat then needs_update = true else needs_update = false end
 		if fs.access("/sys/firmware/efi") then
-			download_url = "https://github.com//" ..Variable2.. "/" ..Variable3.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs-efi.img.gz"
+			download_url = "http://" ..Variable1.. "/" ..Variable2.. "/x86_64/" ..dateyr.. "-openwrt-x86-64-combined-squashfs-efi.img.gz"
 		else
-			download_url = "https://github.com/" ..Variable2.. "/" ..Variable3.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs.img.gz"
+			download_url = "http://" ..Variable1.. "/" ..Variable2.. "/x86_64/" ..dateyr.. "-openwrt-x86-64-combined-squashfs.img.gz"
 		end
+    elseif model:match(".*D2") then
+		api.exec(api.wget, {api._unpack(api.wget_args), "-O", version_file, "http://" ..Variable1.. "/" ..Variable2.. "/newifi-d2/version.txt"}, nil, api.command_timeout)
+		remote_version = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/newifi-d2/version.txt) | tr -d '\n'")
+		dateyr = remote_version
+		remoteformat = remote_version
+		if remoteformat > sysverformat and currentTimeStamp > remoteformat then needs_update = true else needs_update = false end
+        download_url = "http://" ..Variable1.. "/" ..Variable2.. "/newifi-d2/" ..dateyr.. "-openwrt-ramips-mt7621-newifi-d2-squashfs-sysupgrade.bin"
+    elseif model:match(".*XIAOYU") then
+		api.exec(api.wget, {api._unpack(api.wget_args), "-O", version_file, "http://" ..Variable1.. "/" ..Variable2.. "/XY-C5/version.txt"}, nil, api.command_timeout)
+		remote_version = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/XY-C5/version.txt) | tr -d '\n'")
+		dateyr = remote_version
+		remoteformat = luci.sys.exec("date -d $(echo " ..remote_version.. " | awk -F. '{printf $3\"-\"$1\"-\"$2}') +%s")
+		if remoteformat > sysverformat and currentTimeStamp > remoteformat then needs_update = true else needs_update = false end
+        download_url = "http://" ..Variable1.. "/" ..Variable2.. "/XY-C5/" ..dateyr.. "-openwrt-ramips-mt7621-xiaoyu_xy-c5-squashfs-sysupgrade.bin"
 	else
 		local needs_update = false
 		return {

@@ -5,7 +5,7 @@ local util = require "luci.util"
 local i18n = require "luci.i18n"
 local ipkg = require("luci.model.ipkg")
 local api = require "luci.model.cbi.gpsysupgrade.api"
-local Variable1 = "ywt114"
+local Variable1 = "192.168.123.199"
 local Variable2 = "OpenWrt"
 local Variable3 = "x86_64"
 local Variable4 = "6.1"
@@ -17,8 +17,8 @@ end
 
 function check_update()
 		needs_update, notice = false, false
-		remote_version = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable2.. "/" ..Variable3.. "/version.txt) | tr -d '\n'")
-		updatelogs = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable2.. "/" ..Variable3.. "/release.txt) | tr -d '\n'")
+		remote_version = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/" ..Variable3.. "/version.txt) | tr -d '\n'")
+		updatelogs = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/" ..Variable3.. "/release.txt) | tr -d '\n'")
 		remoteformat = remote_version
 		fnotice = remote_version
 		dateyr = remote_version
@@ -34,14 +34,22 @@ function to_check()
     if not model or model == "" then model = api.auto_get_model() end
 	system_version = get_system_version()
 	sysverformat = system_version
-	currentTimeStamp = os.date("%Y%m%d")
+	currentTimeStamp = os.date("%Y%m%d%H")
 	if model == "x86_64" then
 		check_update()
 		if fs.access("/sys/firmware/efi") then
-			download_url = "https://github.com/" ..Variable2.. "/" ..Variable3.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-combined-squashfs-efi.img.gz"
+			download_url = "http://" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs-efi.img.gz"
 		else
-			download_url = "https://github.com/" ..Variable2.. "/" ..Variable3.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-combined-squashfs.img.gz"
+			download_url = "http://" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs.img.gz"
 		end
+    elseif model:match(".*D2.*") then
+		model = "newifi-d2"
+		check_update()
+        download_url = "http://" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-d-team_newifi-d2-squashfs-sysupgrade.bin"
+    elseif model:match(".*XY-C5.*") then
+		model = "XY-C5"
+		check_update()
+        download_url = "http://" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-xiaoyu_xy-c5-squashfs-sysupgrade.bin"
 	else
 		local needs_update = false
 		return {
