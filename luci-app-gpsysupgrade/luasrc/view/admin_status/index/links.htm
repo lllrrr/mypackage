@@ -1,7 +1,7 @@
 <script>
 		setTimeout(function(){
 		var links = document.createElement('div');
-		links.innerHTML ='<div class="table"><div class="tr"><div class="td left" width="33%"><a href="https://telegram.org/" target="_blank">Telegram交流</a></div><div class="td left" width="33%"><a href="https://github.com/ywt114/openwrt" target="_blank">GitHub仓库</a></div><div class="td left"><a href="https://github.com/ywt114/OpenWrt" target="_blank">固件下载</a></div></div></div>';
+		links.innerHTML ='<div class="table"><div class="tr"><div class="td middle" width="33%"><a href="https://telegram.org/" target="_blank">为了防止出现各种无法正常使用的问题，请务必将本路由器WAN口（靠电源接口最近的那个网口）与光猫上LAN口相连，其他网络设备连到本路由器LAN口（除了WAN口的其余四个口）。</a></div></div></div>';
 		var telegram = document.querySelectorAll(".cbi-section")[0];
 		telegram.appendChild(links);
 		}, 3000);

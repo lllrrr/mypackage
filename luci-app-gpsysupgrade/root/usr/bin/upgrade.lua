@@ -43,7 +43,6 @@ function to_flash(url)
 
 	local result = api.exec("/sbin/sysupgrade", {"-k", file}, nil, api.command_timeout) == 0
 
-
     if not result or not fs.access(file) then
         return {
             code = 1,
@@ -54,7 +53,6 @@ function to_flash(url)
     return {code = 0}
 end
 
-
     if not model or model == "" then model = api.auto_get_model() end
     
     local download_url,remote_version,needs_update,remoteformat,sysverformat,currentTimeStamp,dateyr
@@ -63,15 +61,15 @@ end
 	sysverformat = system_version
 	currentTimeStamp = os.date("%Y%m%d")
 	if model == "x86_64" then
-		api.exec(api.wget, {api._unpack(api.wget_args), "-O", version_file, "https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/version.txt"}, nil, api.command_timeout)
-		remote_version = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/version.txt) | tr -d '\n'")
+		api.exec(api.wget, {api._unpack(api.wget_args), "-O", version_file, "https://github.com/" ..Variable2.. "/" ..Variable3.. "/version.txt"}, nil, api.command_timeout)
+		remote_version = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable2.. "/" ..Variable3.. "/version.txt) | tr -d '\n'")
 		dateyr = remote_version
 		remoteformat = remote_version
 		if remoteformat > sysverformat and currentTimeStamp > remoteformat then needs_update = true else needs_update = false end
 		if fs.access("/sys/firmware/efi") then
-			download_url = "https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-generic-squashfs-combined-efi.img.gz"
+			download_url = "https://github.com//" ..Variable2.. "/" ..Variable3.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs-efi.img.gz"
 		else
-			download_url = "https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-generic-squashfs-combined-efi.img.gz"
+			download_url = "https://github.com/" ..Variable2.. "/" ..Variable3.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs.img.gz"
 		end
 	else
 		local needs_update = false
@@ -79,16 +77,14 @@ end
             code = 1,
             error = i18n.translate("Can't determine MODEL, or MODEL not supported.")
 			}
-	end
-	
+	end	
 
     if needs_update and not download_url then
         return {
             code = 1,
             now_version = system_version,
             version = remote_version,
-            error = i18n.translate(
-                "New version found, but failed to get new version download url.")
+            error = i18n.translate("New version found, but failed to get new version download url.")
         }
     end
 

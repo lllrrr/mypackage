@@ -19,7 +19,6 @@ local function http_write_json(content)
 	http.write_json(content or {code = 1})
 end
 
-
 function sysversion_check()
 	local json = sysupgrade.to_check("")
 	http_write_json(json)
@@ -33,6 +32,5 @@ function sysversion_update()
 	else
 		json = sysupgrade.to_download(http.formvalue("url"))
 	end
-
 	http_write_json(json)
 end

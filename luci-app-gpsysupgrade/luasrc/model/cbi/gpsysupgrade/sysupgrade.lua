@@ -17,8 +17,8 @@ end
 
 function check_update()
 		needs_update, notice = false, false
-		remote_version = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/version.txt) | tr -d '\n'")
-		updatelogs = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/release.txt) | tr -d '\n'")
+		remote_version = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable2.. "/" ..Variable3.. "/version.txt) | tr -d '\n'")
+		updatelogs = luci.sys.exec("echo -n $(curl -fsSL https://github.com/" ..Variable2.. "/" ..Variable3.. "/release.txt) | tr -d '\n'")
 		remoteformat = remote_version
 		fnotice = remote_version
 		dateyr = remote_version
@@ -38,9 +38,9 @@ function to_check()
 	if model == "x86_64" then
 		check_update()
 		if fs.access("/sys/firmware/efi") then
-			download_url = "https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-generic-squashfs-combined-efi.img.gz"
+			download_url = "https://github.com/" ..Variable2.. "/" ..Variable3.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-combined-squashfs-efi.img.gz"
 		else
-			download_url = "https://github.com/" ..Variable1.. "/" ..Variable2.. "/releases/download/" ..Variable3.. "_" ..Variable4.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-generic-squashfs-combined-efi.img.gz"
+			download_url = "https://github.com/" ..Variable2.. "/" ..Variable3.. "/" ..dateyr.. "-" ..Variable4.. "-openwrt-x86-64-combined-squashfs.img.gz"
 		end
 	else
 		local needs_update = false
@@ -48,16 +48,14 @@ function to_check()
             code = 1,
             error = i18n.translate("Can't determine MODEL, or MODEL not supported.")
 			}
-	end
-	
+	end	
 
     if needs_update and not download_url then
         return {
             code = 1,
             now_version = system_version,
             version = remote_version,
-            error = i18n.translate(
-                "New version found, but failed to get new version download url.")
+            error = i18n.translate("New version found, but failed to get new version download url.")
         }
     end
 
