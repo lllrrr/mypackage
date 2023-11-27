@@ -3,7 +3,7 @@
 include $(TOPDIR)/rules.mk
 
 LUCI_TITLE:=LuCI for sysupgrade
-LUCI_DEPENDS:=+luci-base +wget
+LUCI_DEPENDS:=+luci-base
 PKG_MAINTAINER:=GaryPang <garyp@qq.com>
 
 include $(TOPDIR)/feeds/luci/luci.mk
