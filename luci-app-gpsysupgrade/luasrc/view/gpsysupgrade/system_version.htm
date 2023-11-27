@@ -147,6 +147,8 @@ local system_version = require "luci.model.cbi.gpsysupgrade.sysupgrade".get_syst
 		if (!kconfig.checked && kopkg.checked){
 			opts = "-n -k";
 			}
+		if (kconfig.checked && !kopkg.checked){
+			opts = "-n -k";
 				removePageNotice_sysup();
 				check();
 						XHR.get(sysUpgradeUrl, {
