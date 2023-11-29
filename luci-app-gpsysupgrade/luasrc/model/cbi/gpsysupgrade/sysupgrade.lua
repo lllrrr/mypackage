@@ -36,18 +36,18 @@ function to_check()
 	if model == "x86_64" then
 		check_update()
 		if fs.access("/sys/firmware/efi") then
-			download_url = '" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs-efi.img.gz'
+			download_url = "" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs-efi.img.gz"
 		else
-			download_url = '" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs.img.gz'
+			download_url = "" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs.img.gz"
 		end
     elseif model:match(".*D2.*") then
 		model = "newifi-d2"
 		check_update()
-        download_url = '" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-d-team_newifi-d2-squashfs-sysupgrade.bin'
+        download_url = "" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-d-team_newifi-d2-squashfs-sysupgrade.bin"
     elseif model:match(".*XY-C5.*") then
 		model = "xy-c5"
 		check_update()
-        download_url = '" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-xiaoyu_xy-c5-squashfs-sysupgrade.bin'
+        download_url = "" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-xiaoyu_xy-c5-squashfs-sysupgrade.bin"
 	else
 		local needs_update = false
 		return {
