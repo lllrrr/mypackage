@@ -5,10 +5,8 @@ local util = require "luci.util"
 local i18n = require "luci.i18n"
 local ipkg = require("luci.model.ipkg")
 local api = require "luci.model.cbi.gpsysupgrade.api"
-local Variable1 = "192.168.123.199"
-local Variable2 = "OpenWrt"
-local Variable3 = "x86_64"
-local Variable4 = "6.1"
+local Variable1 = "http://192.168.123.199"
+local Variable2 = "Op"
 
 function get_system_version()
 	local system_version = luci.sys.exec("[ -f '/etc/openwrt_version' ] && echo -n `cat /etc/openwrt_version` | tr -d '\n'")
@@ -17,8 +15,8 @@ end
 
 function check_update()
 		needs_update, notice = false, false
-		remote_version = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/version.txt) | tr -d '\n'")
-		updatelogs = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/release.txt) | tr -d '\n'")
+		remote_version = luci.sys.exec("echo -n $(curl -fsSL " ..Variable1.. "/" ..Variable2.. "/version.txt) | tr -d '\n'")
+		updatelogs = luci.sys.exec("echo -n $(curl -fsSL " ..Variable1.. "/" ..Variable2.. "/release.txt) | tr -d '\n'")
 		remoteformat = remote_version
 		fnotice = remote_version
 		dateyr = remote_version
@@ -38,18 +36,18 @@ function to_check()
 	if model == "x86_64" then
 		check_update()
 		if fs.access("/sys/firmware/efi") then
-			download_url = "http://" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs-efi.img.gz"
+			download_url = '" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs-efi.img.gz'
 		else
-			download_url = "http://" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs.img.gz"
+			download_url = '" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs.img.gz'
 		end
     elseif model:match(".*D2.*") then
 		model = "newifi-d2"
 		check_update()
-        download_url = "http://" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-d-team_newifi-d2-squashfs-sysupgrade.bin"
+        download_url = '" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-d-team_newifi-d2-squashfs-sysupgrade.bin'
     elseif model:match(".*XY-C5.*") then
-		model = "XY-C5"
+		model = "xy-c5"
 		check_update()
-        download_url = "http://" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-xiaoyu_xy-c5-squashfs-sysupgrade.bin"
+        download_url = '" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-xiaoyu_xy-c5-squashfs-sysupgrade.bin'
 	else
 		local needs_update = false
 		return {
