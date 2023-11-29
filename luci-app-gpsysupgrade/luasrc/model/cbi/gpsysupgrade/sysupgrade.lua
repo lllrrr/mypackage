@@ -17,8 +17,8 @@ end
 
 function check_update()
 		needs_update, notice = false, false
-		remote_version = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/" ..Variable3.. "/version.txt) | tr -d '\n'")
-		updatelogs = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/" ..Variable3.. "/release.txt) | tr -d '\n'")
+		remote_version = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/version.txt) | tr -d '\n'")
+		updatelogs = luci.sys.exec("echo -n $(curl -fsSL http://" ..Variable1.. "/" ..Variable2.. "/release.txt) | tr -d '\n'")
 		remoteformat = remote_version
 		fnotice = remote_version
 		dateyr = remote_version
