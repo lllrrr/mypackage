@@ -38,7 +38,7 @@ function to_check()
 	system_version = get_system_version()
 	sysverformat = system_version
 	currentTimeStamp = os.date("%Y%m%d")
-	if model == "x86_64" then
+	if model == "string" then
 		check_update()
 		if fs.access("/sys/firmware/efi") then
 			download_url = "" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs-efi.img.gz"
