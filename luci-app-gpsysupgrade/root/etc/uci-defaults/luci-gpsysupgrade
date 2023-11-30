@@ -1,1 +1,4 @@
+#!/bin/sh
+
+echo "$(ubus call system board | grep 'model' | awk '{print $3}' | tr -d '",')" >> /etc/model
 rm -rf /tmp/luci-modulecache /tmp/luci-indexcache*

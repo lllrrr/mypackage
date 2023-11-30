@@ -13,6 +13,11 @@ function get_system_version()
     return system_version
 end
 
+function get_model()
+	local model = luci.sys.exec("echo -n `cat /etc/model` | tr -d '\n'")
+    return model
+end
+
 function check_update()
 		needs_update, notice = false, false
 		remote_version = luci.sys.exec("echo -n $(curl -fsSL " ..Variable1.. "/" ..Variable2.. "/version.txt) | tr -d '\n'")
@@ -29,7 +34,7 @@ function check_update()
 end
 
 function to_check()
-    if not model or model == "" then model = api.auto_get_model() end
+    if not model or model == "" then model = get_model() end
 	system_version = get_system_version()
 	sysverformat = system_version
 	currentTimeStamp = os.date("%Y%m%d%H")
@@ -40,11 +45,11 @@ function to_check()
 		else
 			download_url = "" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-x86-64-combined-squashfs.img.gz"
 		end
-    elseif model:match(".*D2.*") then
+    elseif model == "Newifi-D2" then
 		model = "newifi-d2"
 		check_update()
         download_url = "" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-d-team_newifi-d2-squashfs-sysupgrade.bin"
-    elseif model:match(".*XY-C5.*") then
+    elseif model == "XY-C5" then
 		model = "xy-c5"
 		check_update()
         download_url = "" ..Variable1.. "/" ..Variable2.. "/" ..model.. "/" ..dateyr.. "-openwrt-ramips-mt7621-xiaoyu_xy-c5-squashfs-sysupgrade.bin"
