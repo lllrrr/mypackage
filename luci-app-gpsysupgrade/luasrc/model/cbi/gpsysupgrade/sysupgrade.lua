@@ -37,7 +37,7 @@ function to_check()
     if not model or model == "" then model = get_model() end
 	system_version = get_system_version()
 	sysverformat = system_version
-	currentTimeStamp = os.date("%Y%m%d%H")
+	currentTimeStamp = os.date("%Y%m%d")
 	if model == "x86_64" then
 		check_update()
 		if fs.access("/sys/firmware/efi") then
