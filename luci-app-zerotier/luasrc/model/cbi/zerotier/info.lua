@@ -10,6 +10,6 @@ function t.cfgvalue()
   luci.sys.exec("for i in $(ifconfig | grep 'zt' | awk '{print $1}'); do ifconfig $i; done > /tmp/zero.info")
 	return fs.readfile(conffile) or ""
 end
-t.readonly= "readonly"
+t.readonly = "readonly"
 
 return f
