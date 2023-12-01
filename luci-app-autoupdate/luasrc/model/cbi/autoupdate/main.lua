@@ -1,5 +1,5 @@
-m = Map("autoupdate", translate("AutoUpdate"),
-translate("AutoUpdate LUCI supports scheduled upgrade & one-click firmware upgrade")
+m = Map("autoupdate", translate("Update Config"),
+translate("LUCI upgrade firmware && script upgrade config")
 )
 
 s = m:section(TypedSection, "autoupdate")
