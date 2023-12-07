@@ -253,6 +253,15 @@ define Device/iodata_wn-gx300gr
 endef
 TARGET_DEVICES += iodata_wn-gx300gr
 
+define Device/jdcloud_re-sp-01b
+  DTS := JDCloud-1
+  IMAGE_SIZE := 27328k
+  DEVICE_TITLE := JDCloud RE-SP-01B
+  DEVICE_PACKAGES := kmod-fs-ext4 kmod-mt7603 kmod-mt7615e kmod-sdhci-mt7620 \
+	kmod-usb3 wpad-basic
+endef
+TARGET_DEVICES += jdcloud_re-sp-01b
+
 define Device/k2p
   DTS := K2P
   IMAGE_SIZE := $(ralink_default_fw_size_16M)
@@ -313,15 +322,6 @@ define Device/mt7621
   DEVICE_TITLE := MediaTek MT7621 EVB
 endef
 TARGET_DEVICES += mt7621
-
-define Device/jdcloud-1
-  DTS := JDCloud-1
-  IMAGE_SIZE := 27328k
-  DEVICE_TITLE := JDCLOUD
-  DEVICE_PACKAGES := kmod-fs-ext4 kmod-mt7603 kmod-mt7615e kmod-mt7615-firmware \
-	kmod-sdhci-mt7620 kmod-usb3 wpad-basic fixjdcmac
-endef
-TARGET_DEVICES += jdcloud-1
 
 define Device/newifi-d1
   DTS := Newifi-D1

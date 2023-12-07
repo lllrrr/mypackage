@@ -7,14 +7,15 @@
 #include <dt-bindings/input/input.h>
 
 / {
-	compatible = "jdcloud-1", "mediatek,mt7621-soc";
-	model = "JDCloud-1";
+	compatible = "jdcloud,re-sp-01b", "mediatek,mt7621-soc";
+	model = "JDCloud RE-SP-01B";
 
 	aliases {
 		led-boot = &led_red;
 		led-failsafe = &led_red;
 		led-running = &led_green;
 		led-upgrade = &led_blue;
+		label-mac-device = &ethernet;
 	};
 
 	chosen {
@@ -62,7 +63,7 @@
 	flash@0 {
 		compatible = "jedec,spi-nor";
 		reg = <0>;
-		spi-max-frequency = <10000000>;
+		spi-max-frequency = <50000000>;
 
 		partitions {
 			compatible = "fixed-partitions";
@@ -72,25 +73,44 @@
 			partition@0 {
 				label = "u-boot";
 				reg = <0x0 0x30000>;
+				read-only;
 			};
 
-			partition@30000 {
+			config: partition@30000 {
 				label = "config";
 				reg = <0x30000 0x10000>;
+				read-only;
 			};
 
 			factory: partition@40000 {
 				label = "factory";
 				reg = <0x40000 0x10000>;
+				read-only;
 			};
 
 			partition@50000 {
 				compatible = "denx,uimage";
 				label = "firmware";
-				reg = <0x50000 0x1fb0000>;
+				reg = <0x50000 0x1ab0000>;
+			};
+
+			partition@1b00000 {
+				label = "mini";
+				reg = <0x1b00000 0x400000>;
+				read-only;
+			};
+
+			partition@1f00000 {
+				label = "oem";
+				reg = <0x1f00000 0x100000>;
+				read-only;
 			};
 		};
 	};
+};
+
+&ethernet {
+	mtd-mac-address-ascii = <&config 0x4429>;
 };
 
 &pcie {
@@ -100,6 +120,7 @@
 &pcie0 {
 	wifi@0,0 {
 		reg = <0x0000 0 0 0 0>;
+		mtd-mac-address-ascii = <&config 0x4429>;
 		mediatek,mtd-eeprom = <&factory 0x0>;
 	};
 };
@@ -107,20 +128,17 @@
 &pcie1 {
 	wifi@0,0 {
 		reg = <0x0000 0 0 0 0>;
+		mtd-mac-address-ascii = <&config 0x4429>;
+		mtd-mac-address-increment = <0x80>;
+		mtd-mac-address-increment-byte = <3>;
 		mediatek,mtd-eeprom = <&factory 0x8000>;
 		ieee80211-freq-limit = <5000000 6000000>;
 	};
 };
 
-&ethernet {
-	mtd-mac-address = <&factory 0xe000>;
-};
-
-&pinctrl {
-	state_default: pinctrl0 {
-		gpio {
-			ralink,group = "uart2", "uart3", "wdt";
-			ralink,function = "gpio";
-		};
+&state_default {
+	gpio {
+		ralink,group = "uart2", "uart3", "wdt";
+		ralink,function = "gpio";
 	};
 };
