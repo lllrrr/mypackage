@@ -314,6 +314,15 @@ define Device/mt7621
 endef
 TARGET_DEVICES += mt7621
 
+define Device/jdcloud-1
+  DTS := JDCloud-1
+  IMAGE_SIZE := 27328k
+  DEVICE_TITLE := JDCLOUD
+  DEVICE_PACKAGES := kmod-fs-ext4 kmod-mt7603 kmod-mt7615e kmod-mt7615-firmware \
+	kmod-sdhci-mt7620 kmod-usb3 wpad-basic fixjdcmac
+endef
+TARGET_DEVICES += jdcloud-1
+
 define Device/newifi-d1
   DTS := Newifi-D1
   IMAGE_SIZE := $(ralink_default_fw_size_32M)
