@@ -22,8 +22,8 @@ ifneq ($(CONFIG_SDK)$(CONFIG_PACKAGE_kmod-b43)$(CONFIG_PACKAGE_b43legacy-firmwar
 endif
 
 tools-$(BUILD_TOOLCHAIN) += gmp mpfr mpc libelf expat
-tools-y += m4 libtool autoconf automake autoconf-archive flex bison pkg-config mklibs zlib
-tools-y += sstrip make-ext4fs meson e2fsprogs mtd-utils mkimage
+tools-y += m4 libtool autoconf automake flex bison pkg-config mklibs zlib
+tools-y += sstrip make-ext4fs e2fsprogs mtd-utils mkimage
 tools-y += firmware-utils patch-image quilt padjffs2
 tools-y += mm-macros missing-macros cmake scons bc findutils gengetopt patchelf
 tools-y += mtools dosfstools libressl
@@ -35,7 +35,7 @@ tools-$(CONFIG_TARGET_ar71xx) += lzma-old
 tools-$(CONFIG_TARGET_ar71xx)$(CONFIG_TARGET_ath79) += squashfs
 tools-$(CONFIG_USES_MINOR) += kernel2minor
 tools-y += ninja
-tools-y += lzma squashfskit4 zip zstd
+tools-y += lzma squashfskit4 zip
 tools-$(BUILD_B43_TOOLS) += b43-tools
 tools-$(BUILD_ISL) += isl
 tools-$(CONFIG_USE_SPARSE) += sparse
@@ -80,9 +80,7 @@ $(curdir)/zlib/compile := $(curdir)/cmake/compile
 $(curdir)/wrt350nv2-builder/compile := $(curdir)/zlib/compile
 $(curdir)/lzma-old/compile := $(curdir)/zlib/compile
 $(curdir)/make-ext4fs/compile := $(curdir)/zlib/compile
-$(curdir)/meson/compile := $(curdir)/ninja/compile
 $(curdir)/cbootimage/compile += $(curdir)/automake/compile
-$(curdir)/zstd/compile := $(curdir)/cmake/compile
 
 ifneq ($(HOST_OS),Linux)
   $(curdir)/squashfskit4/compile += $(curdir)/coreutils/compile
@@ -90,9 +88,8 @@ ifneq ($(HOST_OS),Linux)
 endif
 
 ifneq ($(CONFIG_CCACHE)$(CONFIG_SDK),)
-$(foreach tool, $(filter-out xz zstd patch ninja meson libressl cmake,$(tools-y)), $(eval $(curdir)/$(tool)/compile += $(curdir)/ccache/compile))
+$(foreach tool, $(filter-out xz patch,$(tools-y)), $(eval $(curdir)/$(tool)/compile += $(curdir)/ccache/compile))
 tools-y += ccache
-$(curdir)/ccache/compile := $(curdir)/zstd/compile
 endif
 
 # in case there is no patch tool on the host we need to make patch tool a
