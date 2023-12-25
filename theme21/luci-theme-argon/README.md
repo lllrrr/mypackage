@@ -56,7 +56,7 @@ It also supports automatic and manual switching between light and dark modes.
 [Contributors](#contributors) •
 [Credits](#credits)
 
-<img src="https://raw.githubusercontent.com/jerrykuku/staff/master/argon4.gif">
+<img src="https://raw.githubusercontent.com/jerrykuku/staff/master/argon2.gif">
 </div>
 
 ## Key Features
@@ -141,7 +141,7 @@ opkg install luci-app-argon-config*.ipk
 ## Contributors
 
 <a href="https://github.com/jerrykuku/luci-theme-argon/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jerrykuku/luci-theme-argon" />
+  <img src="https://contrib.rocks/image?repo=jerrykuku/luci-theme-argon&v=2" />
 </a>
 
 Made with [contrib.rocks](https://contrib.rocks).
@@ -149,7 +149,6 @@ Made with [contrib.rocks](https://contrib.rocks).
 ## Related Projects
 
 - [luci-app-argon-config](https://github.com/jerrykuku/luci-app-argon-config): Argon theme config plugin
-- [luci-app-vssr](https://github.com/jerrykuku/luci-app-vssr): An OpenWrt internet surfing plugin
 - [openwrt-package](https://github.com/jerrykuku/openwrt-package): My OpenWrt package
 - [CasaOS](https://github.com/IceWhaleTech/CasaOS): A simple, easy-to-use, elegant open-source Personal Cloud system (My current main project)
 
