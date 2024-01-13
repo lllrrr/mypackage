@@ -3,15 +3,13 @@
 module("luci.controller.shadowsocksr", package.seeall)
 
 function index()
-	entry({"admin", "services","shadowsocksr"}).dependent = true
-	entry({"admin", "services","shadowsocksr", "show"}, call("show_menu")).leaf = true
-	entry({"admin", "services","shadowsocksr", "hide"}, call("hide_menu")).leaf = true
 	if not nixio.fs.access("/etc/config/shadowsocksr") then
 		call("act_reset")
 	end
-	if nixio.fs.access("/etc/config/passwall_show") then
-		entry({"admin", "services","shadowsocksr"}, alias("admin", "services","shadowsocksr", "client"), ("ShadowSocksR Plus+"), 1).dependent = true
-	end
+	local page
+	page = entry({"admin", "services", "shadowsocksr"}, alias("admin", "services", "shadowsocksr", "client"), _("ShadowSocksR Plus+"), 10)
+	page.dependent = true
+	page.acl_depends = { "luci-app-ssr-plus" }
 	entry({"admin", "services", "shadowsocksr", "client"}, cbi("shadowsocksr/client"), _("SSR Client"), 10).leaf = true
 	entry({"admin", "services", "shadowsocksr", "servers"}, arcombine(cbi("shadowsocksr/servers", {autoapply = true}), cbi("shadowsocksr/client-config")), _("Servers Nodes"), 20).leaf = true
 	entry({"admin", "services", "shadowsocksr", "control"}, cbi("shadowsocksr/control"), _("Access Control"), 30).leaf = true
@@ -34,16 +32,6 @@ function subscribe()
 	luci.sys.call("/usr/bin/lua /usr/share/shadowsocksr/subscribe.lua >>/var/log/ssrplus.log")
 	luci.http.prepare_content("application/json")
 	luci.http.write_json({ret = 1})
-end
-
-function show_menu()
-	luci.sys.call("touch /etc/config/passwall_show")
-	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "shadowsocksr"))
-end
-
-function hide_menu()
-	luci.sys.call("rm -rf /etc/config/passwall_show")
-	luci.http.redirect(luci.dispatcher.build_url("admin", "status", "overview"))
 end
 
 function act_status()
