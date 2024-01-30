@@ -27,6 +27,7 @@ rm -f /usr/lib/lua/luci/view/admin_status/index/ddns.htm
 
 chmod 0755 /etc/init.d/*
 
-rm -rf /tmp/luci-*
+rm -rf /tmp/luci-modulecache
+rm -f /tmp/luci-indexcache*
 
 exit 0
