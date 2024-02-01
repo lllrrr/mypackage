@@ -3,13 +3,15 @@
 module("luci.controller.shadowsocksr", package.seeall)
 
 function index()
+	entry({"admin", "services","shadowsocksr"}).dependent = true
+	entry({"admin", "services","shadowsocksr", "show"}, call("show_menu")).leaf = true
+	entry({"admin", "services","shadowsocksr", "hide"}, call("hide_menu")).leaf = true
 	if not nixio.fs.access("/etc/config/shadowsocksr") then
 		call("act_reset")
 	end
-	local page
-	page = entry({"admin", "services", "shadowsocksr"}, alias("admin", "services", "shadowsocksr", "client"), _("ShadowSocksR Plus+"), 10)
-	page.dependent = true
-	page.acl_depends = { "luci-app-ssr-plus" }
+	if nixio.fs.access("/etc/config/passwall_show") then
+		entry({"admin", "services","shadowsocksr"}, alias("admin", "services","shadowsocksr", "client"), ("ShadowSocksR Plus+"), 1).dependent = true
+	end
 	entry({"admin", "services", "shadowsocksr", "client"}, cbi("shadowsocksr/client"), _("SSR Client"), 10).leaf = true
 	entry({"admin", "services", "shadowsocksr", "servers"}, arcombine(cbi("shadowsocksr/servers", {autoapply = true}), cbi("shadowsocksr/client-config")), _("Servers Nodes"), 20).leaf = true
 	entry({"admin", "services", "shadowsocksr", "control"}, cbi("shadowsocksr/control"), _("Access Control"), 30).leaf = true
@@ -26,6 +28,16 @@ function index()
 	entry({"admin", "services", "shadowsocksr", "reset"}, call("act_reset"))
 	entry({"admin", "services", "shadowsocksr", "restart"}, call("act_restart"))
 	entry({"admin", "services", "shadowsocksr", "delete"}, call("act_delete"))
+end
+
+function show_menu()
+	luci.sys.call("touch /etc/config/passwall_show")
+	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "shadowsocksr"))
+end
+
+function hide_menu()
+	luci.sys.call("rm -rf /etc/config/passwall_show")
+	luci.http.redirect(luci.dispatcher.build_url("admin", "status", "overview"))
 end
 
 function subscribe()
