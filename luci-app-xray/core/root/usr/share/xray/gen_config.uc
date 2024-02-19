@@ -1,11 +1,11 @@
 #!/usr/bin/ucode
 "use strict";
 
-import { lsdir } from "fs";
+import { access } from "fs";
 import { load_config } from "./common/config.mjs";
 import { bridge_outbounds, bridge_rules, bridges } from "./feature/bridge.mjs";
-import { blocked_domain_rules, dns_conf, dns_server_inbounds, dns_server_outbound, dns_server_tags, fast_domain_rules, secure_domain_rules } from "./feature/dns.mjs";
-import { extra_inbound_balancers, extra_inbound_global_tcp_tags, extra_inbound_global_udp_tags, extra_inbound_rules, extra_inbounds } from "./feature/extra_inbound.mjs";
+import { blocked_domain_rules, dns_conf, dns_rules, dns_server_inbounds, dns_server_outbounds, fast_domain_rules, secure_domain_rules } from "./feature/dns.mjs";
+import { extra_inbound_balancers, extra_inbound_global_http, extra_inbound_global_socks5, extra_inbound_global_tcp, extra_inbound_global_udp, extra_inbound_rules, extra_inbounds } from "./feature/extra_inbound.mjs";
 import { fake_dns_balancers, fake_dns_conf, fake_dns_rules } from "./feature/fake_dns.mjs";
 import { dokodemo_inbound, http_inbound, https_inbound, socks_inbound } from "./feature/inbound.mjs";
 import { manual_tproxy_outbound_tags, manual_tproxy_outbounds, manual_tproxy_rules } from "./feature/manual_tproxy.mjs";
@@ -61,9 +61,9 @@ function inbounds(proxy, config, extra_inbound) {
 
 function outbounds(proxy, config, manual_tproxy, bridge, extra_inbound, fakedns) {
     let result = [
-        direct_outbound("direct"),
+        direct_outbound("direct", null),
         blackhole_outbound(),
-        dns_server_outbound(),
+        ...dns_server_outbounds(proxy),
         ...manual_tproxy_outbounds(config, manual_tproxy),
         ...bridge_outbounds(config, bridge)
     ];
@@ -102,21 +102,25 @@ function outbounds(proxy, config, manual_tproxy, bridge, extra_inbound, fakedns)
     return result;
 }
 
-function rules(geoip_existence, proxy, bridge, manual_tproxy, extra_inbound, fakedns) {
+function rules(proxy, bridge, manual_tproxy, extra_inbound, fakedns) {
+    const geoip_existence = access("/usr/share/xray/geoip.dat") || false;
     const tproxy_tcp_inbound_v4_tags = ["tproxy_tcp_inbound_v4"];
     const tproxy_udp_inbound_v4_tags = ["tproxy_udp_inbound_v4"];
     const tproxy_tcp_inbound_v6_tags = ["tproxy_tcp_inbound_v6"];
     const tproxy_udp_inbound_v6_tags = ["tproxy_udp_inbound_v6"];
-    const built_in_tcp_inbounds = [...tproxy_tcp_inbound_v4_tags, "socks_inbound", "https_inbound", "http_inbound"];
-    const built_in_udp_inbounds = [...tproxy_udp_inbound_v4_tags, "dns_conf_inbound"];
-    const extra_inbound_global_tcp = extra_inbound_global_tcp_tags() || [];
-    const extra_inbound_global_udp = extra_inbound_global_udp_tags() || [];
+    const extra_inbound_global_tcp_tags = extra_inbound_global_tcp() || [];
+    const extra_inbound_global_udp_tags = extra_inbound_global_udp() || [];
+    const extra_inbound_global_http_tags = extra_inbound_global_http() || [];
+    const extra_inbound_global_socks5_tags = extra_inbound_global_socks5() || [];
+    const built_in_tcp_inbounds = [...tproxy_tcp_inbound_v4_tags, ...extra_inbound_global_tcp_tags, ...extra_inbound_global_http_tags, ...extra_inbound_global_socks5_tags, "socks_inbound", "https_inbound", "http_inbound"];
+    const built_in_udp_inbounds = [...tproxy_udp_inbound_v4_tags, ...extra_inbound_global_udp_tags, "dns_conf_inbound"];
     let result = [
         ...fake_dns_rules(fakedns),
         ...manual_tproxy_rules(manual_tproxy),
         ...extra_inbound_rules(extra_inbound),
         ...system_route_rules(proxy),
         ...bridge_rules(bridge),
+        ...dns_rules(proxy, [...tproxy_tcp_inbound_v6_tags, ...tproxy_tcp_inbound_v4_tags, ...extra_inbound_global_tcp_tags], [...tproxy_udp_inbound_v6_tags, ...tproxy_udp_inbound_v4_tags, ...extra_inbound_global_udp_tags]),
         ...function () {
             let direct_rules = [];
             if (geoip_existence) {
@@ -125,7 +129,7 @@ function rules(geoip_existence, proxy, bridge, manual_tproxy, extra_inbound, fak
                     if (length(geoip_direct_code_list) > 0) {
                         push(direct_rules, {
                             type: "field",
-                            inboundTag: [...built_in_tcp_inbounds, ...built_in_udp_inbounds, ...extra_inbound_global_tcp, ...extra_inbound_global_udp],
+                            inboundTag: [...built_in_tcp_inbounds, ...built_in_udp_inbounds],
                             outboundTag: "direct",
                             ip: geoip_direct_code_list
                         });
@@ -142,7 +146,7 @@ function rules(geoip_existence, proxy, bridge, manual_tproxy, extra_inbound, fak
                 }
                 push(direct_rules, {
                     type: "field",
-                    inboundTag: [...tproxy_tcp_inbound_v6_tags, ...tproxy_udp_inbound_v6_tags, ...built_in_tcp_inbounds, ...built_in_udp_inbounds, ...extra_inbound_global_tcp, ...extra_inbound_global_udp],
+                    inboundTag: [...tproxy_tcp_inbound_v6_tags, ...tproxy_udp_inbound_v6_tags, ...built_in_tcp_inbounds, ...built_in_udp_inbounds],
                     outboundTag: "direct",
                     ip: ["geoip:private"]
                 });
@@ -151,40 +155,35 @@ function rules(geoip_existence, proxy, bridge, manual_tproxy, extra_inbound, fak
         }(),
         {
             type: "field",
-            inboundTag: [...tproxy_tcp_inbound_v6_tags],
+            inboundTag: tproxy_tcp_inbound_v6_tags,
             balancerTag: "tcp_outbound_v6"
         },
         {
             type: "field",
-            inboundTag: [...tproxy_udp_inbound_v6_tags],
+            inboundTag: tproxy_udp_inbound_v6_tags,
             balancerTag: "udp_outbound_v6"
         },
         {
             type: "field",
-            inboundTag: [...built_in_tcp_inbounds, ...extra_inbound_global_tcp],
+            inboundTag: built_in_tcp_inbounds,
             balancerTag: "tcp_outbound_v4"
         },
         {
             type: "field",
-            inboundTag: [...built_in_udp_inbounds, ...extra_inbound_global_udp],
+            inboundTag: built_in_udp_inbounds,
             balancerTag: "udp_outbound_v4"
-        },
-        {
-            type: "field",
-            inboundTag: dns_server_tags(proxy),
-            outboundTag: "dns_server_outbound"
         },
     ];
     if (proxy["tproxy_sniffing"] == "1") {
         if (length(secure_domain_rules(proxy)) > 0) {
             splice(result, 0, 0, {
                 type: "field",
-                inboundTag: [...tproxy_tcp_inbound_v4_tags, ...extra_inbound_global_tcp],
+                inboundTag: [...tproxy_tcp_inbound_v4_tags, ...extra_inbound_global_tcp_tags],
                 balancerTag: "tcp_outbound_v4",
                 domain: secure_domain_rules(proxy),
             }, {
                 type: "field",
-                inboundTag: [...tproxy_udp_inbound_v4_tags, ...extra_inbound_global_udp],
+                inboundTag: [...tproxy_udp_inbound_v4_tags, ...extra_inbound_global_udp_tags],
                 balancerTag: "udp_outbound_v4",
                 domain: secure_domain_rules(proxy),
             }, {
@@ -202,14 +201,14 @@ function rules(geoip_existence, proxy, bridge, manual_tproxy, extra_inbound, fak
         if (length(blocked_domain_rules(proxy)) > 0) {
             splice(result, 0, 0, {
                 type: "field",
-                inboundTag: [...tproxy_tcp_inbound_v4_tags, ...tproxy_udp_inbound_v4_tags, ...tproxy_tcp_inbound_v6_tags, ...tproxy_udp_inbound_v6_tags, ...extra_inbound_global_tcp, ...extra_inbound_global_udp],
+                inboundTag: [...tproxy_tcp_inbound_v4_tags, ...tproxy_udp_inbound_v4_tags, ...tproxy_tcp_inbound_v6_tags, ...tproxy_udp_inbound_v6_tags, ...extra_inbound_global_tcp_tags, ...extra_inbound_global_udp_tags],
                 outboundTag: "blackhole_outbound",
                 domain: blocked_domain_rules(proxy),
             });
         }
         splice(result, 0, 0, {
             type: "field",
-            inboundTag: [...tproxy_tcp_inbound_v4_tags, ...tproxy_udp_inbound_v4_tags, ...tproxy_tcp_inbound_v6_tags, ...tproxy_udp_inbound_v6_tags, ...extra_inbound_global_tcp, ...extra_inbound_global_udp],
+            inboundTag: [...tproxy_tcp_inbound_v4_tags, ...tproxy_udp_inbound_v4_tags, ...tproxy_tcp_inbound_v6_tags, ...tproxy_udp_inbound_v6_tags, ...extra_inbound_global_tcp_tags, ...extra_inbound_global_udp_tags],
             outboundTag: "direct",
             domain: fast_domain_rules(proxy)
         });
@@ -226,40 +225,21 @@ function rules(geoip_existence, proxy, bridge, manual_tproxy, extra_inbound, fak
 
 function balancers(proxy, extra_inbound, fakedns) {
     const general_balancer_strategy = proxy["general_balancer_strategy"] || "random";
-    let result = [
-        {
-            "tag": "tcp_outbound_v4",
-            "selector": balancer(proxy, "tcp_balancer_v4", "tcp_balancer_v4"),
-            "strategy": {
-                "type": general_balancer_strategy
-            }
-        },
-        {
-            "tag": "udp_outbound_v4",
-            "selector": balancer(proxy, "udp_balancer_v4", "udp_balancer_v4"),
-            "strategy": {
-                "type": general_balancer_strategy
-            }
-        },
-        {
-            "tag": "tcp_outbound_v6",
-            "selector": balancer(proxy, "tcp_balancer_v6", "tcp_balancer_v6"),
-            "strategy": {
-                "type": general_balancer_strategy
-            }
-        },
-        {
-            "tag": "udp_outbound_v6",
-            "selector": balancer(proxy, "udp_balancer_v6", "udp_balancer_v6"),
-            "strategy": {
-                "type": general_balancer_strategy
-            }
-        },
+    const built_in_outbounds = ["tcp_outbound_v4", "udp_outbound_v4", "tcp_outbound_v6", "udp_outbound_v6"];
+    const built_in_balancers = ["tcp_balancer_v4", "udp_balancer_v4", "tcp_balancer_v6", "udp_balancer_v6"];
+    return [
+        ...map(built_in_balancers, function (balancer_tag, index) {
+            return {
+                "tag": built_in_outbounds[index],
+                "selector": balancer(proxy, balancer_tag, balancer_tag),
+                "strategy": {
+                    "type": general_balancer_strategy
+                }
+            };
+        }),
         ...extra_inbound_balancers(extra_inbound),
         ...fake_dns_balancers(fakedns),
     ];
-
-    return result;
 };
 
 function observatory(proxy, manual_tproxy) {
@@ -274,9 +254,6 @@ function observatory(proxy, manual_tproxy) {
 }
 
 function gen_config() {
-    const share_dir = lsdir("/usr/share/xray");
-    const geoip_existence = index(share_dir, "geoip.dat") > 0;
-
     const config = load_config();
     const bridge = filter(values(config), v => v[".type"] == "bridge") || [];
     const fakedns = filter(values(config), v => v[".type"] == "fakedns") || [];
@@ -303,7 +280,7 @@ function gen_config() {
         },
         routing: {
             domainStrategy: general["routing_domain_strategy"] || "AsIs",
-            rules: rules(geoip_existence, general, bridge, manual_tproxy, extra_inbound, fakedns),
+            rules: rules(general, bridge, manual_tproxy, extra_inbound, fakedns),
             balancers: balancers(general, extra_inbound, fakedns)
         }
     });
