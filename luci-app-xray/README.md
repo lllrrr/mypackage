@@ -40,6 +40,12 @@ Fork this repository and:
 * Wait until actions finish
 * Use `opkg -i *` to install both ipks from Releases.
 
+## Changelog since 3.4.0
+
+* 2024-02-18 chore: optimize code style; bump version
+* 2024-02-19 fix: several DNS related validation
+* 2024-02-20 fix: domain match priority; stricter resolve options; socks / http auth
+
 ## Changelog since 3.3.0
 
 * 2024-01-19 chore: bump version
