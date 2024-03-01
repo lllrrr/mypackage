@@ -16,6 +16,8 @@ sed -i 's/root::0:0:99999:7:::/root:$1$.jRW0wfC$K2zXyaQ5S9cX3bG8H7NJ81:0:0:99999
 sed -i 's/root:::0:99999:7:::/root:$1$.jRW0wfC$K2zXyaQ5S9cX3bG8H7NJ81:0:0:99999:7:::/g' /etc/shadow
 #root:$1$RQytXiRO$uOrT4VYZL.2qzRNaI.IXz.:19675:0:99999:7:::  #lxw
 #root:$1$oA/Yj6wt$pcG.PiYcTqrA3W8a6Kw9l/:19783:0:99999:7:::  #psw
+#root:$1$Il54HYNf$GHmoCpySnbQOIHoLyGuDq1:19567:0:99999:7:::  #lxw
+#root:$1$V4UetPzk$CYXluq4wUazHjmCDBCqXF.:0:0:99999:7:::  #psw
 
 sed -i '/DISTRIB_REVISION/d' /etc/openwrt_release
 echo "DISTRIB_REVISION='R8.3.19.0410'" >> /etc/openwrt_release

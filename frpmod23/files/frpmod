@@ -9,7 +9,7 @@ uci set frpc.ssh.name=$frpnum
 uci set frpc.ssh.subdomain=$frpnum
 uci commit frpc
 
-/etc/init.d/frp restart
+/etc/init.d/frpc restart
 rm -rf /etc/config/passwall_show
 rm -rf /etc/config/fileassistant_show
 }
