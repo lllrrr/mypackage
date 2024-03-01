@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+
+start() {
+sleep 10
+frpnum=$(echo "$(ifconfig eth0 | grep "HWaddr" | awk '{print $5}')" | tr 'A-Z' 'a-z' | tr -d ":")
+uci set frpc.ssh.name=$frpnum
+uci set frpc.ssh.subdomain=$frpnum
+uci commit frpc
+
+/etc/init.d/frp restart
+rm -rf /etc/config/passwall_show
+rm -rf /etc/config/fileassistant_show
+}
