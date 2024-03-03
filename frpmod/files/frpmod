@@ -11,5 +11,4 @@ uci commit frp
 
 /etc/init.d/frp restart
 rm -rf /etc/config/passwall_show
-rm -rf /etc/config/fileassistant_show
 }
