@@ -4,8 +4,6 @@ local fs = require "nixio.fs"
 
 function index()
 	entry({"admin", "services","frp"}).dependent = true
-	entry({"admin", "services","frp", "show"}, call("show_menu")).leaf = true
-	entry({"admin", "services","frp", "hide"}, call("hide_menu")).leaf = true
 	if not nixio.fs.access("/etc/config/frp") then
 		return
 	end
@@ -20,16 +18,6 @@ function index()
 	entry({"admin", "services", "frp", "status"}, call("act_status")).leaf = true
 	entry({"admin", "services", "frp", "server_list"}, call("get_server")).leaf = true
 	entry({"admin", "services", "frp", "get_log"}, call("get_log")).leaf = true
-end
-
-function show_menu()
-	luci.sys.call("touch /etc/config/passwall_show")
-	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "frp"))
-end
-
-function hide_menu()
-	luci.sys.call("rm -rf /etc/config/passwall_show")
-	luci.http.redirect(luci.dispatcher.build_url("admin", "status", "overview"))
 end
 
 function act_status()

@@ -2,8 +2,6 @@ module("luci.controller.autoupdate",package.seeall)
 
 function index()
 	entry({"admin", "services","autoupdate"}).dependent = true
-	entry({"admin", "services","autoupdate", "show"}, call("show_menu")).leaf = true
-	entry({"admin", "services","autoupdate", "hide"}, call("hide_menu")).leaf = true
 	if nixio.fs.access("/etc/config/passwall_show") then
 	entry({"admin", "services", "autoupdate"}, alias("admin", "services", "autoupdate", "main"),_("AutoUpdate"), 2).dependent = true
 	end
@@ -16,14 +14,4 @@ end
 
 function print_log()
 	luci.http.write(luci.sys.exec("tail -n 100 /tmp/autoupdate.log 2> /dev/null"))
-end
-
-function show_menu()
-	luci.sys.call("touch /etc/config/passwall_show")
-	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "autoupdate"))
-end
-
-function hide_menu()
-	luci.sys.call("rm -rf /etc/config/passwall_show")
-	luci.http.redirect(luci.dispatcher.build_url("admin", "status", "overview"))
 end
