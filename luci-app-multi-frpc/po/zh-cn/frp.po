@@ -2,7 +2,7 @@ msgid ""
 msgstr "Content-Type: text/plain; charset=UTF-8"
 
 msgid "Frp Setting"
-msgstr "Frp 内网穿透"
+msgstr "内网穿透设置"
 
 msgid "NOT RUNNING"
 msgstr "未运行"
@@ -11,7 +11,7 @@ msgid "RUNNING"
 msgstr "运行中"
 
 msgid "Frp is a fast reverse proxy to help you expose a local server behind a NAT or firewall to the internet."
-msgstr "Frp 是一个可用于内网穿透的高性能的反向代理应用。"
+msgstr "一个可用于内网穿透的高性能的反向代理应用。"
 
 msgid "Basic Settings"
 msgstr "基本设置"
@@ -41,7 +41,7 @@ msgid "Commonly used to distinguish you with other clients."
 msgstr "通常用于区分你与其他客户端"
 
 msgid "Time duration between server of frpc and frps mustn't exceed 15 minutes."
-msgstr "frpc服务器与frps之间的时间间隔不得超过15分钟"
+msgstr "服务器与客户端之间的时间间隔不得超过15分钟"
 
 msgid "Vhost HTTP Port"
 msgstr "HTTP 穿透服务端口"
@@ -56,7 +56,7 @@ msgid "TCP Stream Multiplexing"
 msgstr "TCP 端口复用"
 
 msgid "decide if exit program when first login failed, otherwise continuous relogin to frps."
-msgstr "第一次登录失败就退出程序，否则将持续尝试登陆 Frp 服务器。"
+msgstr "第一次登录失败就退出程序，否则将持续尝试登陆服务器。"
 
 msgid "Default is Ture. This feature in frps.ini and frpc.ini must be same."
 msgstr "该功能默认启用，该配置项在服务端和客户端必须保持一致。"
@@ -71,10 +71,10 @@ msgid "Custom TLS Protocol Encryption"
 msgstr "自定义TLS协议加密"
 
 msgid "Frp supports traffic encryption between frpc and frps through the TLS protocol, and supports client or server unidirectional and bidirectional authentication."
-msgstr "frp 支持 frpc 和 frps 之间的流量通过 TLS 协议加密，并且支持客户端或服务端单向验证，双向验证等功能。"
+msgstr "支持客户端和服务器之间的流量通过 TLS 协议加密，并且支持客户端或服务端单向验证，双向验证等功能。"
 
 msgid "Frps one-way verifies the identity of frpc."
-msgstr "frps 单向验证 frpc 身份。"
+msgstr "服务器单向验证客户端身份。"
 
 msgid "Client Certificate File"
 msgstr "TLS 客户端证书文件路径"
@@ -83,7 +83,7 @@ msgid "Client Key File"
 msgstr "TLS 客户端密钥文件路径"
 
 msgid "Frpc one-way verifies the identity of frps."
-msgstr "frpc 单向验证 frps 身份。"
+msgstr "客户端单向验证服务器身份。"
 
 msgid "CA Certificate File"
 msgstr "TLS CA 证书路径"
@@ -101,10 +101,10 @@ msgid "KCP Protocol"
 msgstr "KCP 协议"
 
 msgid "Connect frps by HTTP PROXY"
-msgstr "通过代理连接 frps"
+msgstr "通过代理连接服务器"
 
 msgid "frpc can connect frps using HTTP PROXY"
-msgstr "frpc 支持通过 HTTP PROXY 和 frps 进行通信"
+msgstr "客户端支持通过 HTTP PROXY 和服务器进行通信"
 
 msgid "HTTP PROXY"
 msgstr "HTTP 代理"
@@ -119,7 +119,7 @@ msgid "Connection Pool"
 msgstr "指定预创建连接的数量"
 
 msgid "Connections will be established in advance."
-msgstr "frpc 会预先和服务端建立起指定数量的连接。"
+msgstr "客户端会预先和服务端建立起指定数量的连接。"
 
 msgid "Service registration interval"
 msgstr "服务注册间隔"
@@ -191,16 +191,16 @@ msgid "Enable State"
 msgstr "开启状态"
 
 msgid "Frp Domain Config"
-msgstr "Frp 域名配置"
+msgstr "域名配置"
 
 msgid "Config Frp Protocol"
-msgstr "配置 Frp 协议参数"
+msgstr "配置协议参数"
 
 msgid "Disable"
 msgstr "关闭"
 
 msgid "Frp Protocol Type"
-msgstr "Frp 协议类型"
+msgstr "协议类型"
 
 msgid "Domain Type"
 msgstr "域名类型"
@@ -248,7 +248,7 @@ msgid "Enable URL routing"
 msgstr "启用 URL 路由"
 
 msgid "Frp support forward http requests to different backward web services by url routing."
-msgstr "Frp 支持通过url路由将http请求转发到不同的反向web服务。"
+msgstr "支持通过url路由将http请求转发到不同的反向web服务。"
 
 msgid "Choose Plugin"
 msgstr "选择插件"
@@ -257,7 +257,7 @@ msgid "Proxy Authentication"
 msgstr "代理认证"
 
 msgid "Other PCs could access the Internet through frpc's network by using http_proxy plugin."
-msgstr "http proxy 插件，可以使其他机器通过 frpc 的网络访问互联网；开启身份验证之后需要用户名、密码才能连接到 HTTP 代理。"
+msgstr "http proxy 插件，可以使其他机器通过客户端的网络访问互联网；开启身份验证之后需要用户名、密码才能连接到 HTTP 代理。"
 
 msgid "HTTP Proxy UserName"
 msgstr "HTTP 代理用户名"
@@ -281,13 +281,13 @@ msgid "Rewriting the Host Header"
 msgstr "修改 Host Header"
 
 msgid "Frp can rewrite http requests with a modified Host header."
-msgstr "Frp可以用修改后的主机头重写http请求。"
+msgstr "可以用修改后的主机头重写http请求。"
 
 msgid "Proxy-Protocol Version"
 msgstr "Proxy-Protocol 版本"
 
 msgid "Encrypted the communication between frpc and frps, will effectively prevent the traffic intercepted (If Custom TLS Protocol Encryption is enabled, except that the protocol of xtcp is configured as kcp, you can no longer set Use Encryption to repeat encryption)."
-msgstr "将 frpc 与 frps 之间的通信内容加密传输，将会有效防止流量被拦截（启用自定义TLS协议加密后除 xtcp 的 protocol 配置为 kcp 外，可不再设置此项重复加密）。"
+msgstr "将服务器与客户端之间的通信内容加密传输，将会有效防止流量被拦截（启用自定义TLS协议加密后除 xtcp 的 protocol 配置为 kcp 外，可不再设置此项重复加密）。"
 
 msgid "The contents will be compressed to speed up the traffic forwarding speed, but this will consume some additional cpu resources."
 msgstr "对传输内容进行压缩，加快流量转发速度，但是会额外消耗一些 cpu 资源。"
@@ -323,7 +323,7 @@ msgid "plugin_header_X-From-Where"
 msgstr "插件X-From-Where请求头"
 
 msgid "Multi Frpc"
-msgstr "Frpc内网穿透"
+msgstr "内网穿透"
 
 msgid "Server List"
 msgstr "服务器列表"
@@ -345,3 +345,19 @@ msgstr "选择一个配置"
 
 msgid "Reload"
 msgstr "刷新"
+
+msgid "Frp Server Config"
+msgstr "服务器配置"
+
+msgid "Config Server"
+msgstr "配置服务器"
+
+msgid "Server Name"
+msgstr "服务器名"
+
+msgid "Server Address"
+msgstr "服务器地址"
+
+msgid "Server Port"
+msgstr "服务器端口"
+
