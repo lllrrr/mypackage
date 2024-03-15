@@ -16,21 +16,29 @@ check_list() {
 	wweek=`uci -q get $NAME.@device[$i].week `
 	current_time=$(date +%H:%M)
 	current_weekday=$(date +%u)
-	[ "$start_time" = "$end_time" ] || { 
-	[[ "$start_time" < "$end_time" ]] && { [[ "$current_time" > "$start_time" ]] && [[ "$current_time" < "$end_time" ]] || return ; }
-	[[ "$start_time" > "$end_time" ]] && { [[ "$current_time" < "$start_time" ]] && [[ "$current_time" > "$end_time" ]] || return ; }
-	}
 	for ww in `echo $wweek | sed 's/,/ /g' `; do 
 		if [ $current_weekday = $ww ] || [ 'x0' = x$ww ] ;then 
-		      checki='1'
+		       [ "$start_time" = "$end_time" ] && checki='1' || { 
+		       	   if  [ "$start_time" \< "$end_time" ]; then
+			       if  [ "$current_time" \> "$start_time" ]  &&  [ "$current_time" \< "$end_time" ] ; then
+		       	           checki='1'
+		       	       fi
+		       	   else 
+			       if [ "$start_time" \> "$end_time" ] ; then
+			          if [ "$current_time" \< "$start_time" ] && [ "$current_time" \> "$end_time" ] ; then
+		       	              checki='1'
+		       	          fi
+			       fi
+			   fi
+		       	}
 		fi
 	done
-	return $re
+	return
 }
 
 idlistusr(){
    checki='0'
-   [ -s $IDLIST ] || return
+   [ -s $IDLIST ] || touch $IDLIST
    for list in $idlist ;do
 	check_list $list
 	if [ $checki == '1' ] ; then

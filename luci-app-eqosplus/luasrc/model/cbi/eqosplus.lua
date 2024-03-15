@@ -7,7 +7,7 @@ local ipc = require "luci.ip"
 local a, t, e
 
 a = Map("eqosplus", translate("Network speed limit"))
-a.description = translate("Users can limit the network speed for uploading/downloading through MAC, IP.The speed unit is MB/second.")
+a.description = translate("Users can limit the network speed for uploading/downloading through MAC, IP.The speed unit is MB/second.")..translate("Suggested feedback:")..translate("<a href=\'https://github.com/sirpdboy/luci-app-eqosplus.git' target=\'_blank\'>GitHub @sirpdboy/luci-app-eqosplus </a>")
 a.template = "eqosplus/index"
 
 t = a:section(TypedSection, "eqosplus")
@@ -33,6 +33,9 @@ t = a:section(TypedSection, "device")
 t.template = "cbi/tblsection"
 t.anonymous = true
 t.addremove = true
+
+comment = t:option(Value, "comment", translate("Comment"))
+comment.size = 8
 
 e = t:option(Flag, "enable", translate("Enabled"))
 e.rmempty = false
@@ -99,7 +102,5 @@ week:value('1,2,3,4,5',translate("Workday"))
 week:value('6,7',translate("Rest Day"))
 week.default='0'
 week.size = 6
-comment = t:option(Value, "comment", translate("Comment"))
-comment.size = 8
 
 return a
