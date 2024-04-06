@@ -20,9 +20,9 @@ upgrade_fw.write = function()
 	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "autoupdate","log"))
 end
 
-upgrade_fw = s:option (Button, "_upgrade_fw_reset", translate("Upgrade Firmware Reset Config"))
-upgrade_fw.inputtitle = translate ("Upgrade Firmware Reset Config")
-upgrade_fw.write = function()
+upgrade_fw_re = s:option (Button, "_upgrade_fw_reset", translate("Upgrade Firmware Reset Config"))
+upgrade_fw_re.inputtitle = translate ("Upgrade Firmware Reset Config")
+upgrade_fw_re.write = function()
 	luci.sys.call ("sysupgrade -n -q /tmp/tmp/$(uci -q get autoupdate.@autoupdate[0].flag).bin >> /tmp/autoupdate.log 2>&1")
 	luci.http.redirect(luci.dispatcher.build_url("admin", "services", "autoupdate","log"))
 end
