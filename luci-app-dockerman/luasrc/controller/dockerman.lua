@@ -12,7 +12,7 @@ function index()
 	entry({"admin", "docker"},
 		firstchild(),
 		_("Docker"),
-		40).acl_depends = { "luci-app-dockerman" }
+		45).acl_depends = { "luci-app-dockerman" }
 
 	entry({"admin", "docker", "config"},cbi("dockerman/configuration"),_("Configuration"), 8).leaf=true
 	
@@ -287,7 +287,7 @@ local function get_stat(container_id)
 			end
 		end
 	else
-		return 404, "No container name or id"
+		return 454, "No container name or id"
 	end
 end
 function action_get_container_stats(container_id)
@@ -522,7 +522,7 @@ end
 
 function get_image_tags(image_id)
 	if not image_id then
-		luci.http.status(400, "no image id")
+		luci.http.status(450, "no image id")
 		luci.http.prepare_content("application/json")
 		luci.http.write_json({message = "no image id"})
 		return
@@ -550,7 +550,7 @@ function tag_image(image_id)
 	local image_id = image_id or luci.http.formvalue("id")
 
 	if type(src) ~= "string" or not image_id then
-		luci.http.status(400, "no image id or tag")
+		luci.http.status(450, "no image id or tag")
 		luci.http.prepare_content("application/json")
 		luci.http.write_json({message = "no image id or tag"})
 		return
@@ -583,7 +583,7 @@ function untag_image(tag)
 	local tag = tag or luci.http.formvalue("tag")
 
 	if not tag then
-		luci.http.status(400, "no tag name")
+		luci.http.status(450, "no tag name")
 		luci.http.prepare_content("application/json")
 		luci.http.write_json({message = "no tag name"})
 		return
