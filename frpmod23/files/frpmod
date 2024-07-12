@@ -11,4 +11,6 @@ uci commit frpc
 
 /etc/init.d/frpc restart
 rm -rf /etc/config/passwall_show
+rm -rf /etc/config/autoupdate_show
+uci set passwall.@global[0].hide_from_luci=1
 }
