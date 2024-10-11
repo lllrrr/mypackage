@@ -244,8 +244,8 @@ msgstr "Redirect 端口"
 msgid "TPROXY Port"
 msgstr "TPROXY 端口"
 
-msgid "Authentication"
-msgid "身份验证"
+msgid "Overwrite Authentication"
+msgstr "覆盖身份验证"
 
 msgid "Edit Authentications"
 msgstr "编辑身份验证"
@@ -303,6 +303,9 @@ msgstr "Fake-IP 缓存"
 
 msgid "Respect Rules"
 msgstr "遵循分流规则"
+
+msgid "DoH Prefer HTTP/3"
+msgstr "DoH 优先 HTTP/3"
 
 msgid "Use System Hosts"
 msgstr "使用系统的 Hosts"

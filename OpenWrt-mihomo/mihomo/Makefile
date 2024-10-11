@@ -5,9 +5,9 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/MetaCubeX/mihomo.git
-PKG_SOURCE_DATE:=2024-09-23
-PKG_SOURCE_VERSION:=59a2b24593fce55244cf3ad3817855b0b1b7f6b3
-PKG_MIRROR_HASH:=3d8848f5b4967e401195cb3ea7a03c97a2b6eeb5c5e625e758e9ba51581c5492
+PKG_SOURCE_DATE:=2024-10-08
+PKG_SOURCE_VERSION:=08dcef80bf9a528d36cf8d516cc251f6449f9336
+PKG_MIRROR_HASH:=803fd00529f3bb01617cc6349343858f73b2c6b4d533e8d76434941af7908395
 
 PKG_LICENSE:=MIT
 PKG_MAINTAINER:=Joseph Mory <morytyann@gmail.com>
@@ -16,7 +16,7 @@ PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
 PKG_BUILD_FLAGS:=no-mips16
 
-PKG_BUILD_VERSION:=alpha-59a2b24
+PKG_BUILD_VERSION:=alpha-08dcef8
 PKG_BUILD_TIME:=$(shell date -u -Iseconds)
 
 GO_PKG:=github.com/metacubex/mihomo
@@ -75,6 +75,7 @@ define Package/mihomo/install
 	$(INSTALL_BIN) $(CURDIR)/files/mihomo.init $(1)/etc/init.d/mihomo
 
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
+	$(INSTALL_BIN) $(CURDIR)/files/uci-defaults/firewall.sh $(1)/etc/uci-defaults/99_firewall_mihomo
 	$(INSTALL_BIN) $(CURDIR)/files/uci-defaults/init.sh $(1)/etc/uci-defaults/99_init_mihomo
 	$(INSTALL_BIN) $(CURDIR)/files/uci-defaults/migrate.sh $(1)/etc/uci-defaults/99_migrate_mihomo
 
@@ -83,6 +84,16 @@ define Package/mihomo/install
 
 	$(INSTALL_DIR) $(1)/lib/upgrade/keep.d
 	$(INSTALL_DATA) $(CURDIR)/files/mihomo.upgrade $(1)/lib/upgrade/keep.d/mihomo
+endef
+
+define Package/mihomo/postrm
+#!/bin/sh
+if [ -z $${IPKG_INSTROOT} ]; then
+	uci -q batch <<-EOF > /dev/null
+		del firewall.mihomo
+		commit firewall
+	EOF
+fi
 endef
 
 define Build/Prepare

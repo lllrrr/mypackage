@@ -111,7 +111,7 @@ return view.extend({
         o.depends('scheduled_restart', '1');
 
         o = s.option(form.ListValue, 'profile', _('Choose Profile'));
-        o.rmempty = false;
+        o.optional = true;
 
         for (const profile of profiles) {
             o.value('file:' + profile.name, _('File:') + profile.name);
@@ -232,6 +232,7 @@ return view.extend({
         s = m.section(form.TableSection, 'subscription', _('Subscription Config'));
         s.addremove = true;
         s.anonymous = true;
+        s.sortable = true;
 
         o = s.option(form.Value, 'name', _('Subscription Name'));
         o.rmempty = false;
@@ -241,7 +242,7 @@ return view.extend({
         o.rmempty = false;
 
         o = s.option(form.Value, 'user_agent', _('User Agent'));
-        o.default = 'mihomo';
+        o.default = 'clash';
         o.rmempty = false;
         o.width = '15%';
         o.value('mihomo');
@@ -252,7 +253,7 @@ return view.extend({
     
         s.tab('general', _('General Config'));
 
-        o = s.taboption('general', form.ListValue, 'log_level', _('Log Level'));
+        o = s.taboption('general', form.ListValue, 'log_level', '*' + ' ' + _('Log Level'));
         o.value('silent');
         o.value('error');
         o.value('warning');
@@ -269,37 +270,36 @@ return view.extend({
         o.value('always', _('Enable'));
         o.value('off', _('Disable'));
 
-        o = s.taboption('general', widgets.NetworkSelect, 'outbound_interface', _('Outbound Interface'));
+        o = s.taboption('general', widgets.NetworkSelect, 'outbound_interface', '*' + ' ' + _('Outbound Interface'));
         o.optional = true;
-        o.rmempty = false;
 
-        o = s.taboption('general', form.Flag, 'ipv6', _('IPv6'));
+        o = s.taboption('general', form.Flag, 'ipv6', '*' + ' ' + _('IPv6'));
         o.rmempty = false;
 
         o = s.taboption('general', form.Value, 'tcp_keep_alive_idle', _('TCP Keep Alive Idle'));
-        o.datatype = 'integer';
+        o.datatype = 'uinteger';
         o.placeholder = '600';
 
         o = s.taboption('general', form.Value, 'tcp_keep_alive_interval', _('TCP Keep Alive Interval'));
-        o.datatype = 'integer';
+        o.datatype = 'uinteger';
         o.placeholder = '15';
 
         s.tab('external_control', _('External Control Config'));
 
-        o = s.taboption('external_control', form.Value, 'ui_name', _('UI Name'));
+        o = s.taboption('external_control', form.Value, 'ui_name', '*' + ' ' + _('UI Name'));
         o.rmempty = false;
 
-        o = s.taboption('external_control', form.Value, 'ui_url', _('UI Url'));
+        o = s.taboption('external_control', form.Value, 'ui_url', '*' + ' ' + _('UI Url'));
         o.rmempty = false;
         o.value('https://mirror.ghproxy.com/https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip', 'MetaCubeXD')
         o.value('https://mirror.ghproxy.com/https://github.com/MetaCubeX/Yacd-meta/archive/refs/heads/gh-pages.zip', 'YACD')
         o.value('https://mirror.ghproxy.com/https://github.com/MetaCubeX/Razord-meta/archive/refs/heads/gh-pages.zip', 'Razord')
 
-        o = s.taboption('external_control', form.Value, 'api_port', _('API Port'));
+        o = s.taboption('external_control', form.Value, 'api_port', '*' + ' ' + _('API Port'));
         o.datatype = 'port';
         o.placeholder = '9090';
 
-        o = s.taboption('external_control', form.Value, 'api_secret', _('API Secret'));
+        o = s.taboption('external_control', form.Value, 'api_secret', '*' + ' ' + _('API Secret'));
         o.rmempty = false;
 
         o = s.taboption('external_control', form.Flag, 'selection_cache', _('Save Proxy Selection'));
@@ -307,38 +307,39 @@ return view.extend({
 
         s.tab('inbound', _('Inbound Config'));
 
-        o = s.taboption('inbound', form.Flag, 'allow_lan', _('Allow Lan'));
+        o = s.taboption('inbound', form.Flag, 'allow_lan', '*' + ' ' + _('Allow Lan'));
         o.rmempty = false;
 
-        o = s.taboption('inbound', form.Value, 'http_port', _('HTTP Port'));
+        o = s.taboption('inbound', form.Value, 'http_port', '*' + ' ' + _('HTTP Port'));
         o.datatype = 'port';
         o.placeholder = '8080';
 
-        o = s.taboption('inbound', form.Value, 'socks_port', _('SOCKS Port'));
+        o = s.taboption('inbound', form.Value, 'socks_port', '*' + ' ' + _('SOCKS Port'));
         o.datatype = 'port';
         o.placeholder = '1080';
 
-        o = s.taboption('inbound', form.Value, 'mixed_port', _('Mixed Port'));
+        o = s.taboption('inbound', form.Value, 'mixed_port', '*' + ' ' + _('Mixed Port'));
         o.datatype = 'port';
         o.placeholder = '7890';
 
-        o = s.taboption('inbound', form.Value, 'redir_port', _('Redirect Port'));
+        o = s.taboption('inbound', form.Value, 'redir_port', '*' + ' ' + _('Redirect Port'));
         o.datatype = 'port';
         o.placeholder = '7891';
 
-        o = s.taboption('inbound', form.Value, 'tproxy_port', _('TPROXY Port'));
+        o = s.taboption('inbound', form.Value, 'tproxy_port', '*' + ' ' + _('TPROXY Port'));
         o.datatype = 'port';
         o.placeholder = '7892';
 
-        o = s.taboption('inbound', form.Flag, 'authentication', _('Authentication'));
+        o = s.taboption('inbound', form.Flag, 'authentication', '*' + ' ' + _('Overwrite Authentication'));
         o.rmempty = false;
 
         o = s.taboption('inbound', form.SectionValue, '_authentications', form.TableSection, 'authentication', _('Edit Authentications'));
         o.retain = true;
         o.depends('authentication', '1');
 
-        o.subsection.anonymous = true;
         o.subsection.addremove = true;
+        o.subsection.anonymous = true;
+        o.subsection.sortable = true;
 
         so = o.subsection.option(form.Flag, 'enabled', _('Enable'));
         so.rmempty = false;
@@ -351,36 +352,39 @@ return view.extend({
 
         s.tab('tun', _('TUN Config'));
 
-        o = s.taboption('tun', form.ListValue, 'tun_stack', _('Stack'));
+        o = s.taboption('tun', form.ListValue, 'tun_stack', '*' + ' ' + _('Stack'));
         o.value('system', 'System');
         o.value('gvisor', 'gVisor');
         o.value('mixed', 'Mixed');
 
-        o = s.taboption('tun', form.Value, 'tun_mtu', _('MTU'));
+        o = s.taboption('tun', form.Value, 'tun_mtu', '*' + ' ' + _('MTU'));
+        o.datatype = 'uinteger';
         o.placeholder = '9000';
 
-        o = s.taboption('tun', form.Flag, 'tun_gso', _('GSO'));
+        o = s.taboption('tun', form.Flag, 'tun_gso', '*' + ' ' + _('GSO'));
         o.rmempty = false;
 
-        o = s.taboption('tun', form.Value, 'tun_gso_max_size', _('GSO Max Size'));
+        o = s.taboption('tun', form.Value, 'tun_gso_max_size', '*' + ' ' + _('GSO Max Size'));
+        o.datatype = 'uinteger';
         o.placeholder = '65536';
+        o.retain = true;
         o.depends('tun_gso', '1');
 
-        o = s.taboption('tun', form.Flag, 'tun_endpoint_independent_nat', _('Endpoint Independent NAT'));
+        o = s.taboption('tun', form.Flag, 'tun_endpoint_independent_nat', '*' + ' ' + _('Endpoint Independent NAT'));
         o.rmempty = false;
 
         s.tab('dns', _('DNS Config'));
 
-        o = s.taboption('dns', form.Value, 'dns_port', _('DNS Port'));
+        o = s.taboption('dns', form.Value, 'dns_port', '*' + ' ' + _('DNS Port'));
         o.datatype = 'port';
         o.placeholder = '1053';
 
-        o = s.taboption('dns', form.ListValue, 'dns_mode', _('DNS Mode'));
+        o = s.taboption('dns', form.ListValue, 'dns_mode', '*' + ' ' + _('DNS Mode'));
         o.value('normal', 'Normal');
         o.value('fake-ip', 'Fake-IP');
         o.value('redir-host', 'Redir-Host');
 
-        o = s.taboption('dns', form.Value, 'fake_ip_range', _('Fake-IP Range'));
+        o = s.taboption('dns', form.Value, 'fake_ip_range', '*' + ' ' + _('Fake-IP Range'));
         o.datatype = 'cidr4';
         o.placeholder = '198.18.0.1/16';
         o.retain = true;
@@ -396,6 +400,7 @@ return view.extend({
         o.depends({ 'dns_mode': 'fake-ip', 'fake_ip_filter': '1' });
 
         o = s.taboption('dns', form.ListValue, 'fake_ip_filter_mode', _('Fake-IP Filter Mode'))
+        o.retain = true;
         o.value('blacklist', _('Block Mode'));
         o.value('whitelist', _('Allow Mode'));
         o.depends({ 'dns_mode': 'fake-ip', 'fake_ip_filter': '1' });
@@ -406,6 +411,9 @@ return view.extend({
         o.depends('dns_mode', 'fake-ip');
 
         o = s.taboption('dns', form.Flag, 'dns_respect_rules', _('Respect Rules'));
+        o.rmempty = false;
+
+        o = s.taboption('dns', form.Flag, 'dns_doh_prefer_http3', _('DoH Prefer HTTP/3'));
         o.rmempty = false;
 
         o = s.taboption('dns', form.Flag, 'dns_ipv6', _('IPv6'));
@@ -424,8 +432,9 @@ return view.extend({
         o.retain = true;
         o.depends('hosts', '1');
 
-        o.subsection.anonymous = true;
         o.subsection.addremove = true;
+        o.subsection.anonymous = true;
+        o.subsection.sortable = true;
 
         so = o.subsection.option(form.Flag, 'enabled', _('Enable'));
         so.rmempty = false;
@@ -442,16 +451,17 @@ return view.extend({
         o.retain = true;
         o.depends('dns_nameserver', '1');
 
+        o.subsection.addremove = true;
         o.subsection.anonymous = true;
-        o.subsection.addremove = false;
+        o.subsection.sortable = true;
 
         so = o.subsection.option(form.Flag, 'enabled', _('Enable'));
         so.rmempty = false;
 
         so = o.subsection.option(form.ListValue, 'type', _('Type'));
-        so.readonly = true;
         so.value('default-nameserver');
         so.value('proxy-server-nameserver');
+        so.value('direct-nameserver');
         so.value('nameserver');
         so.value('fallback');
 
@@ -464,8 +474,9 @@ return view.extend({
         o.retain = true;
         o.depends('dns_nameserver_policy', '1');
 
-        o.subsection.anonymous = true;
         o.subsection.addremove = true;
+        o.subsection.anonymous = true;
+        o.subsection.sortable = true;
 
         so = o.subsection.option(form.Flag, 'enabled', _('Enable'));
         so.rmempty = false;
@@ -501,7 +512,7 @@ return view.extend({
         o.rmempty = false;
 
         o = s.taboption('geox', form.Value, 'geox_update_interval', _('GeoX Update Interval'), _('Hour'));
-        o.datatype = 'integer';
+        o.datatype = 'uinteger';
         o.placeholder = '24';
         o.retain = true;
         o.depends('geox_auto_update', '1');
