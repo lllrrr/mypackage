@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # 读取设置文件
 function get_config(){
 	while [[ "$*" != "" ]]; do
@@ -18,7 +17,8 @@ function read_config(){
 	"pushbot_sheep" "starttime" "endtime" "pushbot_whitelist" "pushbot_blacklist" "pushbot_interface" "MAC_online_list" "MAC_offline_list" \
 	"up_timeout" "down_timeout" "timeout_retry_count" "thread_num" "soc_code" "pve_host" "pve_port"\
 	"err_enable" "err_sheep_enable" "err_device_aliases" "network_err_event" "system_time_event" "autoreboot_time" "network_restart_time" "public_ip_event" "public_ip_retry_count" \
-	"jsonpath" "dd_webhook" "we_webhook" "pp_token" "pp_channel" "pp_webhook" "pp_topic_enable" "pp_topic" "fs_webhook" "pushdeer_key" "pushdeer_srv_enable" "pushdeer_srv" "bark_srv_enable" "bark_srv" "bark_token" "bark_sound" "bark_icon" "bark_icon_enable" "bark_level"
+	"jsonpath" "dd_webhook" "we_webhook" "pp_token" "pp_channel" "pp_webhook" "pp_topic_enable" "pp_topic" "fs_webhook" "pushdeer_key" "pushdeer_srv_enable" "pushdeer_srv" "bark_srv_enable" \
+	"bark_srv" "bark_encryption_enable"  "bark_encryption_key" "bark_encryption_iv" "bark_token" "bark_sound" "bark_icon" "bark_icon_enable" "bark_level"
 	
 	for str_version in "wrtbwmon" "iputils-arping" "curl" "iw"; do
 		eval `echo ${str_version:0:2}"_version"`=`opkg list-installed|grep -w ^${str_version}|awk '{print $3}'` 2>/dev/null
@@ -103,8 +103,16 @@ function diy_send(){
 	[ -f ${tempjsonpath} ] && local logrow=$(grep -c "" ${tempjsonpath}) || local logrow="0"
 	[ $logrow -eq "0" ] && echo "`date "+%Y-%m-%d %H:%M:%S"` 【！！！】json 文件生成失败，请检查文件格式" >> ${logfile} && return 1
 	/usr/bin/jq -r '.[]' ${tempjsonpath}|grep "null" && echo "`date "+%Y-%m-%d %H:%M:%S"` 【！！！】参数变量生成失败，请检查设置项 `/usr/bin/jq -r '.' ${tempjsonpath}|grep "null"`" >> ${logfile}
-	
-	curl -X POST -H "$content_type" -d "${data}" "${diyurl}"
+		if [ "${bark_encryption_enable}" = "1" ]; then
+        local  bark_encryption_url="${bark_srv}/${bark_token}"
+        local key=$(printf ${bark_encryption_key} | xxd -ps -c 200)
+        local iv=$(printf ${bark_encryption_iv}| xxd -ps -c 200)
+        local ciphertext=$(openssl enc -aes-256-cbc -K ${key} -iv ${iv} -in ${data//@/} | base64 |awk '{printf "%s",$1}'|sed 's/ //g')
+        local ciphertext_json_data="{ \"ciphertext\": \"${ciphertext}\"}"
+  	    curl -X POST -H "$content_type" -d "${ciphertext_json_data}" "${bark_encryption_url}"
+	else
+	  curl -X POST -H "$content_type" -d "${data}" "${diyurl}"
+	fi
 }
 
 # 下载设备MAC厂商信息
@@ -978,9 +986,9 @@ function login_send(){
 	[ -z "$web_logged" ] && [ -z "$ssh_logged" ] && [ -z "$web_login_failed" ] && [ -z "$ssh_login_failed" ] && return
 	[ ! -f ${dir}login_monitor ] && return
 	cat ${dir}login_monitor|grep -i "accepted login"|awk '{print $4" "$NF}' >> ${dir}web_login
-	cat ${dir}login_monitor|grep -i "Password auth succeeded\|Pubkey auth succeeded"|grep -Eo "[0-9]{2}:[0-9]{2}:[0-9]{2}.*[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"|awk '{print $1" "$NF" "$5}' >> ${dir}ssh_login
+	cat ${dir}login_monitor|grep -i "Password auth succeeded\|Pubkey auth succeeded\|Accepted publickey for\|Accepted password for "|grep -Eo "[0-9]{2}:[0-9]{2}:[0-9]{2}.*[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"|awk '{print $1" "$NF" "$5}' >> ${dir}ssh_login
 	cat ${dir}login_monitor|grep -i "failed login"|grep -Eo "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >> ${dir}web_failed
-	cat ${dir}login_monitor|grep -i "Bad password attempt\|Login attempt for nonexistent user from"|grep -Eo "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >> ${dir}ssh_failed
+	cat ${dir}login_monitor|grep -i "Bad password attempt\|Login attempt for nonexistent user from\|Disconnected from authenticating user\|Timeout before authentication for"|grep -Eo "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" >> ${dir}ssh_failed
 	echo "" > ${dir}login_monitor
 	add_ip_black
 	
@@ -1092,6 +1100,7 @@ function add_ip_black(){
 	
 	if [ $logrow -le "0" ]; then
 		iptables -D INPUT -m set --match-set ip_blacklist src -j DROP >/dev/null 2>&1
+		iptables -D FORWARD  -m set --match-set ip_blacklist src -j DROP >/dev/null 2>&1
 		ipset destroy ip_blacklist >/dev/null 2>&1
 		return
 	fi
