@@ -7,7 +7,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=default-settings
-PKG_VERSION:=21.23
+PKG_VERSION:=23
 PKG_RELEASE:=2023.10.16
 PKG_LICENSE:=GPLv3
 PKG_LICENSE_FILES:=LICENSE
@@ -21,7 +21,7 @@ define Package/$(PKG_NAME)
   CATEGORY:=LuCI
   TITLE:=LuCI support for Default Settings
   PKGARCH:=all
-  DEPENDS:=+kmod-ipt-raw +kmod-nf-nathelper +kmod-nf-nathelper-extra +luci-base +luci +luci-lib-ipkg +@LUCI_LANG_zh_Hans
+  DEPENDS:=+kmod-nf-nathelper +kmod-nf-nathelper-extra +luci-base +luci +luci-lib-ipkg +@LUCI_LANG_zh_Hans
 endef
 
 define Package/$(PKG_NAME)/description
