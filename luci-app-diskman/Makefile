@@ -14,6 +14,8 @@ LUCI_DEPENDS:=+luci-compat +luci-lib-ipkg +e2fsprogs +parted +smartmontools +blk
 	+kmod-fs-exfat +exfat-mkfs +exfat-fsck \
 	+kmod-fs-ntfs \
 	+kmod-fs-btrfs \
+	+block-mount \
+	+cfdisk \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_ntfs_3g_utils:ntfs-3g-utils \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_btrfs_progs:btrfs-progs \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_lsblk:lsblk \
@@ -29,15 +31,15 @@ define Package/$(PKG_NAME)/config
 config PACKAGE_$(PKG_NAME)_INCLUDE_ntfs_3g_utils
 	depends on PACKAGE_$(PKG_NAME)
 	bool "Include ntfs-3g-utils"
-	default y
+	default n
 config PACKAGE_$(PKG_NAME)_INCLUDE_btrfs_progs
 	depends on PACKAGE_$(PKG_NAME)
 	bool "Include btrfs-progs"
-	default y
+	default n
 config PACKAGE_$(PKG_NAME)_INCLUDE_lsblk
 	depends on PACKAGE_$(PKG_NAME)
 	bool "Include lsblk"
-	default y
+	default n
 config PACKAGE_$(PKG_NAME)_INCLUDE_mdadm
 	depends on PACKAGE_$(PKG_NAME)
 	bool "Include mdadm"
