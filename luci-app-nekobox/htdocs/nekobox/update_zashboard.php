@@ -1,42 +1,34 @@
 <?php
 
-ini_set('memory_limit', '128M'); 
+ini_set('memory_limit', '128M');
 
 function getUiVersion() {
-    $versionFile = '/etc/neko/ui/zashboard/version.txt'; 
-    
-    if (file_exists($versionFile)) {
-        return trim(file_get_contents($versionFile));
-    } else {
-        return "Version file does not exist";
-    }
+    $versionFile = '/etc/neko/ui/zashboard/version.txt';
+    return file_exists($versionFile) ? trim(file_get_contents($versionFile)) : "Version file not found";
 }
 
 function writeVersionToFile($version) {
-    $versionFile = '/etc/neko/ui/zashboard/version.txt';  
-    file_put_contents($versionFile, $version);
+    file_put_contents('/etc/neko/ui/zashboard/version.txt', $version);
 }
 
-$repo_owner = "Thaolga";
-$repo_name = "neko";
+$repo_owner = "Zephyruso";
+$repo_name = "zashboard";
 $api_url = "https://api.github.com/repos/$repo_owner/$repo_name/releases/latest";
 
-$curl_command = "curl -s -H 'User-Agent: PHP' --connect-timeout 10 " . escapeshellarg($api_url);
-$response = shell_exec($curl_command);
+$response = shell_exec("curl -s -H 'User-Agent: PHP' --connect-timeout 10 " . escapeshellarg($api_url));
 
 if ($response === false || empty($response)) {
-    die("GitHub API request failed. Please check your network connection or try again later.");
+    die("GitHub API request failed");
 }
 
 $data = json_decode($response, true);
-
 if (json_last_error() !== JSON_ERROR_NONE) {
-    die("Error parsing GitHub API response: " . json_last_error_msg());
+    die("Failed to parse GitHub API response");
 }
 
 $latest_version = $data['tag_name'] ?? '';
-$install_path = '/etc/neko/ui/zashboard';  
-$temp_file = '/tmp/compressed-dist.tgz';
+$install_path = '/etc/neko/ui/zashboard';
+$temp_file = '/tmp/dist.zip';
 
 if (!is_dir($install_path)) {
     mkdir($install_path, 0755, true);
@@ -45,14 +37,14 @@ if (!is_dir($install_path)) {
 $current_version = getUiVersion();
 
 if (isset($_GET['check_version'])) {
-    echo "Latest version: $latest_version";  
+    echo "Latest version: $latest_version";
     exit;
 }
 
-$download_url = 'https://github.com/Thaolga/neko/releases/download/v1.10.0/artifact.tar';  
+$download_url = $data['assets'][0]['browser_download_url'] ?? '';
 
 if (empty($download_url)) {
-    die("Download link not found. Please check the resources for the release version.");
+    die("Download link not found");
 }
 
 exec("wget -O '$temp_file' '$download_url'", $output, $return_var);
@@ -61,25 +53,45 @@ if ($return_var !== 0) {
 }
 
 if (!file_exists($temp_file)) {
-    die("The downloaded file does not exist");
+    die("Downloaded file not found");
 }
 
-echo "Start extracting the file...\n";
-exec("tar -xf '$temp_file' -C '$install_path'", $output, $return_var);
+exec("rm -rf /tmp/dist_extract", $output, $return_var);
 if ($return_var !== 0) {
-    echo "Decompression failed, error message: " . implode("\n", $output);
-    die("Decompression failed");
+    die("Failed to clean temporary extraction directory");
 }
-echo "Extraction successful \n";
+
+exec("unzip -o '$temp_file' -d '/tmp/dist_extract'", $output, $return_var);
+if ($return_var !== 0) {
+    die("Extraction failed");
+}
+
+$extracted_dist_dir = "/tmp/dist_extract/dist";
+if (is_dir($extracted_dist_dir)) {
+    exec("rm -rf $install_path/*", $output, $return_var);
+    if ($return_var !== 0) {
+        die("Failed to delete old files");
+    }
+
+    exec("mv $extracted_dist_dir/* $install_path/", $output, $return_var);
+    if ($return_var !== 0) {
+        die("Failed to move extracted files");
+    }
+
+    exec("rm -rf /tmp/dist_extract", $output, $return_var);
+    if ($return_var !== 0) {
+        die("Failed to remove temporary extraction directory");
+    }
+} else {
+    die("'dist' directory not found, extraction failed");
+}
 
 exec("chown -R root:root '$install_path' 2>&1", $output, $return_var);
 if ($return_var !== 0) {
-    echo "Failed to change file owner, error message: " . implode("\n", $output) . "\n";
-    die();
+    die("Failed to change file ownership");
 }
-echo "The file owner has been changed to root.\n";
 
-writeVersionToFile($latest_version); 
+writeVersionToFile($latest_version);
 echo "Update complete! Current version: $latest_version";
 
 unlink($temp_file);
