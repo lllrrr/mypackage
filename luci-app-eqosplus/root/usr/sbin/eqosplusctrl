@@ -29,6 +29,7 @@ check_list() {
 }
 
 idlistusr(){
+
    checki='0'
    [ -s $IDLIST ] || return
    for list in $idlist ;do
