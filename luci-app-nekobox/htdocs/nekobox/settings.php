@@ -173,7 +173,6 @@ $razordVersion = getRazordVersion();
     <div class="row">
         <a href="./index.php" class="col btn btn-lg">🏠 Home</a>
         <a href="./dashboard.php" class="col btn btn-lg">📊 Panel</a>
-        <a href="./configs.php" class="col btn btn-lg">⚙️ Configs</a>
         <a href="./singbox.php" class="col btn btn-lg"></i>📦 Document</a> 
         <a href="./settings.php" class="col btn btn-lg">🛠️ Settings</a>
 <div class="container px-4">
@@ -552,9 +551,6 @@ $razordVersion = getRazordVersion();
             <div class="modal-body text-center">
                 <div id="updateDescription" class="alert alert-info mb-3"></div>
                 <pre id="logOutput" style="white-space: pre-wrap; word-wrap: break-word; text-align: left; display: inline-block;">Waiting for the operation to begin...</pre>
-                <div class="alert alert-info mt-3" role="alert">
-                   Prompt: If the update fails, please enter <code>nekobox</code> in the terminal to update!
-                </div>
             </div>
         </div>
     </div>
@@ -1240,7 +1236,7 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
                 <tbody>
                     <tr class="text-center">
                         <td>Github</td>
-                        <td>Github</td>
+                        <td>Thaolga</td>
                     </tr>
                     <tr class="text-center">
                         <td>
@@ -1250,13 +1246,13 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
                         </td>
                         <td>
                             <div class="link-box">
-                                <a href="https://github.com/Thaolga/openwrt-nekobox" target="_blank">Thaolga</a>
+                                <a href="https://github.com/Thaolga/openwrt-nekobox" target="_blank">NEKOBOX</a>
                             </div>
                         </td>
                     </tr>
                     <tr class="text-center">
                         <td>Telegram</td>
-                        <td>MetaCubeX</td>
+                        <td>Zephyruso</td>
                     </tr>
                     <tr class="text-center">
                         <td>
@@ -1266,7 +1262,7 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
                         </td>
                         <td>
                             <div class="link-box">
-                                <a href="https://github.com/MetaCubeX" target="_blank">METACUBEX</a>
+                                <a href="https://github.com/Zephyruso/zashboard" target="_blank">ZASHBOARD</a>
                             </div>
                         </td>
                     </tr>
