@@ -2,7 +2,7 @@
 ob_start();
 include './cfg.php';
 
-$dataFilePath = '/tmp/subscription_data.txt';
+$dataFilePath = '/etc/neko/proxy_provider/subscription_data.txt';
 $lastSubscribeUrl = '';
 
 if (file_exists($dataFilePath)) {
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 #!/bin/sh
 
 LOG_FILE="/tmp/update_subscription.log"
-SUBSCRIBE_URL=$(cat /etc/neko/tmp/subscription.txt | tr -d '\n\r')
+SUBSCRIBE_URL=$(cat /etc/neko/proxy_provider/subscription.txt | tr -d '\n\r')
 
 if [ -z "\$SUBSCRIBE_URL" ]; then
   echo "\$(date): The subscription link is empty or extraction failed" >> "\$LOG_FILE"
@@ -94,6 +94,15 @@ wget -O "\$CONFIG_FILE" "\$SUBSCRIBE_URL" >> "\$LOG_FILE" 2>&1
 
 if [ \$? -eq 0 ]; then
   echo "\$(date): Configuration file updated successfully. Save path: \$CONFIG_FILE" >> "\$LOG_FILE"
+  sed -i 's/"Proxy"/"DIRECT"/g' "\$CONFIG_FILE"
+
+  if [ \$? -eq 0 ]; then
+    echo "\$(date): The Proxy in the configuration file has been successfully replaced with DIRECT" >> "\$LOG_FILE"
+  else
+    echo "\$(date): Failed to replace Proxy with DIRECT. Please check the configuration file" >> "\$LOG_FILE"
+    exit 1
+  fi
+
 else
   echo "\$(date): Configuration file update failed. Please check the link or network" >> "\$LOG_FILE"
   exit 1
@@ -142,26 +151,20 @@ EOL;
 </style>
 <div class="container-sm container-bg callout border border-3 rounded-4 col-11">
     <div class="row">
-        <a href="./index.php" class="col btn btn-lg">🏠 Home</a>
-        <a href="./mihomo_manager.php" class="col btn btn-lg">🗃️ Manager</a>
-        <a href="./singbox.php" class="col btn btn-lg">🏦 Sing-box</a>
-        <a href="./subscription.php" class="col btn btn-lg">🏣 Singbox</a>
-        <a href="./mihomo.php" class="col btn btn-lg">🏪 Mihomo</a>
+        <a href="./index.php" class="col btn btn-lg"><i class="bi bi-house-door"></i> Home</a>
+        <a href="./mihomo_manager.php" class="col btn btn-lg"><i class="bi bi-folder"></i> Manager</a>
+        <a href="./singbox.php" class="col btn btn-lg"><i class="bi bi-shop"></i> Sing-box</a>
+        <a href="./subscription.php" class="col btn btn-lg"><i class="bi bi-bank"></i> Singbox</a>
+        <a href="./mihomo.php" class="col btn btn-lg"><i class="bi bi-building"></i> Mihomo</a>
 <div class="outer-container">
     <div class="container" style="padding-left: 2.4em; padding-right: 2.4em;">
         <h1 class="title text-center" style="margin-top: 3rem; margin-bottom: 2rem;">Sing-box  Template I</h1>
         <div class="alert alert-info">
             <h4 class="alert-heading">Help Information</h4>
-            <p>
-                  Please select a template to generate the configuration file: Choose the corresponding template based on the subscription node information. If you select a template with regional grouping, please ensure that your nodes include the following lines</p>
-            </p>
             <ul>
-                <li><strong>Template 1</strong>：No region, no grouping, general</li>
-                <li><strong>Template 2</strong>：No region, with routing rules, general</li>
-                <li><strong>Template 3</strong>：Hong Kong, Japan, United States, grouped with routing rules</li>
-                <li><strong>Template 4</strong>：Hong Kong, Singapore, Japan, United States, grouped with routing rules</li>
-                <li><strong>Template 5</strong>：Singapore, Japan, United States, South Korea, grouped with routing rules</li>
-                <li><strong>Template 6</strong>：Hong Kong, Taiwan, Singapore, Japan, United States, South Korea, grouped with routing rules</li>
+                <li><strong>Template 1</strong>：No region, no grouping</li>
+                <li><strong>Template 2</strong>：No region, with routing rules</li>
+                <li><strong>Template 3</strong>：Hong Kong, Taiwan, Singapore, Japan, United States, South Korea, grouped with routing rules</li>
             </ul>
         </div>
         <form method="post" action="">
@@ -199,14 +202,6 @@ EOL;
                     <div class="col">
                         <input type="radio" class="form-check-input" id="useDefaultTemplate5" name="defaultTemplate" value="5">
                         <label class="form-check-label" for="useDefaultTemplate5">Template 5</label>
-                    </div>
-                    <div class="col">
-                        <input type="radio" class="form-check-input" id="useDefaultTemplate6" name="defaultTemplate" value="6">
-                        <label class="form-check-label" for="useDefaultTemplate6">Template 6</label>
-                    </div>
-                    <div class="col">
-                        <input type="radio" class="form-check-input" id="useDefaultTemplate7" name="defaultTemplate" value="7">
-                        <label class="form-check-label" for="useDefaultTemplate7">Template 7</label>
                     </div>
                 </div>
                 <div class="mt-3">
@@ -279,7 +274,7 @@ EOL;
     });
 </script>
         <?php
-        $dataFilePath = '/tmp/subscription_data.txt';
+        $dataFilePath = '/etc/neko/proxy_provider/subscription_data.txt';
         $configFilePath = '/etc/neko/config/sing-box.json';
         $downloadedContent = ''; 
         $fixedFileName = 'subscription.txt';
@@ -318,11 +313,9 @@ EOL;
                 $defaultTemplates = [
                     '1' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_7.json",
                     '2' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_6.json",
-                    '3' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_9.json",
-                    '4' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_10.json",
-                    '5' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_11.json",
-                    '6' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_8.json",
-                    '7' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_12.json"
+                    '3' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_8.json",
+                    '4' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_12.json",
+                    '5' => "https://raw.githubusercontent.com/Thaolga/Rules/main/Clash/json/config_2.json"
                 ];
 
                 $templateUrlEncoded = urlencode($defaultTemplates[$_POST['defaultTemplate']] ?? '');
@@ -354,6 +347,14 @@ EOL;
                     $logMessages[] = "Unable to read the downloaded file content";
                 } else {
 
+                    $downloadedContent = preg_replace_callback(
+                        '/\{\s*"tag":\s*"(.*?)",\s*"type":\s*"selector",\s*"outbounds":\s*\[\s*"Proxy"\s*\]\s*\}/s',
+                        function ($matches) {
+                            return str_replace('"Proxy"', '"DIRECT"', $matches[0]);
+                        },
+                        $downloadedContent
+                    );
+
                     if (isset($_POST['defaultTemplate']) && $_POST['defaultTemplate'] == '0') {
                 $replacement = '
   "clash_api": {
@@ -366,7 +367,7 @@ EOL;
                 $downloadedContent = preg_replace('/"clash_api":\s*\{.*?\},/s', $replacement, $downloadedContent);
             }
 
-                    $tmpFileSavePath = '/etc/neko/tmp/' . $fixedFileName;  
+                    $tmpFileSavePath = '/etc/neko/proxy_provider/' . $fixedFileName;  
                     if (file_put_contents($tmpFileSavePath, $completeSubscribeUrl) === false) {
                         $logMessages[] = "Unable to save subscription URL to file: " . $tmpFileSavePath;
                     } else {
@@ -379,9 +380,15 @@ EOL;
                     } else {
                         $logMessages[] = "Configuration file generated and saved successfully: " . $configFilePath;
                     }
+
+                    if (file_exists($tempFilePath)) {
+                        unlink($tempFilePath); 
+                        $logMessages[] = "Temporary file has been cleaned: " . $tempFilePath;
+                    } else {
+                        $logMessages[] = "Temporary file not found for cleaning: " . $tempFilePath;
+                    }
                 }
             }
-
             echo "<div class='result-container'>";
             echo "<form method='post' action=''>";
             echo "<div class='mb-3'>";
