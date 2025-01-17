@@ -326,13 +326,12 @@ function renderPayload(s, total, uciconfig) {
 		initPayload(o, n, 'factor', uciconfig);
 
 		o = s.option(form.ListValue, prefix + 'rule_set', _('Factor') + ` ${n+1}`);
-		o.value('', _('-- Please choose --'));
 		if (n === 0)
 			o.depends('type', 'RULE-SET');
 		o.depends(prefix + 'type', 'RULE-SET');
 		initPayload(o, n, 'factor', uciconfig);
 		o.load = L.bind(function(n, key, uciconfig, section_id) {
-			hm.loadRulesetLabel.call(this, null, section_id);
+			hm.loadRulesetLabel.call(this, [], null, section_id);
 
 			return new RulesEntry(uci.get(uciconfig, section_id, 'entry')).getPayload(n)[key];
 		}, o, n, 'factor', uciconfig)
@@ -395,22 +394,18 @@ function renderPayload(s, total, uciconfig) {
 
 		o = s.option(form.DynamicList, prefix + 'fused', _('Factor') + ' ++',
 			_('Content will not be verified, Please make sure you enter it correctly.'));
-		o.value('', _('-- Please choose --'));
 		extenbox[n].forEach((type) => {
 			o.depends(Object.fromEntries([['type', type], [prefix + 'type', /.+/]]));
 		})
 		initDynamicPayload(o, n, 'factor', uciconfig);
 		o.load = L.bind(function(n, key, uciconfig, section_id) {
 			let fusedval = [
-				['', _('-- Please choose --')],
 				['NETWORK', '-- NETWORK --'],
 				['udp', _('UDP')],
 				['tcp', _('TCP')],
 				['RULESET', '-- RULE-SET --']
 			];
-			hm.loadRulesetLabel.call(this, null, section_id);
-			this.keylist = [...fusedval.map(e => e[0]), ...this.keylist];
-			this.vallist = [...fusedval.map(e => e[1]), ...this.vallist];
+			hm.loadRulesetLabel.call(this, fusedval, null, section_id);
 			this.super('load', section_id);
 
 			return new RulesEntry(uci.get(uciconfig, section_id, 'entry')).getPayloads().slice(n).map(e => e[key] ?? '');
@@ -528,7 +523,7 @@ function renderRules(s, uciconfig) {
 		UIEl.setValue(rule.toString('json'));
 	}
 	o.write = function() {};
-	//o.depends('SUB-RULE', '0');
+	//o.depends('SUB-RULE', '');
 	o.editable = true;
 
 	o = s.option(form.Flag, 'src', _('src'));
@@ -545,7 +540,7 @@ function renderRules(s, uciconfig) {
 		UIEl.setValue(rule.toString('json'));
 	}
 	o.write = function() {};
-	o.depends('SUB-RULE', '0');
+	o.depends('SUB-RULE', '');
 	o.modalonly = true;
 
 	o = s.option(form.Flag, 'no-resolve', _('no-resolve'));
@@ -562,7 +557,7 @@ function renderRules(s, uciconfig) {
 		UIEl.setValue(rule.toString('json'));
 	}
 	o.write = function() {};
-	o.depends('SUB-RULE', '0');
+	o.depends('SUB-RULE', '');
 	o.modalonly = true;
 }
 
@@ -656,7 +651,7 @@ return view.extend({
 
 		so = ss.taboption('field_general', form.MultiValue, 'proxies', _('Node'));
 		so.value('', _('-- Please choose --'));
-		so.load = L.bind(hm.loadNodeLabel, so);
+		so.load = L.bind(hm.loadNodeLabel, so, [['', _('-- Please choose --')]]);
 		so.validate = function(section_id, value) {
 			if (this.section.getOption('include_all').formvalue(section_id) === '1' ||
 			    this.section.getOption('include_all_proxies').formvalue(section_id) === '1')
@@ -670,7 +665,7 @@ return view.extend({
 
 		so = ss.taboption('field_general', form.MultiValue, 'use', _('Provider'));
 		so.value('', _('-- Please choose --'));
-		so.load = L.bind(hm.loadProviderLabel, so);
+		so.load = L.bind(hm.loadProviderLabel, so, [['', _('-- Please choose --')]]);
 		so.validate = function(section_id, value) {
 			if (this.section.getOption('include_all').formvalue(section_id) === '1' ||
 			    this.section.getOption('include_all_providers').formvalue(section_id) === '1')
@@ -702,16 +697,22 @@ return view.extend({
 		so.default = so.disabled;
 		so.modalonly = true;
 
+		// need deprecated
 		so = ss.taboption('field_override', widgets.DeviceSelect, 'interface_name', _('Bind interface'),
 			_('Bind outbound interface.</br>') +
-			_('Priority: Proxy Node > Proxy Group > Global.'));
+			_('Priority: Proxy Node > Proxy Group > Global.') + '</br>' +
+			_('Option will soon be deprecated, please use the same option in proxy node.'));
 		so.multiple = false;
 		so.noaliases = true;
+		so.readonly = true;
 		so.modalonly = true;
 
+		// need deprecated
 		so = ss.taboption('field_override', form.Value, 'routing_mark', _('Routing mark'),
-			_('Priority: Proxy Node > Proxy Group > Global.'));
+			_('Priority: Proxy Node > Proxy Group > Global.') + '</br>' +
+			_('Option will soon be deprecated, please use the same option in proxy node.'));
 		so.datatype = 'uinteger';
+		so.readonly = true;
 		so.modalonly = true;
 
 		/* Health fields */
@@ -824,34 +825,18 @@ return view.extend({
 
 		renderRules(ss, data[0]);
 
-		so = ss.option(form.Flag, 'SUB-RULE', _('SUB-RULE'));
-		so.default = so.disabled;
+		so = ss.option(form.ListValue, 'SUB-RULE', _('SUB-RULE'));
 		so.load = function(section_id) {
-			return boolToFlag(new RulesEntry(uci.get(data[0], section_id, 'entry')).subrule ? true : false);
+			hm.loadSubRuleGroup.call(this, [['', _('-- Please choose --')]], section_id);
+
+			return new RulesEntry(uci.get(data[0], section_id, 'entry')).subrule || '';
 		}
 		so.validate = function(section_id, value) {
 			value = this.formvalue(section_id);
 
-			this.section.getUIElement(section_id, 'detour').node.querySelector('select').disabled = (value === '1') ? 'true' : null;
+			this.section.getUIElement(section_id, 'detour').node.querySelector('select').disabled = value ? 'true' : null;
 
 			return true;
-		}
-		so.onchange = function(ev, section_id, value) {
-			let UIEl = this.section.getUIElement(section_id, 'entry');
-
-			let rule = new RulesEntry(UIEl.getValue()).setKey('subrule', value === '1' ? ' ' : false);
-
-			UIEl.node.previousSibling.innerText = rule.toString('mihomo');
-			UIEl.setValue(rule.toString('json'));
-		}
-		so.write = function() {};
-		so.modalonly = true;
-
-		so = ss.option(form.ListValue, 'sub_rule', _('Sub rule'));
-		so.load = function(section_id) {
-			hm.loadSubRuleGroup.call(this, section_id);
-
-			return new RulesEntry(uci.get(data[0], section_id, 'entry')).subrule || '';
 		}
 		so.onchange = function(ev, section_id, value) {
 			let UIEl = this.section.getUIElement(section_id, 'entry');
@@ -861,9 +846,7 @@ return view.extend({
 			UIEl.node.previousSibling.innerText = rule.toString('mihomo');
 			UIEl.setValue(rule.toString('json'));
 		}
-		so.rmempty = false;
 		so.write = function() {};
-		so.depends('SUB-RULE', '1');
 		so.modalonly = true;
 		/* Routing rules END */
 
@@ -1139,7 +1122,7 @@ return view.extend({
 		so = ss.option(form.MultiValue, 'rule_set', _('Rule set'),
 			_('Match rule set.'));
 		so.value('', _('-- Please choose --'));
-		so.load = L.bind(hm.loadRulesetLabel, so, ['domain', 'classical']);
+		so.load = L.bind(hm.loadRulesetLabel, so, [['', _('-- Please choose --')]], ['domain', 'classical']);
 		so.depends('type', 'rule_set');
 		so.modalonly = true;
 
