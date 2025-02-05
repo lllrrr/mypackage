@@ -642,15 +642,22 @@ function getSubscriptionUrlFromFile($file) {
 .table-responsive {
     width: 100%;
 }
+
+@media (max-width: 767px) {
+.custom-padding {
+    padding-left: 3ch;  
+    padding-right: 3ch;  
+}
+
 </style>
 <div class="container-sm container-bg callout border border-3 rounded-4 col-11">
     <div class="row">
         <a href="./index.php" class="col btn btn-lg"><i class="bi bi-house-door"></i> Home</a>
         <a href="./mihomo_manager.php" class="col btn btn-lg"><i class="bi bi-folder"></i> Manager</a>
-        <a href="./singbox.php" class="col btn btn-lg"><i class="bi bi-shop"></i> Sing-box</a>
-        <a href="./subscription.php" class="col btn btn-lg"><i class="bi bi-bank"></i> Singbox</a>
-        <a href="./mihomo.php" class="col btn btn-lg"><i class="bi bi-building"></i> Mihomo</a>
-        <h1 class="text-center p-2" style="margin-top: 2rem; margin-bottom: 1rem;">Mihomo Subscription Conversion Template</h1>
+        <a href="./singbox.php" class="col btn btn-lg"><i class="bi bi-shop"></i> Template I</a>
+        <a href="./subscription.php" class="col btn btn-lg"><i class="bi bi-bank"></i> Template II</a>
+        <a href="./mihomo.php" class="col btn btn-lg"><i class="bi bi-building"></i> Template III</a>
+        <h1 class="text-center p-2" style="margin-top: 2rem; margin-bottom: 1rem;">Mihomo Template</h1>
 
         <div class="col-12 custom-padding">
             <div class="form-section">

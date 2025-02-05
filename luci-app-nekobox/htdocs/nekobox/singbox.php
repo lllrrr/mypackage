@@ -143,6 +143,12 @@ EOL;
 </head>
 <body>
 <style>
+.container-fluid {
+    max-width: 2400px;
+    width: 100%;
+    margin: 0 auto;
+}
+
 @media (max-width: 767px) {
     .row a {
         font-size: 9px; 
@@ -152,16 +158,33 @@ EOL;
 .table-responsive {
     width: 100%;
 }
+
+@media (max-width: 768px) {
+    .row.mb-4 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px; 
+    }
+
+    .btn {
+        width: 100%; 
+    }
+
+    .btn i {
+        margin-right: 8px; 
+    }
+}
+
 </style>
 <div class="container-sm container-bg callout border border-3 rounded-4 col-11">
     <div class="row">
         <a href="./index.php" class="col btn btn-lg"><i class="bi bi-house-door"></i> Home</a>
         <a href="./mihomo_manager.php" class="col btn btn-lg"><i class="bi bi-folder"></i> Manager</a>
-        <a href="./singbox.php" class="col btn btn-lg"><i class="bi bi-shop"></i> Sing-box</a>
-        <a href="./subscription.php" class="col btn btn-lg"><i class="bi bi-bank"></i> Singbox</a>
-        <a href="./mihomo.php" class="col btn btn-lg"><i class="bi bi-building"></i> Mihomo</a>
+        <a href="./singbox.php" class="col btn btn-lg"><i class="bi bi-shop"></i> Template I</a>
+        <a href="./subscription.php" class="col btn btn-lg"><i class="bi bi-bank"></i> Template II</a>
+        <a href="./mihomo.php" class="col btn btn-lg"><i class="bi bi-building"></i> Template III</a>
 <div class="outer-container">
-    <div class="container" style="padding-left: 2.4em; padding-right: 2.4em;">
+    <div class="container-fluid">
         <h1 class="title text-center" style="margin-top: 3rem; margin-bottom: 2rem;">Sing-box  Template I</h1>
         <div class="alert alert-info">
             <h4 class="alert-heading">Help Information</h4>
@@ -223,7 +246,7 @@ EOL;
                     </form>
                 </div>
                 <div class="col-auto">
-                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#cronModal">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#cronModal">
                         <i class="bi bi-clock"></i> Set up a scheduled task
                     </button>
                 </div>
@@ -437,7 +460,7 @@ EOL;
             echo "<h2 class='card-title'>Saved data</h2>";
             echo "<pre>" . htmlspecialchars($savedData) . "</pre>";
             echo "<form method='post' action=''>";
-            echo "<button class='btn btn-danger' type='submit' name='clearData'>Clear data</button>";
+            echo '<button class="btn btn-danger" type="submit" name="clearData"><i class="bi bi-trash"></i> Clear data</button>';
             echo "</form>";
             echo "</div>";
             echo "</div>";

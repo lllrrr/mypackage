@@ -172,169 +172,124 @@ $razordVersion = getRazordVersion();
     <?php include './ping.php'; ?>
   </head>
 <style>
-    @media (max-width: 576px) {
-        .btn-custom {
-            width: 45%; 
-            margin: 0 auto; 
-            display: block; 
+
+@media (max-width: 767px) {
+    .form-select {
+        width: 100%;  
+        margin-left: 0;  
     }
 
-        .btn-fw {
-            width: 100%; 
-            margin-right: 0; 
-            margin-bottom: 10px; 
-        }
-
-        .container .form-select {
-            margin-right: 6ch;
-            width: calc(100% - 1.8ch); 
-        }
+    .col-12.col-md-6 {
+        padding-left: 10px;  
+        padding-right: 18px;
     }
+}
+
+@media (max-width: 767px) {
+    .btn-custom {
+        margin-left: 10px;  
+
+    }
+}
 
 </style>
   <body>
 
 <div class="container-sm container-bg text-center callout border border-3 rounded-4 col-11">
     <div class="row">
-        <a href="./index.php" class="col btn btn-lg"><i class="bi bi-house-door"></i> Home</a>
-        <a href="./dashboard.php" class="col btn btn-lg"><i class="bi bi-bar-chart"></i> Panel</a>
-        <a href="./singbox.php" class="col btn btn-lg"><i class="bi bi-box"></i> Document</a> 
-        <a href="./settings.php" class="col btn btn-lg"><i class="bi bi-gear"></i> Settings</a>
+        <a href="./index.php" class="col btn btn-lg text-nowrap"><i class="bi bi-house-door"></i> Home</a>
+        <a href="./dashboard.php" class="col btn btn-lg text-nowrap"><i class="bi bi-bar-chart"></i> Panel</a>
+        <a href="./singbox.php" class="col btn btn-lg text-nowrap"><i class="bi bi-box"></i> Document</a> 
+        <a href="./settings.php" class="col btn btn-lg text-nowrap"><i class="bi bi-gear"></i> Settings</a>
+
 <div class="container px-4">
     <h2 class="text-center p-2 mb-4">Theme Settings</h2>
     <form action="settings.php" method="post">
         <div class="row justify-content-center">
-            <div class="col-12 col-md-6 mb-3">
-                <select class="form-select" name="themechange" aria-label="themex style="text-indent: 5ch;">
+            <div class="col-12 col-md-6 mb-3 d-flex">
+                <select class="form-select" name="themechange" aria-label="themex" style="margin-left: 10px;">
                     <option selected>Change Theme (<?php echo $neko_theme ?>)</option>
                     <?php foreach ($arrFiles as $file) echo "<option value=\"".$file.'">'.$file."</option>" ?>
                 </select>
             </div>
             <div class="col-12 col-md-6 mb-3" style="padding-right: 1.3rem;" >
                 <div class="d-flex justify-content-between gap-2">
-                    <input class="btn btn-info btn-custom" type="submit" value="🖫 Change Theme">
+                    <button class="btn btn-info btn-custom" type="submit">
+                        <i class="bi bi-paint-bucket"></i> Change Theme
+                    </button>
                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#colorModal">
-                        Theme Editor
+                        <i class="bi-palette"></i> Theme Editor
                     </button>
                     
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filesModal">
-                        Upload Background Image
+                        <i class="bi-camera-video"></i> Set as Background
                     </button>
                 </div>
             </div>
         </div>
     </form>
-    <table class="table table-borderless mb-3">
-        <tbody>
-            <tr>
-                <td colspan="2">
+
+<table class="table table-borderless mb-3">
+    <tbody>
+        <tr>
+            <td colspan="2">
+                <div class="table-container">
                     <h2 class="text-center mb-3">Software Information</h2>
                     <form action="settings.php" method="post">
                         <div class="btn-group d-flex justify-content-center">
-                            <button type="submit" name="fw" value="enable" class="btn btn<?php if($fwstatus==1) echo "-outline" ?>-success <?php if($fwstatus==1) echo "disabled" ?> btn-fw" style="margin-right: 20px;">Enable</button>
-                            <button type="submit" name="fw" value="disable" class="btn btn<?php if($fwstatus==0) echo "-outline" ?>-danger <?php if($fwstatus==0) echo "disabled" ?>">Disable</button>
-                         </div>
-                     </form>
-                 </td>
-             </tr>
-         <tr>
-     <tr>
-    <td>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Client Version</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-center" style="font-family: monospace;">
-                        <span id="cliver"></span><span id="NewCliver"> </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-center">
-                        <button class="btn btn-pink me-1" id="checkCliverButton">🔍 Detect</button>
-                        <button class="btn btn-info" id="updateButton" title="Update to Latest Version" onclick="showVersionTypeModal()">🔄 Update</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </td>
-    <td>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Ui Panel</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-center">
-                        <?php echo htmlspecialchars($uiVersion); ?><span id="NewUi"> </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-center">
-                        <button class="btn btn-pink me-1" id="checkUiButton">🔍 Detect</button>
-                        <button class="btn btn-info" id="updateUiButton" title="Update Panel" onclick="showPanelSelector()">🔄 Update</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </td>
-</tr>
-<tr>
-    <td>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Sing-box Core Version</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-center">
-                        <div id="singBoxCorever">
-                            <?php echo htmlspecialchars($singBoxVersion); ?><span id="NewSingbox"></span>
+                            <button type="submit" name="fw" value="enable" class="btn btn-success <?php if($fwstatus==1) echo "disabled" ?>">Enable</button>
+                            <button type="submit" name="fw" value="disable" class="btn btn-danger <?php if($fwstatus==0) echo "disabled" ?>">Disable</button>
                         </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-center">
-                        <button class="btn btn-pink me-1" id="checkSingboxButton">🔍 Detect</button>
-                        <button class="btn btn-info" id="singboxOptionsButton" title="Singbox Related Operations">🔄 Update</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </td>
-    <td>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Mihomo Core Version</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="text-center">
-                        <?php echo htmlspecialchars($mihomoVersion); ?><span id="NewMihomo"> </span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-center">
-                        <button class="btn btn-pink me-1" id="checkMihomoButton">🔍 Detect</button>
-                        <button class="btn btn-info" id="updateCoreButton" title="Update Mihomo Core" onclick="showMihomoVersionSelector()">🔄 Update</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </td>
-</tr>
-</tbody>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="table-container">
+                    <h2>Client Version</h2>
+                    <p id="cliver" class="text-center" style="font-family: monospace;"></p>
+                    <div class="text-center">
+                        <button class="btn btn-pink me-1" id="checkCliverButton"><i class="bi bi-search"></i> Detect</button>
+                        <button class="btn btn-info" id="updateButton" title="Update to Latest Version" onclick="showVersionTypeModal()"><i class="bi bi-arrow-repeat"></i> Update</button>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="table-container">
+                    <h2>Ui Panel</h2>
+                    <p class="text-center"><?php echo htmlspecialchars($uiVersion); ?></p>
+                    <div class="text-center">
+                        <button class="btn btn-pink me-1" id="checkUiButton"><i class="bi bi-search"></i> Detect</button>
+                        <button class="btn btn-info" id="updateUiButton" title="Update Panel" onclick="showPanelSelector()"><i class="bi bi-arrow-repeat"></i> Update</button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="table-container">
+                    <h2>Sing-box Core Version</h2>
+                    <p id="singBoxCorever" class="text-center"><?php echo htmlspecialchars($singBoxVersion); ?></p>
+                    <div class="text-center">
+                        <button class="btn btn-pink me-1" id="checkSingboxButton"><i class="bi bi-search"></i> Detect</button>
+                        <button class="btn btn-info" id="singboxOptionsButton" title="Singbox Related Operations"><i class="bi bi-arrow-repeat"></i> Update</button>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="table-container">
+                    <h2>Mihomo Core Version</h2>
+                    <p class="text-center"><?php echo htmlspecialchars($mihomoVersion); ?></p>
+                    <div class="text-center">
+                        <button class="btn btn-pink me-1" id="checkMihomoButton"><i class="bi bi-search"></i> Detect</button>
+                        <button class="btn btn-info" id="updateCoreButton" title="Update Mihomo Core" onclick="showMihomoVersionSelector()"><i class="bi bi-arrow-repeat"></i> Update</button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </tbody>
 </table>
-
 <div class="modal fade" id="updateVersionTypeModal" tabindex="-1" aria-labelledby="updateVersionTypeModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -589,327 +544,7 @@ $razordVersion = getRazordVersion();
         </div>
     </div>
 </div>
-<div class="modal fade" id="colorModal" tabindex="-1" aria-labelledby="colorModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="colorModalLabel">Select Theme Color</h5>
-        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      </div>
-      <div class="modal-body">
-        <form method="POST" action="theme.php" id="themeForm" enctype="multipart/form-data">
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="primaryColor" class="form-label">Primary Color</label>
-              <input type="color" class="form-control" name="primaryColor" id="primaryColor" value="#ffcc00">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="secondaryColor" class="form-label">Secondary Color</label>
-              <input type="color" class="form-control" name="secondaryColor" id="secondaryColor" value="#00ffff">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="bodyBgColor" class="form-label">Main Background Color</label>
-              <input type="color" class="form-control" name="bodyBgColor" id="bodyBgColor" value="#087990">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="infoBgSubtle" class="form-label">Info Background Color</label>
-              <input type="color" class="form-control" name="infoBgSubtle" id="infoBgSubtle" value="#6a5acd">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="primaryBorderSubtle" class="form-label">Primary Border Color</label>
-              <input type="color" class="form-control" name="primaryBorderSubtle" id="primaryBorderSubtle" value="#87ceeb">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="bodyColor" class="form-label">Text Color 1</label>
-              <input type="color" class="form-control" name="bodyColor" id="bodyColor" value="#ffff00">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="tertiaryColor" class="form-label">Text Color 2</label>
-              <input type="color" class="form-control" name="tertiaryColor" id="tertiaryColor" value="#00ff00">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="tertiaryRgbColor" class="form-label">Text Color 3</label>
-              <input type="color" class="form-control" name="tertiaryRgbColor" id="tertiaryRgbColor" value="#1e90ff">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="heading1Color" class="form-label">Heading 1</label>
-              <input type="color" class="form-control" name="heading1Color" id="heading1Color" value="#00a2e8">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="heading2Color" class="form-label">Heading 2</label>
-              <input type="color" class="form-control" name="heading2Color" id="heading2Color" value="#00a2e8">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="heading3Color" class="form-label">Heading 3</label>
-              <input type="color" class="form-control" name="heading3Color" id="heading3Color" value="#ffcc00">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="heading4Color" class="form-label">Heading 4</label>
-              <input type="color" class="form-control" name="heading4Color" id="heading4Color" value="#ff4500">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="heading5Color" class="form-label">Heading 5</label>
-              <input type="color" class="form-control" name="heading5Color" id="heading5Color" value="#7d5fff">
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="heading6Color" class="form-label">Heading 6</label>
-              <input type="color" class="form-control" name="heading6Color" id="heading6Color" value="#00ffff">
-            </div>
-          </div>
 
-          <div class="mb-3 form-check">
-            <input type="checkbox" class="form-check-input" id="useBackgroundImage" name="useBackgroundImage">
-            <label class="form-check-label" for="useBackgroundImage">Use Custom Background Image</label>
-          </div>
-
-          <div class="mb-3" id="backgroundImageContainer" style="display:none;">
-            <label for="backgroundImage" class="form-label">Select Background Image</label>
-            <select class="form-select" id="backgroundImage" name="backgroundImage">
-              <option value="">Please select an image</option>
-              <?php
-              $dir = $_SERVER['DOCUMENT_ROOT'] . '/nekobox/assets/Pictures/';
-              $files = array_diff(scandir($dir), array('..', '.')); 
-              foreach ($files as $file) {
-                  if (in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])) {
-                      echo "<option value='/nekobox/assets/Pictures/$file'>$file</option>";
-                  }
-              }
-              ?>
-            </select>
-          </div>
-
-          <button type="submit" class="btn btn-primary  mb-3 me-2">Save Theme</button>
-          <button type="button" class="btn btn-success  mb-3 me-2" id="resetButton">Restore Default Values</button>
-          <button type="button" class="btn btn-info mb-3" id="exportButton">Export Settings</button>
-          <input type="file" id="importButton" class="form-control mb-3" accept="application/json">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-    document.getElementById('useBackgroundImage').addEventListener('change', function() {
-        const container = document.getElementById('backgroundImageContainer');
-        container.style.display = this.checked ? 'block' : 'none';
-    });
-</script>
-
-<div class="modal fade" id="filesModal" tabindex="-1" aria-labelledby="filesModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="filesModalLabel">Upload and Manage Background Image</h5>
-        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      </div>
-      
-      <div class="modal-body">
-        <div class="mb-4">
-          <h2 class="mb-3">Upload Background Image</h2>
-          <form method="POST" action="theme.php" enctype="multipart/form-data">
-            <input type="file" class="form-control mb-3" name="imageFile" id="imageFile">
-            <button type="submit" class="btn btn-success" id="submitBtn">Upload Image</button>
-          </form>
-        </div>
-
-        <h2 class="mb-3">Uploaded Image Files</h2>
-        <table class="table table-bordered text-center">
-          <thead>
-            <tr>
-              <th>File Name</th>
-              <th>File Size</th>
-              <th>Preview</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php
-            $picturesDir = $_SERVER['DOCUMENT_ROOT'] . '/nekobox/assets/Pictures/';
-            if (is_dir($picturesDir)) {
-                $files = array_diff(scandir($picturesDir), array('..', '.'));
-                foreach ($files as $file) {
-                    $filePath = $picturesDir . $file;
-                    if (is_file($filePath)) {
-                        $fileSize = filesize($filePath);
-                        $fileUrl = '/nekobox/assets/Pictures/' . $file;
-                        echo "<tr>
-                                <td class='align-middle'>$file</td>
-                                <td class='align-middle'>" . formatSize($fileSize) . "</td>
-                                <td class='align-middle'><img src='$fileUrl' alt='$file' style='width: 100px; height: auto;'></td>
-                                <td class='align-middle'>
-                                  <a href='?delete=$file' class='btn btn-danger btn-sm'>Delete</a>
-                                </td>
-                              </tr>";
-                    }
-                }
-            }
-            ?>
-          </tbody>
-        </table>
-      </div>
-   <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-<?php
-if (isset($_GET['delete'])) {
-    $fileToDelete = $_GET['delete'];
-    $filePath = $picturesDir . $fileToDelete;
-    if (file_exists($filePath)) {
-        unlink($filePath); 
-        echo '<script>window.location.href = "settings.php";</script>';
-        exit;
-    }
-}
-
-function formatSize($size) {
-    if ($size >= 1073741824) {
-        return number_format($size / 1073741824, 2) . ' GB';
-    } elseif ($size >= 1048576) {
-        return number_format($size / 1048576, 2) . ' MB';
-    } elseif ($size >= 1024) {
-        return number_format($size / 1024, 2) . ' KB';
-    } else {
-        return $size . ' bytes';
-    }
-}
-?>
-  </tbody>
-</table>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const colorInputs = document.querySelectorAll('input[type="color"]');
-    
-    colorInputs.forEach(input => {
-      if (localStorage.getItem(input.name)) {
-        input.value = localStorage.getItem(input.name);
-      }
-
-      input.addEventListener('input', function() {
-        localStorage.setItem(input.name, input.value);
-      });
-    });
-
-    const useBackgroundImageCheckbox = document.getElementById('useBackgroundImage');
-    const backgroundImageContainer = document.getElementById('backgroundImageContainer');
-
-    const savedBackgroundImageState = localStorage.getItem('useBackgroundImage');
-    if (savedBackgroundImageState === 'true') {
-      useBackgroundImageCheckbox.checked = true;
-      backgroundImageContainer.style.display = 'block';
-    } else {
-      useBackgroundImageCheckbox.checked = false;
-      backgroundImageContainer.style.display = 'none';
-    }
-
-    useBackgroundImageCheckbox.addEventListener('change', function() {
-      if (useBackgroundImageCheckbox.checked) {
-        backgroundImageContainer.style.display = 'block';
-      } else {
-        backgroundImageContainer.style.display = 'none';
-      }
-
-      localStorage.setItem('useBackgroundImage', useBackgroundImageCheckbox.checked);
-    });
-
-    document.getElementById('resetButton').addEventListener('click', function() {
-      document.getElementById('primaryColor').value = '#ffcc00';
-      document.getElementById('secondaryColor').value = '#00ffff';
-      document.getElementById('bodyBgColor').value = '#087990';
-      document.getElementById('bodyColor').value = '#ffff00';
-      document.getElementById('infoBgSubtle').value = '#6a5acd';
-      document.getElementById('primaryBorderSubtle').value = '#87ceeb';
-      document.getElementById('tertiaryColor').value = '#00ff00';
-      document.getElementById('tertiaryRgbColor').value = '#1e90ff';
-      document.getElementById('heading1Color').value = '#00a2e8';
-      document.getElementById('heading2Color').value = '#00a2e8';
-      document.getElementById('heading3Color').value = '#ffcc00';
-      document.getElementById('heading4Color').value = '#ff4500';
-      document.getElementById('heading5Color').value = '#7d5fff';
-      document.getElementById('heading6Color').value = '#00ffff';
-      
-      localStorage.clear();
-    });
-
-    document.getElementById('exportButton').addEventListener('click', function() {
-      const settings = {
-        primaryColor: document.getElementById('primaryColor').value,
-        secondaryColor: document.getElementById('secondaryColor').value,
-        bodyBgColor: document.getElementById('bodyBgColor').value,
-        infoBgSubtle: document.getElementById('infoBgSubtle').value,
-        primaryBorderSubtle: document.getElementById('primaryBorderSubtle').value,
-        bodyColor: document.getElementById('bodyColor').value,
-        tertiaryColor: document.getElementById('tertiaryColor').value,
-        tertiaryRgbColor: document.getElementById('tertiaryRgbColor').value,
-        heading1Color: document.getElementById('heading1Color').value,
-        heading2Color: document.getElementById('heading2Color').value,
-        heading3Color: document.getElementById('heading3Color').value,
-        heading4Color: document.getElementById('heading4Color').value,
-        heading5Color: document.getElementById('heading5Color').value,
-        heading6Color: document.getElementById('heading6Color').value,
-        useBackgroundImage: document.getElementById('useBackgroundImage').checked,
-        backgroundImage: document.getElementById('backgroundImage').value
-      };
-
-      const blob = new Blob([JSON.stringify(settings)], { type: 'application/json' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'theme-settings.json';
-      link.click();
-    });
-
-    document.getElementById('importButton').addEventListener('change', function(event) {
-      const file = event.target.files[0];
-      if (file && file.type === 'application/json') {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const settings = JSON.parse(e.target.result);
-
-          document.getElementById('primaryColor').value = settings.primaryColor;
-          document.getElementById('secondaryColor').value = settings.secondaryColor;
-          document.getElementById('bodyBgColor').value = settings.bodyBgColor;
-          document.getElementById('infoBgSubtle').value = settings.infoBgSubtle;
-          document.getElementById('primaryBorderSubtle').value = settings.primaryBorderSubtle;
-          document.getElementById('bodyColor').value = settings.bodyColor;
-          document.getElementById('tertiaryColor').value = settings.tertiaryColor;
-          document.getElementById('tertiaryRgbColor').value = settings.tertiaryRgbColor;
-          document.getElementById('heading1Color').value = settings.heading1Color;
-          document.getElementById('heading2Color').value = settings.heading2Color;
-          document.getElementById('heading3Color').value = settings.heading3Color;
-          document.getElementById('heading4Color').value = settings.heading4Color;
-          document.getElementById('heading5Color').value = settings.heading5Color;
-          document.getElementById('heading6Color').value = settings.heading6Color;
-          document.getElementById('useBackgroundImage').checked = settings.useBackgroundImage;
-
-          const backgroundImageContainer = document.getElementById('backgroundImageContainer');
-          backgroundImageContainer.style.display = settings.useBackgroundImage ? 'block' : 'none';
-          document.getElementById('backgroundImage').value = settings.backgroundImage || '';
-
-          localStorage.setItem('primaryColor', settings.primaryColor);
-          localStorage.setItem('secondaryColor', settings.secondaryColor);
-          localStorage.setItem('bodyBgColor', settings.bodyBgColor);
-          localStorage.setItem('infoBgSubtle', settings.infoBgSubtle);
-          localStorage.setItem('primaryBorderSubtle', settings.primaryBorderSubtle);
-          localStorage.setItem('bodyColor', settings.bodyColor);
-          localStorage.setItem('tertiaryColor', settings.tertiaryColor);
-          localStorage.setItem('tertiaryRgbColor', settings.tertiaryRgbColor);
-          localStorage.setItem('heading1Color', settings.heading1Color);
-          localStorage.setItem('heading2Color', settings.heading2Color);
-          localStorage.setItem('heading3Color', settings.heading3Color);
-          localStorage.setItem('heading4Color', settings.heading4Color);
-          localStorage.setItem('heading5Color', settings.heading5Color);
-          localStorage.setItem('heading6Color', settings.heading6Color);
-          localStorage.setItem('useBackgroundImage', settings.useBackgroundImage);
-          localStorage.setItem('backgroundImage', settings.backgroundImage);
-        };
-        reader.readAsText(file);
-      }
-    });
-  });
-</script>
 <style>
     @media (max-width: 767px) {
         .table td {
@@ -1217,6 +852,52 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<style>
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse; 
+    }
+
+    .custom-table th, .custom-table td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ccc; 
+    }
+
+@media (max-width: 767px) {
+    .custom-table {
+        display: block;
+        width: 100%;
+    }
+
+    .custom-table thead {
+        display: none;
+    }
+
+    .custom-table tbody {
+        display: block;
+    }
+
+    .custom-table tr {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+        border: none;
+    }
+
+    .custom-table td {
+        display: block;
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+    }
+
+    .custom-table td:first-child {
+        font-weight: bold;
+    }
+}
+</style>
+
 <script>
 function checkVersion(outputId, updateFiles, currentVersions) {
     const modalContent = document.getElementById('modalContent');
@@ -1278,7 +959,7 @@ function checkVersion(outputId, updateFiles, currentVersions) {
 
     Promise.all(requests).then(() => {
         modalContent.innerHTML = `
-            <table class="table table-striped table-bordered">
+            <table class="table custom-table">
                 <thead>
                     <tr>
                         <th class="text-center">Component Name</th>
@@ -1311,11 +992,11 @@ document.getElementById('checkSingboxButton').addEventListener('click', function
         finalPuernyaVersion = puernyaVersion; 
     }
 
-    if (singBoxVersion && /^v/.test(singBoxVersion) && /alpha|beta/.test(singBoxVersion)) {
+    if (singBoxVersion && /^v/.test(singBoxVersion) && /-.+/.test(singBoxVersion)) {
         finalCompileVersion = singBoxVersion;
     }
 
-    if (singBoxVersion && /alpha|beta/.test(singBoxVersion) && puernyaVersion !== '1.10.0-alpha.29-067c81a7' && !/^v/.test(singBoxVersion)) {
+    if (singBoxVersion && /-.+/.test(singBoxVersion) && puernyaVersion !== '1.10.0-alpha.29-067c81a7' && !/^v/.test(singBoxVersion)) {
         finalPreviewVersion = singBoxVersion;  
     }
 
@@ -1467,6 +1148,13 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
             padding: 0;
             font-family: Arial, sans-serif;
         }
+
+        .container-fluid {
+            max-width: 2400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
         .feature-box {
             padding: 15px;
             margin-bottom: 20px;
@@ -1530,14 +1218,14 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
     </style>
 </head>
 <body>
-    <div class="container mt-4">
+    <div class="container-fluid mt-4">
         <h2 class="text-center mb-4">About NekoBox</h2>
         <div class="feature-box text-center">
             <h5>NekoBox</h5>
             <p>NekoBox is a thoughtfully designed Sing-box proxy tool, created specifically for home users, aimed at providing a simple yet powerful proxy solution. Built on PHP and BASH technologies, NekoBox simplifies complex proxy configurations into an intuitive experience, allowing every user to easily enjoy an efficient and secure network environment.</p>
         </div>
 
-        <h5 class="text-center mb-4">Core Features</h5>
+        <h5 class="text-center mb-4"><i data-feather="cpu"></i> Core Features</h5>
         <div class="row">
             <div class="col-md-4 mb-4 d-flex">
                 <div class="feature-box text-center flex-fill">
@@ -1559,7 +1247,7 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
             </div>
         </div>
 
-        <h5 class="text-center mb-4">Tool Information</h5>
+        <h5 class="text-center mb-4"><i data-feather="tool"></i> Tool Information</h5>
         <div class="d-flex justify-content-center">
             <div class="table-container">
                 <table class="table table-borderless mb-5">
@@ -1571,12 +1259,12 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
                         <tr class="text-center">
                             <td>
                                 <div class="link-box">
-                                    <a href="https://github.com/SagerNet/sing-box" target="_blank">Sing-box</a>
+                                    <a href="https://github.com/SagerNet/sing-box" target="_blank"><i data-feather="codesandbox"></i>   Sing-box</a>
                                 </div>
                             </td>
                             <td>
                                 <div class="link-box">
-                                    <a href="https://github.com/MetaCubeX/mihomo" target="_blank">Mihomo</a>
+                                    <a href="https://github.com/MetaCubeX/mihomo" target="_blank"><i data-feather="box"></i>   Mihomo</a>
                                 </div>
                             </td>
                         </tr>
@@ -1584,7 +1272,7 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
                 </table>
             </div>
         </div>
-        <h5 class="text-center mb-4">External Links</h5>
+        <h5 class="text-center mb-4"><i data-feather="paperclip"></i>  External Links</h5>
         <div class="table-container">
             <table class="table table-borderless mb-5">
                 <tbody>
@@ -1595,12 +1283,12 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
                     <tr class="text-center">
                         <td>
                             <div class="link-box">
-                                <a href="https://github.com/Thaolga/openwrt-nekobox/issues" target="_blank">Issues</a>
+                                <a href="https://github.com/Thaolga/openwrt-nekobox/issues" target="_blank"><i data-feather="github"></i>   Issues</a>
                             </div>
                         </td>
                         <td>
                             <div class="link-box">
-                                <a href="https://github.com/Thaolga/openwrt-nekobox" target="_blank">NEKOBOX</a>
+                                <a href="https://github.com/Thaolga/openwrt-nekobox" target="_blank"><i data-feather="github"></i>   NEKOBOX</a>
                             </div>
                         </td>
                     </tr>
@@ -1611,12 +1299,12 @@ document.addEventListener('DOMContentLoaded', checkSingboxVersion);
                     <tr class="text-center">
                         <td>
                             <div class="link-box">
-                                <a href="https://t.me/+J55MUupktxFmMDgx" target="_blank">Telegram</a>
+                                <a href="https://t.me/+J55MUupktxFmMDgx" target="_blank"><i data-feather="send"></i> Telegram</a>
                             </div>
                         </td>
                         <td>
                             <div class="link-box">
-                                <a href="https://github.com/Zephyruso/zashboard" target="_blank">ZASHBOARD</a>
+                                <a href="https://github.com/Zephyruso/zashboard" target="_blank"><i data-feather="package"></i>    ZASHBOARD</a>
                             </div>
                         </td>
                     </tr>

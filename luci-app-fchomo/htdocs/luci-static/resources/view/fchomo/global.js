@@ -106,43 +106,6 @@ function updateResVersion(El, version) {
 	return El;
 }
 
-function renderNATBehaviorTest(El) {
-	let resEl = E('div',  { 'class': 'control-group' }, [
-		E('select', {
-			'id': '_status_nattest_l4proto',
-			'class': 'cbi-input-select',
-			'style': 'width: 5em'
-		}, [
-			E('option', { 'value': 'udp' }, 'UDP'),
-			E('option', { 'value': 'tcp' }, 'TCP')
-		]),
-		E('button', {
-			'class': 'cbi-button cbi-button-apply',
-			'click': ui.createHandlerFn(this, function() {
-				const stun = this.formvalue(this.section.section);
-				const l4proto = document.getElementById('_status_nattest_l4proto').value;
-				const l4proto_idx = document.getElementById('_status_nattest_l4proto').selectedIndex;
-
-				return fs.exec_direct('/etc/fchomo/scripts/natcheck.sh', [stun, l4proto, getRandom(32768, 61000)]).then((stdout) => {
-					this.description = '<details><summary>' + _('Expand/Collapse result') + '</summary>' + stdout + '</details>';
-
-					return this.map.reset().then((res) => {
-						document.getElementById('_status_nattest_l4proto').selectedIndex = l4proto_idx;
-					});
-				});
-			})
-		}, [ _('Check') ])
-	]);
-
-	let newEl = E('div', { style: 'font-weight: bold; align-items: center; display: flex' }, []);
-	if (El) {
-		newEl.appendChild(E([El, resEl]));
-	} else
-		newEl.appendChild(resEl);
-
-	return newEl;
-}
-
 return view.extend({
 	load() {
 		return Promise.all([
@@ -195,18 +158,18 @@ return view.extend({
 		}
 
 		so = ss.option(form.DummyValue, '_client_status', _('Client status'));
-		so.cfgvalue = function() { return hm.renderStatus(hm, '_client_bar', CisRunning ? { ...CclashAPI, dashboard_repo: dashboard_repo } : false, 'mihomo-c') }
+		so.cfgvalue = function() { return hm.renderStatus('_client_bar', CisRunning ? { ...CclashAPI, dashboard_repo: dashboard_repo } : false, 'mihomo-c') }
 		poll.add(function() {
 			return hm.getServiceStatus('mihomo-c').then((isRunning) => {
-				hm.updateStatus(hm, document.getElementById('_client_bar'), isRunning ? { dashboard_repo: dashboard_repo } : false, 'mihomo-c');
+				hm.updateStatus(document.getElementById('_client_bar'), isRunning ? { dashboard_repo: dashboard_repo } : false, 'mihomo-c');
 			});
 		})
 
 		so = ss.option(form.DummyValue, '_server_status', _('Server status'));
-		so.cfgvalue = function() { return hm.renderStatus(hm, '_server_bar', SisRunning ? { ...SclashAPI, dashboard_repo: dashboard_repo } : false, 'mihomo-s') }
+		so.cfgvalue = function() { return hm.renderStatus('_server_bar', SisRunning ? { ...SclashAPI, dashboard_repo: dashboard_repo } : false, 'mihomo-s') }
 		poll.add(function() {
 			return hm.getServiceStatus('mihomo-s').then((isRunning) => {
-				hm.updateStatus(hm, document.getElementById('_server_bar'), isRunning ? { dashboard_repo: dashboard_repo } : false, 'mihomo-s');
+				hm.updateStatus(document.getElementById('_server_bar'), isRunning ? { dashboard_repo: dashboard_repo } : false, 'mihomo-s');
 			});
 		})
 
@@ -247,7 +210,7 @@ return view.extend({
 		}
 
 		so = ss.option(form.Value, '_nattest', _('Check routerself NAT Behavior'));
-		so.default = hm.stunserver[0][0];
+		so.default = `udp://${hm.stunserver[0][0]}`;
 		hm.stunserver.forEach((res) => {
 			so.value.apply(so, res);
 		})
@@ -257,14 +220,60 @@ return view.extend({
 				.format('https://github.com/muink/openwrt-stuntman');
 			so.readonly = true;
 		} else {
-			so.renderWidget = function(/* ... */) {
-				let El = form.Value.prototype.renderWidget.apply(this, arguments);
+			so.renderWidget = function(section_id, option_index, cfgvalue) {
+				const cval = new URL(cfgvalue || this.default);
+				//console.info(cval.toString());
+				let El = form.Value.prototype.renderWidget.call(this, section_id, option_index, cval.host);
 
-				return renderNATBehaviorTest.call(this, El);
+				let resEl = E('div',  { 'class': 'control-group' }, [
+					E('select', {
+						'id': '_status_nattest_l4proto',
+						'class': 'cbi-input-select',
+						'style': 'width: 5em'
+					}, [
+						...[
+							['udp', 'UDP'], // default
+							['tcp', 'TCP']
+						].map(res => E('option', {
+								value: res[0],
+								selected: (cval.protocol === `${res[0]}:`) ? "" : null
+							}, res[1]))
+					]),
+					E('button', {
+						'class': 'cbi-button cbi-button-apply',
+						'click': ui.createHandlerFn(this, function() {
+							const stun = this.formvalue(this.section.section);
+							const l4proto = document.getElementById('_status_nattest_l4proto').value;
+
+							return fs.exec_direct('/etc/fchomo/scripts/natcheck.sh', [stun, l4proto, getRandom(32768, 61000)]).then((stdout) => {
+								this.description = '<details><summary>' + _('Expand/Collapse result') + '</summary>' + stdout + '</details>';
+
+								return this.map.reset().then((res) => {
+								});
+							});
+						})
+					}, [ _('Check') ])
+				]);
+				ui.addValidator(resEl.querySelector('#_status_nattest_l4proto'), 'string', false, (v) => {
+					const section_id = this.section.section;
+					const stun = this.formvalue(section_id);
+
+					this.onchange.call(this, {}, section_id, stun);
+					return true;
+				}, 'change');
+
+				let newEl = E('div', { style: 'font-weight: bold; align-items: center; display: flex' }, []);
+				if (El) {
+					newEl.appendChild(E([El, resEl]));
+				} else
+					newEl.appendChild(resEl);
+
+				return newEl;
 			}
 		}
 		so.onchange = function(ev, section_id, value) {
-			this.default = value;
+			const l4proto = document.getElementById('_status_nattest_l4proto').value;
+			this.default = `${l4proto}://${value}`;
 		}
 		so.write = function() {};
 		so.remove = function() {};
@@ -463,7 +472,7 @@ return view.extend({
 		o = s.taboption('inbound', form.SectionValue, '_inbound', form.NamedSection, 'inbound', 'fchomo', _('Tun settings'));
 		ss = o.subsection;
 
-		so = ss.option(form.RichListValue, 'tun_stack', _('Stack'),
+		so = ss.option(form.RichListValue || form.ListValue, 'tun_stack', _('Stack'), // less_24_10
 			_('Tun stack.'));
 		so.value('system', _('System'), _('Less compatibility and sometimes better performance.'));
 		if (features.with_gvisor) {
@@ -472,6 +481,16 @@ return view.extend({
 		}
 		so.default = 'system';
 		so.rmempty = false;
+		if (hm.less_24_10)
+			so.onchange = function(ev, section_id, value) {
+				var desc = ev.target.nextSibling;
+				if (value === 'mixed')
+					desc.innerHTML = _('Mixed <code>system</code> TCP stack and <code>gVisor</code> UDP stack.');
+				else if (value === 'gvisor')
+					desc.innerHTML = _('Based on google/gvisor.');
+				else if (value === 'system')
+					desc.innerHTML = _('Less compatibility and sometimes better performance.');
+			}
 
 		so = ss.option(form.Value, 'tun_mtu', _('MTU'));
 		so.datatype = 'uinteger';
@@ -716,7 +735,7 @@ return view.extend({
 		/* Routing control */
 		ss.tab('routing_control', _('Routing Control'));
 
-		so = ss.taboption('routing_control', form.MultiValue, 'routing_tcpport', _('Routing ports') + ' (TCP)',
+		so = ss.taboption('routing_control', hm.RichMultiValue, 'routing_tcpport', _('Routing ports') + ' (TCP)',
 			_('Specify target ports to be proxied. Multiple ports must be separated by commas.'));
 		so.create = true;
 		hm.routing_port_type.forEach((res) => {
@@ -725,7 +744,7 @@ return view.extend({
 		})
 		so.validate = L.bind(hm.validateCommonPort, so);
 
-		so = ss.taboption('routing_control', form.MultiValue, 'routing_udpport', _('Routing ports') + ' (UDP)',
+		so = ss.taboption('routing_control', hm.RichMultiValue, 'routing_udpport', _('Routing ports') + ' (UDP)',
 			_('Specify target ports to be proxied. Multiple ports must be separated by commas.'));
 		so.create = true;
 		hm.routing_port_type.forEach((res) => {
@@ -774,7 +793,7 @@ return view.extend({
 		/* Custom Direct list */
 		ss.tab('direct_list', _('Custom Direct List'));
 
-		so = ss.taboption('direct_list', hm.CBITextValue, 'direct_list.yaml', null);
+		so = ss.taboption('direct_list', hm.TextValue, 'direct_list.yaml', null);
 		so.rows = 20;
 		so.default = 'FQDN:\nIPCIDR:\nIPCIDR6:\n';
 		so.placeholder = "FQDN:\n- mask.icloud.com\n- mask-h2.icloud.com\n- mask.apple-dns.net\nIPCIDR:\n- '223.0.0.0/12'\nIPCIDR6:\n- '2400:3200::/32'\n";
@@ -792,7 +811,7 @@ return view.extend({
 		/* Custom Proxy list */
 		ss.tab('proxy_list', _('Custom Proxy List'));
 
-		so = ss.taboption('proxy_list', hm.CBITextValue, 'proxy_list.yaml', null);
+		so = ss.taboption('proxy_list', hm.TextValue, 'proxy_list.yaml', null);
 		so.rows = 20;
 		so.default = 'FQDN:\nIPCIDR:\nIPCIDR6:\n';
 		so.placeholder = "FQDN:\n- www.google.com\nIPCIDR:\n- '91.105.192.0/23'\nIPCIDR6:\n- '2001:67c:4e8::/48'\n";

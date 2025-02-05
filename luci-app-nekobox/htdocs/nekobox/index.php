@@ -274,7 +274,7 @@ EOL;
     file_put_contents($cronScriptPath, $cronScriptContent);
     chmod($cronScriptPath, 0755);
     shell_exec("sh $cronScriptPath");
-    echo '<div class="alert alert-success">Cron script created and executed successfully. Log cleanup tasks added or updated to clear logs for $log_file and $tmp_log_file.</div>';
+    echo '<div id="cron-success-message" style="display: none;" class="alert alert-success">Cron script created and executed successfully. Log cleanup tasks added or updated to clear logs for $log_file and $tmp_log_file.</div>';
 }
 
 function rotateLogs($logFile, $maxSize = 1048576) {
@@ -754,10 +754,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selected_config'])) {
     <?php endif; ?>
 <div class="container-sm container-bg callout border border-3 rounded-4 col-11">
     <div class="row">
-        <a href="./index.php" class="col btn btn-lg"><i class="bi bi-house-door"></i> Home</a>
-        <a href="./dashboard.php" class="col btn btn-lg"><i class="bi bi-bar-chart"></i> Panel</a>
-        <a href="./singbox.php" class="col btn btn-lg"><i class="bi bi-box"></i> Document</a> 
-        <a href="./settings.php" class="col btn btn-lg"><i class="bi bi-gear"></i> Settings</a>
+        <a href="./index.php" class="col btn btn-lg text-nowrap"><i class="bi bi-house-door"></i> Home</a>
+        <a href="./dashboard.php" class="col btn btn-lg text-nowrap"><i class="bi bi-bar-chart"></i> Panel</a>
+        <a href="./singbox.php" class="col btn btn-lg text-nowrap"><i class="bi bi-box"></i> Document</a> 
+        <a href="./settings.php" class="col btn btn-lg text-nowrap"><i class="bi bi-gear"></i> Settings</a>
     <div class="container-sm text-center col-8">
   <img src="./assets/img/nekobox.png">
 <div id="version-info">
@@ -822,30 +822,83 @@ $(document).ready(function() {
        margin-bottom: 20px;
    }
 
-   @media (max-width: 1024px) {
-       td:first-child {
-       display: block;
-       width: 100%;
-       font-weight: bold;
-       margin-bottom: 5px;
+   @media (max-width: 768px) {
+      .section-container {
+         padding-left: 15px;
+         padding-right: 15px;
+      }
+   }
+
+   @media (max-width: 768px) {
+      tr {
+          margin-bottom: 15px;
+          display: block;
+      }
+   }
+
+@media (max-width: 767px) {
+    .section-container .table {
+        display: block;
+        width: 100%;
     }
-    
-   td:last-child {
-       display: block;
-       width: 100%;
-   }
 
-   .btn-group .btn {
-       font-size: 0.375rem;
-       white-space: nowrap;
-       padding: 0.375rem 0.5rem;
-   }
+    .section-container .table tbody,
+    .section-container .table thead,
+    .section-container .table tr {
+        display: block;
+    }
 
-   tr {
-       margin-bottom: 15px;
-       display: block;
-   }
+    .section-container .table td {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+    }
+
+    .section-container .table td:first-child {
+        font-weight: bold;
+        background-color: #f8f9fa;
+    }
+
+    .section-container .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .section-container .form-select,
+    .section-container .form-control,
+    .section-container .input-group {
+        width: 100%;
+    }
+
+    .section-container .btn {
+        width: 100%;
+    }
 }
+
+@media (max-width: 767px) {
+    .section-container .table td {
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-container .table td:first-child {
+        background-color: #f0f0f0;
+        font-size: 1.1em;
+    }
+
+    .section-container .btn {
+        border-radius: 5px;
+    }
+
+    .section-container .btn-group {
+        gap: 15px;
+    }
+}
+
 </style>
 <div class="section-container">
    <table class="table table-borderless mb-2">
@@ -939,6 +992,7 @@ $(document).ready(function() {
            </tr>
        </tbody>
    </table>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const savedConfig = localStorage.getItem("configSelection");
@@ -949,6 +1003,16 @@ $(document).ready(function() {
     function saveConfigSelection() {
         const selectedConfig = document.getElementById("config_file").value;
         localStorage.setItem("configSelection", selectedConfig);
+    }
+</script>
+
+<script>
+    const lastShownTime = localStorage.getItem('lastCronMessageShownTime');
+    const currentTime = new Date().getTime(); 
+
+    if (!lastShownTime || (currentTime - lastShownTime) > 12 * 60 * 60 * 1000) {
+        document.getElementById('cron-success-message').style.display = 'block';
+        localStorage.setItem('lastCronMessageShownTime', currentTime);
     }
 </script>
 
@@ -1060,6 +1124,26 @@ $(document).ready(function() {
     .rotated {
         transform: rotate(180deg); 
     }
+
+    @media (max-width: 767px) {
+        .form-inline {
+            display: flex;         
+            flex-wrap: nowrap;     
+            justify-content: center; 
+            gap: 5px;         
+        }
+
+        .form-check-inline, .btn {
+            font-size: 10px;      
+        }
+    }
+
+    @media (max-width: 767px) {
+        #logTabs .nav-item {
+            display: block;  
+            width: 100%;     
+        }
+    }
 </style>
 <h2 class="text-center">Logs</h2>
 <ul class="nav nav-pills mb-3" id="logTabs" role="tablist">
@@ -1082,7 +1166,7 @@ $(document).ready(function() {
             </div>
             <div class="card-footer text-center">
                 <form action="index.php" method="post">
-                    <button type="submit" name="clear_plugin_log" class="btn btn-danger">🗑️ Clear Log</button>
+                    <button type="submit" name="clear_plugin_log" class="btn btn-danger"><i class="bi bi-trash"></i> Clear Log</button>
                 </form>
             </div>
         </div>
@@ -1095,7 +1179,7 @@ $(document).ready(function() {
             </div>
             <div class="card-footer text-center">
                 <form action="index.php" method="post">
-                    <button type="submit" name="neko" value="clear" class="btn btn-danger">🗑️ Clear Log</button>
+                    <button type="submit" name="neko" value="clear" class="btn btn-danger"><i class="bi bi-trash"></i> Clear Log</button>
                 </form>
             </div>
         </div>
@@ -1107,18 +1191,19 @@ $(document).ready(function() {
                 <pre id="singbox_log" class="log-container form-control" style="resize: vertical; overflow: auto; height: 350px; white-space: pre-wrap;" contenteditable="true"></pre>
             </div>
             <div class="card-footer text-center">
-                <form action="index.php" method="post" class="d-inline-block">
+                <form action="index.php" method="post" class="form-inline">
                     <div class="form-check form-check-inline mb-2">
                         <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
                         <label class="form-check-label" for="autoRefresh">Auto Refresh</label>
                     </div>
-                    <button type="submit" name="clear_singbox_log" class="btn btn-danger">🗑️ Clear Log</button>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#cronModal">⏰ Scheduled restart</button>
+                    <button type="submit" name="clear_singbox_log" class="btn btn-danger me-2"><i class="bi bi-trash"></i> Clear Log</button>
+                    <button type="button" class="btn btn-primary me-2" data-toggle="modal" data-target="#cronModal"><i class="bi bi-clock"></i> Scheduled restart</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="cronModal" tabindex="-1" role="dialog" aria-labelledby="cronModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     <div class="modal-content">
