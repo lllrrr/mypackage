@@ -281,7 +281,6 @@ $lang = $_GET['lang'] ?? 'en';
         padding: 20px;
         border-radius: 10px;
         text-align: center;
-        background-color: #f8f9fa;
     }
 
     #dropArea.dragging {
@@ -466,6 +465,7 @@ $lang = $_GET['lang'] ?? 'en';
     }
 }
 </style>
+<script src="./assets/bootstrap/Sortable.min.js"></script>
 <link href="./assets/bootstrap/video-js.css" rel="stylesheet" />
 <script src="./assets/bootstrap/video.js"></script>
 <link rel="stylesheet" href="./assets/bootstrap/all.min.css">
@@ -1047,9 +1047,11 @@ setInterval(IP.getIpipnetIP, 180000);
     document.addEventListener("DOMContentLoaded", function () {
         var video = document.getElementById('background-video');
         var popup = document.getElementById('popup');
+        var controlPanel = document.getElementById('controlPanel');
 
         popup.style.display = "none";
-        
+        controlPanel.style.display = "none";
+    
         var savedMuteState = localStorage.getItem("videoMuted");
         if (savedMuteState !== null) {
             video.muted = savedMuteState === "true";
@@ -1063,6 +1065,87 @@ setInterval(IP.getIpipnetIP, 180000);
         }
 
         updateButtonStates();
+
+        var savedVolume = localStorage.getItem("videoVolume");
+        if (savedVolume !== null) {
+            video.volume = parseFloat(savedVolume);
+            document.getElementById('volumeControl').value = savedVolume;
+        }
+
+        document.getElementById('volumeControl').addEventListener('input', function () {
+            video.volume = this.value;
+            localStorage.setItem("videoVolume", this.value);
+        });
+
+        var savedCurrentTime = localStorage.getItem("videoCurrentTime");
+        if (savedCurrentTime !== null) {
+            video.currentTime = parseFloat(savedCurrentTime);
+        }
+
+        var progressControl = document.getElementById('progressControl');
+        progressControl.addEventListener('input', function () {
+            var duration = video.duration;
+            if (!isNaN(duration)) {
+                video.currentTime = (progressControl.value / 100) * duration;
+                localStorage.setItem("videoCurrentTime", video.currentTime);
+            }
+        });
+
+        video.addEventListener('timeupdate', function () {
+            var duration = video.duration;
+            var currentTime = video.currentTime;
+            if (!isNaN(duration)) {
+                progressControl.value = (currentTime / duration) * 100;
+                document.getElementById('progressTimeDisplay').textContent = formatTime(currentTime) + ' / ' + formatTime(duration);
+                localStorage.setItem("videoCurrentTime", currentTime);
+            }
+        });
+
+        var savedPlayState = localStorage.getItem("videoPaused");
+        if (savedPlayState === "true") {
+            video.pause();
+            document.getElementById('playPauseBtn').textContent = '▶️ Play';
+        } else {
+            video.play();
+            document.getElementById('playPauseBtn').textContent = '⏸️ Pause';
+        }
+
+        function formatTime(seconds) {
+            var minutes = Math.floor(seconds / 60);
+            var seconds = Math.floor(seconds % 60);
+            return (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var video = document.getElementById('background-video');
+        var playPauseBtn = document.getElementById('playPauseBtn');
+    
+        setInterval(() => {
+            localStorage.removeItem('videoCurrentTime');     
+            video.muted = false;
+            video.volume = 1;
+            video.currentTime = 0;
+            video.style.objectFit = 'cover';
+        
+            playPauseBtn.textContent = '▶️ Play';
+        }, 60 * 60 * 1000); 
+
+        document.getElementById('clearSettingsBtn').addEventListener('click', function() {
+            localStorage.removeItem('videoMuted');
+            localStorage.removeItem('videoVolume');
+            localStorage.removeItem('videoCurrentTime');
+            localStorage.removeItem('videoObjectFit');
+            localStorage.removeItem('videoPaused');
+        
+            video.muted = false;
+            video.volume = 1;
+            video.currentTime = 0;
+            video.style.objectFit = 'cover';
+        
+            playPauseBtn.textContent = '▶️ Play';
+        
+        });
     });
 
     var longPressTimer;
@@ -1096,6 +1179,29 @@ setInterval(IP.getIpipnetIP, 180000);
         updateButtonStates();
     }
 
+    function toggleControlPanel() {
+        var controlPanel = document.getElementById('controlPanel');
+        if (controlPanel.style.display === "none" || controlPanel.style.display === "") {
+            controlPanel.style.display = "block";
+        } else {
+            controlPanel.style.display = "none";
+        }
+    }
+
+    function togglePlayPause() {
+        var video = document.getElementById('background-video');
+        var playPauseBtn = document.getElementById('playPauseBtn');
+        if (video.paused) {
+            video.play();
+            playPauseBtn.textContent = '⏸️ Pause';
+            localStorage.setItem("videoPaused", "false");
+        } else {
+            video.pause();
+            playPauseBtn.textContent = '▶️ Play';
+            localStorage.setItem("videoPaused", "true");
+        }
+    }
+
     function toggleFullScreen() {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen();
@@ -1112,7 +1218,7 @@ setInterval(IP.getIpipnetIP, 180000);
         switch (video.style.objectFit) {
             case "contain":
                 video.style.objectFit = "cover";
-                objectFitBtn.textContent = "🔲 Normal Display";
+                objectFitBtn.textContent = "🔲 Normal";
                 localStorage.setItem("videoObjectFit", "cover");
                 break;
             case "cover":
@@ -1122,7 +1228,7 @@ setInterval(IP.getIpipnetIP, 180000);
                 break;
             case "fill":
                 video.style.objectFit = "none";
-                objectFitBtn.textContent = "🔲 Do Not Scale";
+                objectFitBtn.textContent = "🔲 No Scale";
                 localStorage.setItem("videoObjectFit", "none");
                 break;
             case "none":
@@ -1132,12 +1238,12 @@ setInterval(IP.getIpipnetIP, 180000);
                 break;
             case "scale-down":
                 video.style.objectFit = "contain";
-                objectFitBtn.textContent = "🖼️ Full Screen";
+                objectFitBtn.textContent = "🖼️ Fit";
                 localStorage.setItem("videoObjectFit", "contain");
                 break;
             default:
                 video.style.objectFit = "cover"; 
-                objectFitBtn.textContent = "🔲 Normal Display";
+                objectFitBtn.textContent = "🔲 Normal";
                 localStorage.setItem("videoObjectFit", "cover");
                 break;
         }
@@ -1153,7 +1259,7 @@ setInterval(IP.getIpipnetIP, 180000);
     }
 
     document.addEventListener("keydown", function(event) {
-        if (event.ctrlKey && event.shiftKey && event.key === "S") {
+        if (event.ctrlKey && event.shiftKey && event.key === "Q") {
             togglePopup();
         }
     });
@@ -1164,13 +1270,14 @@ setInterval(IP.getIpipnetIP, 180000);
 <div class="popup" id="popup">
     <h3>🔧 Control Panel</h3>
     <button onclick="toggleAudio()" id="audio-btn">🔊 Toggle Audio</button>
+    <button onclick="toggleControlPanel()" id="control-btn">🎛️ Volume and Progress Control</button>
     <button onclick="toggleObjectFit()" id="object-fit-btn">🔲 Toggle Video Display Mode</button>
     <button onclick="toggleFullScreen()" id="fullscreen-btn">⛶ Toggle Fullscreen</button>
     <button id="clear-cache-btn">🗑️ Clear Cache</button>
     <button type="button" data-bs-toggle="modal" data-bs-target="#urlModal">🔗 Customize Playlist</button>
     <button type="button" data-bs-toggle="modal" data-bs-target="#keyHelpModal">⌨️ Keyboard Shortcuts</button>
-    <button type="button" data-bs-toggle="modal" data-bs-target="#singboxModal">🎤 Sing-box Startup Tips</button>
     <button id="openPlayerButton"  data-bs-toggle="modal" data-bs-target="#audioPlayerModal">🎶 Music Player</button>
+    <button type='button' onclick='openVideoPlayerModal()'><i class='fas fa-video'></i> Media Player</button>
     <button id="startCheckBtn">🌐 Start Website Check</button>
     <button id="toggleModal"><i class="fas fa-arrows-alt-h"></i> Modify Page Width</button>
     <button id="toggleAnimationBtn">🖥️ Start Block Animation</button>
@@ -1181,25 +1288,20 @@ setInterval(IP.getIpipnetIP, 180000);
     <button type="button" data-bs-toggle="modal" data-bs-target="#filesModal"><i class="bi-camera-video"></i> Set Background</button>
     <button onclick="togglePopup()">❌ Close</button>
 </div>
-
-<div class="modal fade" id="singboxModal" tabindex="-1" aria-labelledby="singboxModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="singboxModalLabel">Sing-box Startup Tips</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-           <ul>
-                <li>If startup fails, go to File Management ⇨ Update Database ⇨ Download cache.db Cache Data.</li>
-                <li>If unable to connect to the network after startup, go to Firewall Settings ⇨ Outbound/Inbound/Forward ⇨ Accept ⇨ Save Application.</li>
-           </ul>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
+<div id="controlPanel">
+    <h3>Video Control Panel</h3>
+    <div>
+        <label for="volumeControl">Volume Control</label>
+        <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
     </div>
-  </div>
+    <div>
+        <label for="progressControl">Playback Progress</label>
+        <input type="range" id="progressControl" min="0" max="100" step="0.1" value="0">
+        <span id="progressTimeDisplay">00:00 / 00:00</span>
+    </div>
+    <button id="clearSettingsBtn"><i class="fas fa-trash-alt"></i> Clear Video Settings</button>
+    <button onclick="togglePlayPause()" id="playPauseBtn">⏸️ Pause</button>
+    <button onclick="toggleControlPanel()">❌ Close</button>
 </div>
 
 <script>
@@ -1255,11 +1357,59 @@ window.addEventListener('load', function() {
 </script>
 
 <style>
+#controlPanel {
+    width: 80%;
+    max-width: 625px;
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+#controlPanel h3 {
+    margin-top: 0;
+    font-size: 1.5em;
+    color: #333;
+    text-align: center;
+}
+
+#controlPanel button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 1em;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#controlPanel button:hover {
+    background-color: #0056b3;
+}
+
+#controlPanel input[type="range"] {
+    width: 100%;
+    margin: 10px 0;
+}
+
 #audioPlayerModal .modal-content {
-  background: #222;
-  color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    background: #222;
+    color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
 #audioPlayerModal .modal-header {
@@ -1267,166 +1417,166 @@ window.addEventListener('load', function() {
 }
 
 #audioPlayerModal .modal-title {
-  font-size: 18px;
-  font-weight: bold;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 #audioPlayerModal .close {
-  color: #fff;
-  opacity: 0.8;
+    color: #fff;
+    opacity: 0.8;
 }
 
 #audioPlayerModal .close:hover {
-  opacity: 1;
+    opacity: 1;
 }
 
 .audio-player-container {
-  padding: 20px;
+    padding: 20px;
 
 }
 
 .audio-player-container button {
-  margin: 8px;
-  padding: 10px 15px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  transition: all 0.3s ease-in-out;
-  cursor: pointer;
+    margin: 8px;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
 }
 
 .audio-player-container .btn-primary {
-  background: #ff5733; 
-  color: white;
+    background: #ff5733; 
+    color: white;
 }
 
 .audio-player-container .btn-primary {
-  background: #FF5722 !important; 
-  color: white !important;
+    background: #FF5722 !important; 
+    color: white !important;
 }
 
 .audio-player-container .btn-primary:hover {
-  background: #e64a19 !important; 
+    background: #e64a19 !important; 
 }
 
 .audio-player-container .btn-secondary {
-  background: #9C27B0 !important; 
-  color: white !important;
+    background: #9C27B0 !important; 
+    color: white !important;
 }
 
 .audio-player-container .btn-secondary:hover {
-  background: #8E24AA !important; 
+    background: #8E24AA !important; 
 }
 
 .audio-player-container .btn-info {
-  background: #00BCD4 !important; 
-  color: white !important;
+    background: #00BCD4 !important; 
+    color: white !important;
 }
 
 .audio-player-container .btn-info:hover {
-  background: #0097A7 !important; 
+    background: #0097A7 !important; 
 }
 
 .audio-player-container .btn-warning {
-  background: #FF9800 !important; 
-  color: black !important;
+    background: #FF9800 !important; 
+    color: black !important;
 }
 
 .audio-player-container .btn-warning:hover {
-  background: #FB8C00 !important; 
+    background: #FB8C00 !important; 
 }
 
 .audio-player-container .btn-dark {
-  background: #8BC34A !important; 
-  color: white !important;
+    background: #8BC34A !important; 
+    color: white !important;
 }
 
 .audio-player-container .btn-dark:hover {
-  background: #7CB342 !important; 
+    background: #7CB342 !important; 
 }
 
 #modalLoopButton {
-  color: white !important;
-  background-color: #f39c12 !important; 
+    color: white !important;
+    background-color: #f39c12 !important; 
 }
 
 #modalLoopButton:hover {
-  background-color: #f5b041 !important; 
-  color: white !important; 
+    background-color: #f5b041 !important; 
+    color: white !important; 
 }
 
 .track-name {
-  margin-top: 15px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #1db954;
-  text-align: center;
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #1db954;
+    text-align: center;
 }
 
 #tooltip {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 15px;
-  background: rgba(0, 0, 0, 0.75);
-  color: #fff;
-  font-size: 14px;
-  border-radius: 8px;
-  white-space: nowrap;
-  text-align: center;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-  z-index: 1050;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 14px;
+    border-radius: 8px;
+    white-space: nowrap;
+    text-align: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 1050;
 }
 
 #tooltip.show {
-  visibility: visible;
-  opacity: 1;
+    visibility: visible;
+    opacity: 1;
 }
 
 .datetime-container {
-  text-align: center;
-  margin-bottom: 15px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #ffcc00;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffcc00;
 }
 
 #dateDisplay,
 #timeDisplay {
-  margin: 0 10px;
+    margin: 0 10px;
 }
 
 #timeDisplay {
-  font-style: italic;
+    font-style: italic;
 }
 
 #audioElement {
-  margin-top: 20px;
-  width: 100%;
-  max-width: 600px; /* Limit the audio player width */
-  display: block;
-  margin-left: auto;
-  margin-right: auto; /* Center the audio player */
+    margin-top: 20px;
+    width: 100%;
+    max-width: 600px; 
+    display: block;
+    margin-left: auto;
+    margin-right: auto; 
 }
 
 @media (max-width: 768px) {
-  .audio-player-container {
-    flex-direction: column;
-    align-items: center;
-  }
+    .audio-player-container {
+      flex-direction: column;
+      align-items: center;
+    }
 
-  .audio-player-container button {
-    width: 100%;
-    margin: 5px 0;
-  }
+    .audio-player-container button {
+      width: 100%;
+      margin: 5px 0;
+    }
 }
 
 #playlistCollapse {
-    max-height: 700px; 
+    max-height: 620px; 
     overflow-y: auto;  
     overflow-x: hidden; 
     background-color: rgba(0, 0, 0, 0.8); 
@@ -1489,6 +1639,66 @@ window.addEventListener('load', function() {
     overflow: hidden;
     white-space: nowrap;
 }
+
+.icon-button {
+     background: none;
+     border: none;
+     color: inherit;
+     position: relative;
+     cursor: pointer;
+     padding: 5px;
+     margin: 5px;
+}
+
+.btn-bordered {
+     border: 1px solid #ccc; 
+     border-radius: 5px;
+     padding: 5px 10px;
+}
+
+.file-checkbox {
+     margin-right: 10px;
+     width: 20px;
+     height: 20px;
+}
+
+.icon-button .tooltip {
+     visibility: hidden;
+     width: auto;
+     background-color: black;
+     color: #fff;
+     text-align: center;
+     border-radius: 5px;
+     padding: 5px;
+     position: absolute;
+     z-index: 1;
+     bottom: 125%; 
+     left: 50%;
+     margin-left: -60px;
+     opacity: 0;
+     transition: opacity 0.3s;
+     white-space: nowrap;
+     font-size: 16px; 
+}
+
+.icon-button .tooltip::after {
+     content: "";
+     position: absolute;
+     top: 100%; 
+     left: 50%;
+     margin-left: -5px;
+     border-width: 5px;
+     border-style: solid;
+     border-color: black transparent transparent transparent;
+}
+
+.icon-button:hover .tooltip {
+     visibility: visible;
+     opacity: 1;
+     width: auto;
+     max-width: 200px; 
+     word-wrap: break-word; 
+}
 </style>
 
 <div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -1514,13 +1724,15 @@ window.addEventListener('load', function() {
           <button id="modalRewindButton" class="btn btn-dark">⏪ Rewind</button>
           <button id="modalFastForwardButton" class="btn btn-info">⏩ Fast Forward</button>
           <button id="modalLoopButton" class="btn btn-warning">🔁 Loop</button>
-          <div class="track-name" id="trackName">No Songs</div>
+          <div class="track-name" id="trackName">No Track</div>
         </div>
         <button class="btn btn-outline-primary mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#playlistCollapse">
           📜 Show/Hide Playlist
         </button>
+        <button class="btn btn-outline-primary mt-3 ms-2" type="button" data-bs-toggle="modal" data-bs-target="#urlModal">🔗 Customize Playlist</button>
+        <button class="btn btn-outline-primary mt-3 ms-2" id="clearStorageBtn"><i class="fas fa-trash-alt"></i> Clear Player Settings</button>
         <div id="playlistCollapse" class="collapse mt-3">
-          <h3>Playlist</h3>
+          <h3>Track List</h3>
           <ul id="trackList" class="list-group"></ul>
         </div>
         <div id="tooltip"></div>
@@ -1595,6 +1807,10 @@ function loadDefaultPlaylist() {
                 throw new Error('No valid songs in the playlist');
             }
             console.log('Playlist loaded:', songs);
+            const savedOrder = JSON.parse(localStorage.getItem('songOrder'));
+            if (savedOrder) {
+                songs = savedOrder;
+            }
             updateTrackListUI(); 
             restorePlayerState();
             updateTrackName(); 
@@ -1613,6 +1829,7 @@ function updateTrackListUI() {
         trackItem.textContent = `${index + 1}. ${extractSongName(song)}`;
         trackItem.classList.add('list-group-item', 'track-item');
         trackItem.style.cursor = 'pointer';
+        trackItem.draggable = true; 
 
         trackItem.addEventListener('click', () => {
             currentSongIndex = index;
@@ -1622,10 +1839,59 @@ function updateTrackListUI() {
             highlightCurrentSong();
         });
 
+        trackItem.addEventListener('dragstart', handleDragStart);
+        trackItem.addEventListener('dragover', handleDragOver);
+        trackItem.addEventListener('drop', handleDrop);
+
         trackListContainer.appendChild(trackItem);
     });
 
     highlightCurrentSong(); 
+}
+
+function handleDragStart(e) {
+    e.dataTransfer.setData('text/plain', e.target.dataset.index);
+    e.target.classList.add('dragging');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    const dragging = document.querySelector('.dragging');
+    const closest = getClosestElement(e.clientY);
+    if (closest) {
+        trackListContainer.insertBefore(dragging, closest);
+    } else {
+        trackListContainer.appendChild(dragging);
+    }
+}
+
+function handleDrop(e) {
+    const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    const targetIndex = Array.from(e.target.parentNode.children).indexOf(e.target);
+    if (draggedIndex !== targetIndex) {
+        const [draggedSong] = songs.splice(draggedIndex, 1);
+        songs.splice(targetIndex, 0, draggedSong);
+        saveSongOrder(); 
+        updateTrackListUI(); 
+    }
+    document.querySelector('.dragging').classList.remove('dragging');
+}
+
+function getClosestElement(y) {
+    const elements = [...document.querySelectorAll('.track-item:not(.dragging)')];
+    return elements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function saveSongOrder() {
+    localStorage.setItem('songOrder', JSON.stringify(songs));
 }
 
 function extractSongName(url) {
@@ -1639,6 +1905,9 @@ function updateTrackName() {
 function highlightCurrentSong() {
     document.querySelectorAll('.track-item').forEach((item, index) => {
         item.classList.toggle('active', index === currentSongIndex);
+        if (index === currentSongIndex) {
+            item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     });
 }
 
@@ -1647,7 +1916,7 @@ function loadSong(index) {
         audioPlayer.src = songs[index];
         audioPlayer.addEventListener('loadedmetadata', () => {
             const savedState = JSON.parse(localStorage.getItem('playerState'));
-            if (savedState && savedState.currentSongIndex === index) {
+            if (savedState) {
                 audioPlayer.currentTime = savedState.currentTime || 0;
                 if (savedState.isPlaying) {
                     audioPlayer.play().catch(error => {
@@ -1657,7 +1926,7 @@ function loadSong(index) {
             }
         }, { once: true });
     }
-    highlightCurrentSong();
+    highlightCurrentSong(); 
 }
 
 const playPauseButton = document.getElementById('modalPlayPauseButton');
@@ -1667,19 +1936,19 @@ playPauseButton.addEventListener('click', function() {
         audioPlayer.play().then(() => {
             isPlaying = true;
             savePlayerState();
-            console.log('Playback started');
-            speakMessage('Playback started');
+            console.log('Playing');
+            speakMessage('Playing');
             playPauseButton.textContent = '⏸️ Pause';
             updateTrackName();
         }).catch(error => {
-            console.log('Playback failed:', error);
+            console.log('Failed to play:', error);
         });
     } else {
         audioPlayer.pause();
         isPlaying = false;
         savePlayerState();
-        console.log('Playback paused');
-        speakMessage('Playback paused');
+        console.log('Paused');
+        speakMessage('Paused');
         playPauseButton.textContent = '▶ Play';
     }
 });
@@ -1692,8 +1961,9 @@ document.getElementById('modalPrevButton').addEventListener('click', () => {
         audioPlayer.play();
     }
     updateTrackName();
-    const songName = getSongName(songs[currentSongIndex]);
-    showLogMessage(`Previous song: ${songName}`);
+    highlightCurrentSong(); 
+    const songName = extractSongName(songs[currentSongIndex]);
+    showLogMessage(`Previous: ${songName}`);
 });
 
 document.getElementById('modalNextButton').addEventListener('click', () => {
@@ -1704,17 +1974,18 @@ document.getElementById('modalNextButton').addEventListener('click', () => {
         audioPlayer.play();
     }
     updateTrackName();
-    const songName = getSongName(songs[currentSongIndex]);
-    showLogMessage(`Next song: ${songName}`);
+    highlightCurrentSong(); 
+    const songName = extractSongName(songs[currentSongIndex]);
+    showLogMessage(`Next: ${songName}`);
 });
 
 function updateTrackName() {
     if (songs.length > 0) {
         const currentSongUrl = songs[currentSongIndex];
         const trackName = extractSongName(currentSongUrl);
-        document.getElementById('trackName').textContent = trackName || 'Unknown song';
+        document.getElementById('trackName').textContent = trackName || 'Unknown Song';
     } else {
-        document.getElementById('trackName').textContent = 'No songs';
+        document.getElementById('trackName').textContent = 'No Song';
     }
 }
 
@@ -1724,15 +1995,20 @@ function extractSongName(url) {
 }
 
 audioPlayer.addEventListener('ended', () => {
-    currentSongIndex = (currentSongIndex + 1) % songs.length;
-    loadSong(currentSongIndex);
+    if (isLooping) {
+        loadSong(currentSongIndex);
+    } else {
+        currentSongIndex = (currentSongIndex + 1) % songs.length;
+        loadSong(currentSongIndex);
+    }
     savePlayerState();
     if (isPlaying) {
         audioPlayer.play();
     }
     updateTrackName();
-    const songName = getSongName(songs[currentSongIndex]);
-    showLogMessage(`Auto switch to: ${songName}`);
+    highlightCurrentSong(); 
+    const songName = extractSongName(songs[currentSongIndex]);
+    showLogMessage(`Auto switched to: ${songName}`);
 });
 
 document.getElementById('modalRewindButton').addEventListener('click', () => {
@@ -1755,15 +2031,15 @@ loopButton.addEventListener('click', () => {
     
     if (isLooping) {
         loopButton.textContent = "🔁 Loop";
-        console.log('Loop playback');
-        showLogMessage('Loop playback');
-        speakMessage('Loop playback');
+        console.log('Looping');
+        showLogMessage('Looping');
+        speakMessage('Looping');
         audioPlayer.loop = true;
     } else {
         loopButton.textContent = "🔄 Sequential";
-        console.log('Sequential playback');
-        showLogMessage('Sequential playback');
-        speakMessage('Sequential playback');
+        console.log('Sequential');
+        showLogMessage('Sequential');
+        speakMessage('Sequential');
         audioPlayer.loop = false;
     }
 });
@@ -1825,19 +2101,6 @@ function updateDateTime() {
 setInterval(updateDateTime, 1000);
 updateDateTime();
 
-audioPlayer.addEventListener('ended', function() {
-    if (isLooping) {
-        loadSong(currentSongIndex);
-        savePlayerState();
-        audioPlayer.play();
-    } else {
-        currentSongIndex = (currentSongIndex + 1) % songs.length;
-        loadSong(currentSongIndex);
-        savePlayerState();
-        audioPlayer.play();
-    }
-});
-
 function savePlayerState() {
     const state = {
         currentSongIndex,
@@ -1865,7 +2128,17 @@ function clearExpiredPlayerState() {
     }
 }
 
-setInterval(clearExpiredPlayerState, 10 * 60 * 1000);
+setInterval(() => {
+    localStorage.removeItem('playerState');
+}, 60 * 60 * 1000);
+
+document.getElementById('clearStorageBtn').addEventListener('click', function() {
+    localStorage.removeItem('playerState');
+    localStorage.removeItem('songOrder'); 
+    loadDefaultPlaylist(); 
+    document.getElementById('modalPlayPauseButton').textContent = '▶ Play';
+    alert('Player state cleared!');
+});
 
 function restorePlayerState() {
     const state = JSON.parse(localStorage.getItem('playerState'));
@@ -1875,7 +2148,7 @@ function restorePlayerState() {
         loadSong(currentSongIndex);
         if (state.isPlaying) {
             isPlaying = true;
-            playPauseButton.textContent = '⏸️ Pause';
+            playPauseButton.textContent = 'Pause';
             audioPlayer.currentTime = state.currentTime || 0;
             audioPlayer.play().catch(error => {
                 console.error('Failed to resume playback:', error);
@@ -1889,7 +2162,7 @@ document.addEventListener('dblclick', function() {
     const lastShownTime = localStorage.getItem('lastModalShownTime');
     const currentTime = new Date().getTime();
 
-    if (!lastShownTime || (currentTime - lastShownTime) > 4 * 60 * 60 * 1000) {
+    if (!lastShownTime || (currentTime - lastShownTime) > 24 * 60 * 60 * 1000) {
         if (!hasModalShown) {
             const modal = new bootstrap.Modal(document.getElementById('keyHelpModal'));
             modal.show();
@@ -1917,8 +2190,8 @@ window.addEventListener('keydown', function(event) {
             audioPlayer.play();
         }
         const songName = getSongName(songs[currentSongIndex]);
-        showLogMessage(`Previous song: ${songName}`);
-        speakMessage('Previous song');
+        showLogMessage(`Previous: ${songName}`);
+        speakMessage('Previous');
         updateTrackName();
     } else if (event.key === 'ArrowDown') {
         currentSongIndex = (currentSongIndex + 1) % songs.length;
@@ -1928,8 +2201,8 @@ window.addEventListener('keydown', function(event) {
             audioPlayer.play();
         }
         const songName = getSongName(songs[currentSongIndex]);
-        showLogMessage(`Next song: ${songName}`);
-        speakMessage('Next song');
+        showLogMessage(`Next: ${songName}`);
+        speakMessage('Next');
         updateTrackName();
     } else if (event.key === 'ArrowLeft') {
         audioPlayer.currentTime = Math.max(audioPlayer.currentTime - 10, 0);
@@ -1946,9 +2219,9 @@ window.addEventListener('keydown', function(event) {
         currentSongIndex = 0;
         loadSong(currentSongIndex);
         savePlayerState();
-        console.log('Reset to first song');
-        showLogMessage('Reset to first song');
-        speakMessage('Returned to the first song in the playlist');
+        console.log('Reset to the first track');
+        showLogMessage('Reset to the first track');
+        speakMessage('Returned to the first track in the playlist');
         if (isPlaying) {
             audioPlayer.play();
         }
@@ -1957,20 +2230,20 @@ window.addEventListener('keydown', function(event) {
             audioPlayer.pause();
             isPlaying = false;
             savePlayerState();
-            console.log('Playback paused');
-            showLogMessage('Playback paused');
-            speakMessage('Playback paused');
+            console.log('Paused');
+            showLogMessage('Paused');
+            speakMessage('Paused');
             playPauseButton.textContent = '▶ Play';
         } else {
             audioPlayer.play().then(() => {
                 isPlaying = true;
                 savePlayerState();
-                console.log('Playback started');
-                showLogMessage('Playback started');
-                speakMessage('Playback started');
+                console.log('Playing');
+                showLogMessage('Playing');
+                speakMessage('Playing');
                 playPauseButton.textContent = '⏸️ Pause';
             }).catch(error => {
-                console.log('Playback failed:', error);
+                console.log('Failed to play:', error);
             });
         }
     } else if (event.key === 'F2') {
@@ -1979,36 +2252,36 @@ window.addEventListener('keydown', function(event) {
         if (isLooping) {
             loopButton.textContent = "🔁 Loop";
             audioPlayer.loop = true;
-            console.log('Loop playback');
-            showLogMessage('Loop playback');
-            speakMessage('Loop playback');
+            console.log('Looping');
+            showLogMessage('Looping');
+            speakMessage('Looping');
         } else {
             loopButton.textContent = "🔄 Sequential";
             audioPlayer.loop = false;
-            console.log('Sequential playback');
-            showLogMessage('Sequential playback');
-            speakMessage('Sequential playback');
+            console.log('Sequential');
+            showLogMessage('Sequential');
+            speakMessage('Sequential');
         }
     }
 });
 </script>
 
-
 <div class="modal fade" id="urlModal" tabindex="-1" aria-labelledby="urlModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="urlModalLabel">Update Playlist Link</h5>
+                <h5 class="modal-title" id="urlModalLabel">Update Playlist</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form method="POST">
                     <div class="mb-3">
-                        <label for="new_url" class="form-label">Custom Playlist Link (Press Ctrl + Shift + C to clear data, must use download link for proper playback)</label>
+                        <label for="new_url" class="form-label">Custom Playlist</label>
                         <input type="text" id="new_url" name="new_url" class="form-control" value="<?php echo htmlspecialchars($new_url); ?>" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Update Link</button>
-                    <button type="button" id="resetButton" class="btn btn-secondary ms-2">Restore Default Link</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" id="resetButton" class="btn btn-secondary ms-2">Reset to Default</button>
+                    <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">Cancel</button>
                 </form>
             </div>
         </div>
@@ -2070,27 +2343,34 @@ window.addEventListener('keydown', function(event) {
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="keyHelpModalLabel">Keyboard Shortcuts Guide</h5>
+                <h5 class="modal-title" id="keyHelpModalLabel">Keyboard Shortcuts</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <ul>
-                    <li><strong>Left Mouse Button:</strong> Double click to open the player interface</li>
+                    <li><strong>Left Mouse Button:</strong> Double-click to open the player interface</li>
                     <li><strong>F9 Key:</strong> Toggle play/pause</li>
-                    <li><strong>Up/Down Arrow Keys:</strong> Switch to previous/next track</li>
+                    <li><strong>Up/Down Arrow Keys:</strong> Skip to previous/next track</li>
                     <li><strong>Left/Right Arrow Keys:</strong> Fast forward/rewind 10 seconds</li>
-                    <li><strong>ESC Key:</strong> Return to the first track in the playlist</li>
-                    <li><strong>F2 Key:</strong> Toggle between loop and sequential play mode</li>
+                    <li><strong>ESC Key:</strong> Go back to the first track in the playlist</li>
+                    <li><strong>F2 Key:</strong> Toggle between repeat and sequential play mode</li>
                     <li><strong>F8 Key:</strong> Start website connectivity check</li>
-                    <li><strong>Ctrl + F6 Key:</strong> Start/stop snowflake animation</li>
-                    <li><strong>Ctrl + F7 Key:</strong> Start/stop square light animation</li>
-                    <li><strong>Ctrl + F10 Key:</strong> Start/stop square animation</li>
-                    <li><strong>Ctrl + F11 Key:</strong> Start/stop light dot animation</li>
-                    <li><strong>Ctrl + Shift + S Key:</strong> Open settings</li>
-                    <li><strong>Ctrl + Shift + C Key:</strong> Clear cache data</li>
-                    <li><strong>Ctrl + Shift + V Key:</strong> Customize playlist</li>
-                    <li><strong>Long press top half of the screen on mobile/tablet:</strong> Open settings</li>
+                    <li><strong>Ctrl + F6 Keys:</strong> Start/stop snowflake animation</li>
+                    <li><strong>Ctrl + F7 Keys:</strong> Start/stop block light animation</li>
+                    <li><strong>Ctrl + F10 Keys:</strong> Start/stop block animation</li>
+                    <li><strong>Ctrl + F11 Keys:</strong> Start/stop dot light animation</li>
+                    <li><strong>Ctrl + Shift + Q Keys:</strong> Open control panel</li>
+                    <li><strong>Ctrl + Shift + C Keys:</strong> Clear cache data</li>
+                    <li><strong>Ctrl + Shift + V Keys:</strong> Customize playlist</li>
+                    <li><strong>Long Press on the Upper Half of Screen (Mobile/Tablet):</strong> Open settings</li>
                 </ul>
+                <div class="sing-box-section mt-4">
+                    <h5>Sing-box Startup Tips</h5>
+                    <ul>
+                        <li>If startup fails, go to File Manager ⇨ Update Database ⇨ Download cache.db cache data.</li>
+                        <li>If unable to connect to the network, go to Firewall Settings ⇨ Outbound/Inbound/Forward ⇨ Allow ⇨ Save Application.</li>
+                    </ul>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -2781,11 +3061,11 @@ window.addEventListener('keydown', function(event) {
       </div>
       <div class="modal-body">
         <label for="containerWidth" class="form-label">Page Width</label>
-        <input type="range" class="form-range" name="containerWidth" id="containerWidth" min="800" max="2400" step="50" value="1800" style="width: 100%;">
+        <input type="range" class="form-range" name="containerWidth" id="containerWidth" min="800" max="5400" step="50" value="1800" style="width: 100%;">
         <div id="widthValue" class="mt-2" style="color: #FF00FF;">Current Width: 1800px</div>
 
         <label for="modalMaxWidth" class="form-label mt-4">Modal Max Width</label>
-        <input type="range" class="form-range" name="modalMaxWidth" id="modalMaxWidth" min="1400" max="2400" step="50" value="1400" style="width: 100%;">
+        <input type="range" class="form-range" name="modalMaxWidth" id="modalMaxWidth" min="1400" max="5400" step="50" value="1400" style="width: 100%;">
         <div id="modalWidthValue" class="mt-2" style="color: #00FF00;">Current Max Width: 1400px</div>
 
         <div class="form-check mt-3">
@@ -3074,43 +3354,35 @@ toggleModalButton.onclick = function() {
 </div>
 
 <style>
-    input[type="range"] {
-        -webkit-appearance: none;  
-        appearance: none;
-        width: 100%;
-        height: 10px;  
-        border-radius: 5px;
-        background: linear-gradient(to right, #ff00ff, #00ffff); 
-        outline: none;
-    }
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #ff00ff, #00ffff);
+    outline: none;
+}
 
-    input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #ff00ff;  
-        border: none;
-        cursor: pointer;
-    }
+input[type="range"]::-webkit-slider-thumb,
+input[type="range"]::-moz-range-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ff00ff;
+    border: none;
+    cursor: pointer;
+}
 
-    input[type="range"]:focus {
-        outline: none; 
-    }
+input[type="range"]:focus {
+    outline: none;
+}
 
-    input[type="range"]::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #ff00ff;  
-        border: none;
-        cursor: pointer;
-    }
-
-    #widthValue {
-        color: #ff00ff;
-    }
+#widthValue {
+    color: #ff00ff;
+}
 
 .file-preview {
     display: flex;
@@ -3130,15 +3402,88 @@ toggleModalButton.onclick = function() {
 }
 
 .delete-btn {
-    color: white !important; 
+    color: white !important;
+}
+
+#videoPlayerModal .modal-body {
+    display: flex;
+    gap: 20px;
+    height: calc(90vh - 140px);
+}
+
+#videoPlayerModal .w-75 {
+    flex: 0 0 75%;
+    padding-right: 20px;
+    height: 100%;
+}
+
+#videoPlayerModal #videoPlayer {
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+}
+
+#videoPlayerModal .w-25 {
+    flex: 0 0 25%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#videoPlayerModal #playlist {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+    overflow-y: auto;
+    max-height: 100%;
+    background-color: #000;
+    border-radius: 10px;
+    width: 100%;
+}
+
+#videoPlayerModal #playlist li {
+    font-size: 1rem;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background-color: #333;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+#videoPlayerModal #playlist li:hover {
+    background-color: #007bff;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#videoPlayerModal #playlist li.active {
+    background-color: #28a745;
+    color: white;
 }
 
 @media (max-width: 768px) {
+    #videoPlayerModal .modal-dialog {
+        max-width: 100%;
+        margin: 0;
+    }
+
+    #videoPlayerModal .modal-body {
+        flex-direction: column;
+    }
+
+    #videoPlayerModal .w-75,
+    #videoPlayerModal .w-25 {
+        width: 100%;
+    }
+
     .set-background-btn {
         font-size: 12px;
         padding: 5px 10px;
-        width: 100px; 
-        height: 42px; 
+        width: 100px;
+        height: 42px;
     }
 }
 </style>
@@ -3189,27 +3534,28 @@ toggleModalButton.onclick = function() {
     });
 </script>
 
-<div class="modal fade" id="filesModal" tabindex="-1" aria-labelledby="filesModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="filesModalLabel">Upload and Manage Background Images/Videos/Audio</h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+<div class='modal fade' id='filesModal' tabindex='-1' aria-labelledby='filesModalLabel' aria-hidden='true' data-bs-backdrop='static' data-bs-keyboard='false'>
+    <div class='modal-dialog modal-xl'>
+        <div class='modal-content'>
+            <div class='modal-header'>
+                <h5 class='modal-title' id='filesModalLabel'>Upload and Manage Background Images/Videos/Audio</h5>
+                <button type='button' class='close' data-bs-dismiss='modal' aria-label='Close'>
+                    <span aria-hidden='true'>&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="mb-4 d-flex justify-content-between align-items-center">
+            <div class='modal-body'>
+                <div class='mb-4 d-flex justify-content-between align-items-center'>
                     <div>
                         <button type="button" class="btn btn-success mr-3" onclick="selectAll()"><i class="fas fa-check-square"></i> Select All</button>
                         <button type="button" class="btn btn-warning mr-3" onclick="deselectAll()"><i class="fas fa-square"></i> Deselect All</button>
                         <button type="button" class="btn btn-danger" onclick="batchDelete()"><i class="fas fa-trash-alt"></i> Batch Delete</button>
-                        <span id="selectedCount" class="ms-2" style="display: none;">Selected 0 files, totaling 0 MB</span>
+                        <span id="selectedCount" class="ms-2" style="display: none;">Selected 0 files, Total 0 MB</span>
                     </div>
                     <div>
+                        <button type='button' class='btn btn-primary mr-3' onclick='openVideoPlayerModal()' title="Check to add to playlist"><i class='fas fa-play'></i> Play Video</button>
                         <button type="button" class="btn btn-pink mr-3" onclick="sortFiles()"><i class="fas fa-sort"></i> Sort</button>
-                        <button type="button" class="btn btn-primary mr-3" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                            <i class="fas fa-cloud-upload-alt"></i> Upload File
+                        <button type="button" class="btn btn-primary mr-3" data-bs-toggle="modal" data-bs-target="#newuploadModal">
+                            <i class="fas fa-cloud-upload-alt"></i> Upload Files
                         </button>
                         <button type="button" class="btn btn-danger delete-btn" onclick="setBackground('', '', 'remove')"><i class="fas fa-trash"></i> Remove Background</button>
                     </div>
@@ -3217,29 +3563,25 @@ toggleModalButton.onclick = function() {
                 <table class="table table-bordered text-center">
                     <tbody id="fileTableBody">
                         <?php
-                        function isImage($file)
-                        {
+                        function isImage($file) {
                             $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
                             $fileExtension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                             return in_array($fileExtension, $imageExtensions);
                         }
 
-                        function isVideo($file)
-                        {
+                        function isVideo($file) {
                             $videoExtensions = ['mp4', 'avi', 'mkv', 'mov', 'wmv'];
                             $fileExtension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                             return in_array($fileExtension, $videoExtensions);
                         }
 
-                        function isAudio($file)
-                        {
+                        function isAudio($file) {
                             $audioExtensions = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'webm', 'opus'];
                             $fileExtension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                             return in_array($fileExtension, $audioExtensions);
                         }
 
-                        function getFileNameWithoutPrefix($file)
-                        {
+                        function getFileNameWithoutPrefix($file) {
                             $fileBaseName = pathinfo($file, PATHINFO_FILENAME);
                             $hyphenPos = strpos($fileBaseName, '-');
                             if ($hyphenPos !== false) {
@@ -3249,8 +3591,7 @@ toggleModalButton.onclick = function() {
                             }
                         }
 
-                        function formatFileSize($size)
-                        {
+                        function formatFileSize($size) {
                             if ($size >= 1073741824) {
                                 return number_format($size / 1073741824, 2) . ' GB';
                             } elseif ($size >= 1048576) {
@@ -3276,15 +3617,15 @@ toggleModalButton.onclick = function() {
                                 $indexB = array_search($b, $backgroundFiles);
 
                                 if ($indexA === false && $indexB === false) {
-                                    return 0; 
+                                    return 0;
                                 } elseif ($indexA === false) {
-                                    return 1; 
+                                    return 1;
                                 } elseif ($indexB === false) {
-                                    return -1; 
+                                    return -1;
                                 } else {
-                                    return $indexA - $indexB; 
-                                 }
-                            });     
+                                    return $indexA - $indexB;
+                                }
+                            });
 
                             $fileCount = 0;
                             foreach ($files as $file) {
@@ -3301,8 +3642,8 @@ toggleModalButton.onclick = function() {
                                     }
 
                                     echo "<td class='align-middle' data-label='Preview' style='vertical-align: middle;'>
-                                            <div class='file-preview mb-2' oncontextmenu='showRenameModal(event, \"" . htmlspecialchars($file, ENT_QUOTES) . "\")'>
-                                                <input type='checkbox' class='file-checkbox mb-2' value='" . htmlspecialchars($file, ENT_QUOTES) . "' data-size='$fileSize' onchange='updateSelectedCount()'>";
+                                            <div class='file-preview mb-2 d-flex align-items-center'>
+                                                <input type='checkbox' class='file-checkbox mb-2 mr-2' value='" . htmlspecialchars($file, ENT_QUOTES) . "' data-url='$fileUrl' data-title='$fileNameWithoutPrefix' data-size='$fileSize' onchange='updateSelectedCount()'>";
 
                                     if (isVideo($file)) {
                                         echo "<video width='200' controls title='$fileTitle'>
@@ -3320,15 +3661,29 @@ toggleModalButton.onclick = function() {
                                         echo "Unknown file type";
                                     }
 
-                                    echo "<div class='btn-container mt-2'>
-                                              <a href='?delete=" . htmlspecialchars($file, ENT_QUOTES) . "' class='btn btn-danger me-2 delete-btn' onclick='return confirm(\"Are you sure you want to delete?\")'>Delete</a>";
+                                    echo "<div class='btn-container mt-2 d-flex align-items-center'>
+                                            <a href='?delete=" . htmlspecialchars($file, ENT_QUOTES) . "' onclick='return confirm(\"Are you sure you want to delete this file?\")' class='icon-button btn-bordered' style='margin-right: 10px;'>
+                                                <i class='fas fa-trash-alt'></i><span class='tooltip'>Delete</span>
+                                            </a>
+                                            <button type='button' data-bs-toggle='modal' data-bs-target='#renameModal' onclick='document.getElementById(\"oldFileName\").value=\"" . htmlspecialchars($file, ENT_QUOTES) . "\"; document.getElementById(\"newFileName\").value=\"" . htmlspecialchars(getFileNameWithoutPrefix($file), ENT_QUOTES) . "\";' class='icon-button btn-bordered' style='margin-right: 10px;'>
+                                                <i class='fas fa-edit'></i><span class='tooltip'>Rename</span>
+                                            </button>
+                                            <a href='$fileUrl' download class='icon-button btn-bordered' style='margin-right: 10px;'>
+                                                <i class='fas fa-download'></i><span class='tooltip'>Download</span>
+                                            </a>";
 
                                     if (isImage($file)) {
-                                        echo "<button type='button' onclick=\"setBackground('" . htmlspecialchars($file, ENT_QUOTES) . "', 'image')\" class='btn btn-primary ms-2 set-background-btn'>Set as Background</button>";
+                                        echo "<button type='button' onclick=\"setBackground('" . htmlspecialchars($file, ENT_QUOTES) . "', 'image')\" class='icon-button btn-bordered' style='margin-left: 10px;'>
+                                                <i class='fas fa-image'></i><span class='tooltip'>Set Image as Background</span>
+                                              </button>";
                                     } elseif (isVideo($file)) {
-                                        echo "<button type='button' onclick=\"setBackground('" . htmlspecialchars($file, ENT_QUOTES) . "', 'video')\" class='btn btn-primary ms-2 set-background-btn'>Set as Background</button>";
+                                        echo "<button type='button' onclick=\"setBackground('" . htmlspecialchars($file, ENT_QUOTES) . "', 'video')\" class='icon-button btn-bordered' style='margin-left: 10px;'>
+                                                <i class='fas fa-video'></i><span class='tooltip'>Set Video as Background</span>
+                                              </button>";
                                     } elseif (isAudio($file)) {
-                                        echo "<button type='button' onclick=\"setBackground('" . htmlspecialchars($file, ENT_QUOTES) . "', 'audio')\" class='btn btn-primary ms-2 set-background-btn'>Background Music</button>";
+                                        echo "<button type='button' onclick=\"setBackground('" . htmlspecialchars($file, ENT_QUOTES) . "', 'audio')\" class='icon-button btn-bordered' style='margin-left: 10px;'>
+                                                <i class='fas fa-music'></i><span class='tooltip'>Set Audio as Background</span>
+                                              </button>";
                                     }
 
                                     echo "</div></div></td>";
@@ -3357,7 +3712,7 @@ toggleModalButton.onclick = function() {
                                 if (rename($oldFilePath, $newFilePath)) {
                                     echo "<script>alert('File renamed successfully');</script>";
                                 } else {
-                                    echo "<script>alert('Failed to rename file');</script>";
+                                    echo "<script>alert('File renaming failed');</script>";
                                 }
                             } else {
                                 echo "<script>alert('File does not exist');</script>";
@@ -3369,6 +3724,92 @@ toggleModalButton.onclick = function() {
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.style.position = 'fixed';
+    notification.style.top = '10px';
+    notification.style.right = '10px';
+    notification.style.padding = '10px';
+    notification.style.backgroundColor = '#4CAF50';
+    notification.style.color = '#fff';
+    notification.style.borderRadius = '5px';
+    notification.style.zIndex = '9999';
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    var el = document.getElementById('fileTableBody');
+    var sortable = new Sortable(el, {
+        animation: 150,
+        onEnd: function (evt) {
+            var order = sortable.toArray();
+            $.ajax({
+                type: 'POST',
+                url: 'order_handler.php', 
+                data: { order: order },
+                success: function (response) {
+                    showNotification('Sort order saved successfully!');
+                },
+                error: function (xhr, status, error) {
+                    showNotification('Error saving sort order: ' + error);
+                }
+            });
+        },
+    });
+
+    $.ajax({
+        type: 'GET',
+        url: 'order_handler.php', 
+        success: function (response) {
+            var savedOrder = JSON.parse(response);
+            var fileTableBody = document.getElementById('fileTableBody');
+            var rows = Array.from(fileTableBody.children);
+            rows.sort(function(a, b) {
+                return savedOrder.indexOf(a.id) - savedOrder.indexOf(b.id);
+            });
+            rows.forEach(function(row) {
+                fileTableBody.appendChild(row);
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error('Error loading sort order: ' + error);
+        }
+    });
+});
+</script>
+
+<div class="modal fade" id="videoPlayerModal" tabindex="-1" aria-labelledby="videoPlayerModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="videoPlayerModalLabel">Media Player</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex">
+                <div class="w-75 pe-3">
+                    <video id="videoPlayer" controls preload="auto" width="100%" height="400px" style="display: none;"></video>
+                    <audio id="audioPlayer" controls preload="auto" style="width: 100%; display: none;"></audio>
+                    <img id="imageViewer" src="" style="width: 100%; height: 400px; object-fit: contain; display: none;">
+                </div>
+                <div class="w-25 d-flex flex-column">
+                    <h5>Playlist</h5>
+                    <ul id="playlist" class="list-group flex-grow-1 overflow-auto"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="clearPlaylist()">Clear Playlist</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -3400,11 +3841,11 @@ toggleModalButton.onclick = function() {
     </div>
 </div>
 
-<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+<div class="modal fade" id="newuploadModal" tabindex="-1" aria-labelledby="newuploadModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="uploadModalLabel"><i class="fas fa-cloud-upload-alt"></i> Upload File</h5>
+                <h5 class="modal-title" id="newuploadModalLabel"><i class="fas fa-cloud-upload-alt"></i> Upload File</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
@@ -3428,6 +3869,191 @@ toggleModalButton.onclick = function() {
         </div>
     </div>
 </div>
+
+<script>
+let playlist = JSON.parse(localStorage.getItem('playlist')) || [];
+let currentIndex = 0;
+
+document.addEventListener("DOMContentLoaded", function () {
+    updatePlaylistUI();
+});
+
+function clearPlaylist() {
+    playlist = [];  
+    updatePlaylistUI(); 
+    savePlaylistToLocalStorage(); 
+}
+
+function addToPlaylist(mediaUrl, mediaTitle) {
+    if (!playlist.some(item => item.url === mediaUrl)) {
+        playlist.push({ url: mediaUrl, title: mediaTitle });
+        updatePlaylistUI();
+        savePlaylistToLocalStorage();  
+    }
+}
+
+function updatePlaylistUI() {
+    const playlistElement = document.getElementById('playlist');
+    playlistElement.innerHTML = ''; 
+
+    playlist.forEach((media, index) => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.textContent = `${index + 1}. ${media.title}`;
+
+        const removeButton = document.createElement('button');
+        removeButton.textContent = 'X';
+        removeButton.classList.add('btn', 'btn-danger', 'btn-sm', 'float-right');
+        removeButton.style.display = 'none'; 
+        removeButton.onclick = () => removeFromPlaylist(index);
+
+        listItem.appendChild(removeButton);
+
+        listItem.setAttribute('draggable', 'true');
+        listItem.addEventListener('dragstart', (event) => {
+            event.dataTransfer.setData('text', index);
+        });
+        listItem.addEventListener('dragover', (event) => {
+            event.preventDefault();
+        });
+        listItem.addEventListener('drop', (event) => {
+            event.preventDefault();
+            const draggedIndex = event.dataTransfer.getData('text');
+            if (draggedIndex !== index) {
+                removeFromPlaylist(draggedIndex);
+                addToPlaylist(media.url, media.title);  
+            }
+        });
+
+        listItem.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            removeButton.style.display = 'block'; 
+        });
+
+        if (index === currentIndex) {
+            listItem.classList.add('active');
+        }
+
+        listItem.onclick = () => playMedia(index);
+        playlistElement.appendChild(listItem);
+    });
+
+    const activeItem = playlistElement.querySelector('.active');
+    if (activeItem) {
+        activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function removeFromPlaylist(index) {
+    playlist.splice(index, 1);
+    if (currentIndex === index) {
+        if (playlist.length > 0) {
+            playMedia(Math.min(currentIndex, playlist.length - 1));
+        } else {
+            currentIndex = 0;  
+        }
+    }
+    updatePlaylistUI();
+    savePlaylistToLocalStorage(); 
+}
+
+function playMedia(index) {
+    if (playlist.length === 0) return;
+
+    currentIndex = index;
+    const media = playlist[index];
+
+    const videoElement = document.getElementById('videoPlayer');
+    const audioElement = document.getElementById('audioPlayer');
+    const imageElement = document.getElementById('imageViewer');
+
+    videoElement.style.display = "none";
+    audioElement.style.display = "none";
+    imageElement.style.display = "none";
+
+    let mediaUrl = media.url;
+    if (!mediaUrl.startsWith('http://') && !mediaUrl.startsWith('https://')) {
+        mediaUrl = window.location.origin + mediaUrl;
+    }
+
+    if (/\.(mp4|avi|mkv|mov|wmv)$/i.test(mediaUrl)) {
+        if (!audioElement.paused) {
+            audioElement.pause();
+            audioElement.currentTime = 0;
+        }
+
+        videoElement.src = "";
+        videoElement.src = mediaUrl;
+        videoElement.style.display = "block";
+        videoElement.load();
+        videoElement.play().catch((err) => {
+            console.warn("Autoplay blocked:", err);
+        });
+
+        videoElement.onended = () => playNextVideo();
+    } 
+
+    else if (/\.(mp3|wav|ogg|flac|aac|m4a|webm|opus)$/i.test(mediaUrl)) {
+        if (!videoElement.paused) {
+            videoElement.pause();
+            videoElement.currentTime = 0;
+        }
+
+        audioElement.src = "";
+        audioElement.src = mediaUrl;
+        audioElement.style.display = "block";
+        audioElement.load();
+        audioElement.play().catch((err) => {
+            console.warn("Autoplay blocked:", err);
+        });
+
+        audioElement.onended = () => playNextAudio();
+    } 
+
+    else if (/\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(mediaUrl)) {
+        imageElement.src = mediaUrl;
+        imageElement.style.display = "block";
+    }
+
+    updatePlaylistUI();
+}
+
+function playNextVideo() {
+    let nextIndex = (currentIndex + 1) % playlist.length;
+
+    while (nextIndex !== currentIndex && !/\.(mp4|avi|mkv|mov|wmv)$/i.test(playlist[nextIndex].url)) {
+        nextIndex = (nextIndex + 1) % playlist.length;
+    }
+
+    playMedia(nextIndex);
+}
+
+function playNextAudio() {
+    let nextIndex = (currentIndex + 1) % playlist.length;
+
+    while (nextIndex !== currentIndex && !/\.(mp3|wav|ogg|flac|aac|m4a|webm|opus)$/i.test(playlist[nextIndex].url)) {
+        nextIndex = (nextIndex + 1) % playlist.length;
+    }
+
+    playMedia(nextIndex);
+}
+
+function openVideoPlayerModal() {
+    document.querySelectorAll('.file-checkbox:checked').forEach(checkbox => {
+        addToPlaylist(checkbox.getAttribute('data-url'), checkbox.getAttribute('data-title'));
+    });
+
+    if (playlist.length > 0) playMedia(0);  
+
+    const videoPlayerModal = new bootstrap.Modal(document.getElementById('videoPlayerModal'));
+    videoPlayerModal.show();
+}
+
+function savePlaylistToLocalStorage() {
+    localStorage.setItem('playlist', JSON.stringify(playlist));
+}
+</script>
+
 <script>
 function batchDelete() {
     const checkboxes = document.querySelectorAll('.file-checkbox:checked');
@@ -3932,5 +4558,3 @@ window.addEventListener('load', function() {
     });
   });
 </script>
-
-
