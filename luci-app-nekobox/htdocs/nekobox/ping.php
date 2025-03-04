@@ -2112,44 +2112,33 @@ window.addEventListener('load', function() {
     margin: 10px 0;
 }
 
-#audioPlayerModal .modal-content {
-    background: #222;
-    color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+.btn.btn-outline-primary,
+#modalRewindButton,
+#modalPrevButton,
+#modalPlayPauseButton,
+#modalNextButton,
+#modalFastForwardButton,
+#modalLoopButton {
+    background-color: #009688; 
+    border-color: #009688; 
+    color: white; 
+    border-radius: 8px; 
+    padding: 10px 15px; 
+    font-size: 16px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out; 
 }
 
-#audioPlayerModal .modal-header {
-
-}
-
-#audioPlayerModal .modal-title {
-    font-size: 18px;
-    font-weight: bold;
-}
-
-#audioPlayerModal .close {
-    color: #fff;
-    opacity: 0.8;
-}
-
-#audioPlayerModal .close:hover {
-    opacity: 1;
-}
-
-.audio-player-container {
-    padding: 20px;
-
-}
-
-.audio-player-container button {
-    margin: 8px;
-    padding: 10px 15px;
-    font-size: 16px;
-    border: none;
-    border-radius: 8px;
-    transition: all 0.3s ease-in-out;
-    cursor: pointer;
+.btn.btn-outline-primary:hover,
+#modalRewindButton:hover,
+#modalPrevButton:hover,
+#modalPlayPauseButton:hover,
+#modalNextButton:hover,
+#modalFastForwardButton:hover,
+#modalLoopButton:hover {
+    background-color: #1db954; 
+    border-color: #1db954; 
+    color: white; 
 }
 
 .track-name {
@@ -2209,17 +2198,24 @@ window.addEventListener('load', function() {
     display: block;
     margin-left: auto;
     margin-right: auto; 
-}
+} 
 
 @media (max-width: 768px) {
     .audio-player-container {
-      flex-direction: column;
-      align-items: center;
+        flex-wrap: nowrap; 
+        gap: 5px; 
     }
 
     .audio-player-container button {
-      width: 100%;
-      margin: 5px 0;
+        padding: 0; 
+    }
+
+    .audio-player-container button:not(#modalPlayPauseButton, #modalLoopButton) span {
+        display: none; 
+    }
+
+    .audio-player-container button i {
+        font-size: 16px; 
     }
 }
 
@@ -2227,7 +2223,7 @@ window.addEventListener('load', function() {
     max-height: 500px; 
     overflow-y: auto;  
     overflow-x: hidden; 
-    background-color: rgba(0, 0, 0, 0.8); 
+    background-color: rgba(0, 31, 63, 0.9); 
     backdrop-filter: blur(10px); 
     border-radius: 8px; 
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
@@ -2255,15 +2251,15 @@ window.addEventListener('load', function() {
 }
 
 #trackList .list-group-item.active {
-    background-color: #007bff;
+    background-color: #0056b3; 
     color: white; 
     font-weight: bold; 
 }
 
 #trackList .list-group-item:hover {
-    background-color: #0056b3; 
+    background-color: rgba(0, 86, 179, 0.8); 
     color: white; 
-    transform: scale(1.05); 
+    transform: scale(1.01); 
 }
 
 #playlistCollapse::-webkit-scrollbar {
@@ -2282,7 +2278,7 @@ window.addEventListener('load', function() {
 #trackList .list-group-item .track-name {
     flex-grow: 1;
     font-size: 1rem;
-    color: #fff; 
+    color: #fff;
     text-overflow: ellipsis; 
     overflow: hidden;
     white-space: nowrap;
@@ -2297,16 +2293,19 @@ window.addEventListener('load', function() {
     padding: 5px;
     margin: 5px;
 }
+
 .btn-bordered {
     border: 1px solid #ccc; 
     border-radius: 5px;
     padding: 5px 10px;
 }
+
 .file-checkbox {
     margin-right: 10px;
     width: 20px;
     height: 20px;
 }
+
 .icon-button .tooltip {
     visibility: hidden;
     width: auto;
@@ -2350,12 +2349,13 @@ window.addEventListener('load', function() {
     margin-top: 20px;
     border: 1px solid #333;
     padding: 10px;
-    background-color: #000; 
+    background-color: #001f3f; 
+    border-radius: 10px; 
     border-radius: 5px;
     text-align: center;
     font-family: 'SimSun', 'Songti SC', '宋体', serif; 
     font-size: 1.1rem; 
-    background: rgba(0, 0, 0, 0.9) !important; 
+    background: rgba(0, 31, 63, 0.9) !important; 
     white-space: pre-wrap; 
     word-break: keep-all; 
 }
@@ -2413,7 +2413,7 @@ window.addEventListener('load', function() {
 }
 
 #lyricsContainer::-webkit-scrollbar-track {
-    background: #000; 
+    background: rgba(0, 31, 63, 0.9);
     margin: 80px 0;
 }
 
@@ -2556,6 +2556,15 @@ window.addEventListener('load', function() {
         font-size: 9px;
     }
 }
+
+@media (max-width: 768px) {
+    .modal-body img {
+        display: none;
+    }
+    .datetime-container {
+        font-size: 17px !important; 
+    }
+}
 </style>
 <div id="floatingLyrics" class="floating-lyrics"></div>
 <div class="modal fade" id="audioPlayerModal" tabindex="-1" aria-labelledby="audioPlayerModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -2581,7 +2590,7 @@ window.addEventListener('load', function() {
         <div class="audio-player-container text-center w-100 mt-3 d-flex justify-content-center align-items-center gap-3">
           <button id="modalRewindButton" data-translate-title="rewind"><i class="fas fa-backward"></i></button>
           <button id="modalPrevButton" data-translate-title="previous_song"><i class="fas fa-step-backward"></i></button>
-          <button id="modalPlayPauseButton" data-translate-title="play"><i id="playPauseIcon" class="fas fa-play"></i></button>
+          <button id="modalPlayPauseButton"><i class="fas fa-play"></i></button>
           <button id="modalNextButton" data-translate-title="next_song"><i class="fas fa-step-forward"></i></button>
           <button id="modalFastForwardButton" data-translate-title="fast_forward"><i class="fas fa-forward"></i></button>
           <button id="modalLoopButton" data-translate-title="loop"><i class="fas fa-sync-alt"></i></button>
@@ -2709,18 +2718,10 @@ window.addEventListener('load', function() {
         <div class="track-name text-center mt-3" id="trackName" style="font-size: 24px" data-translate="no_song">No Song</div>
         <div class="lyrics-container mt-3 w-100" id="lyricsContainer"></div>
         <div class="d-flex justify-content-center align-items-center gap-3 mt-3 w-100">
-          <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#playlistCollapse" aria-expanded="true">
-            <i class="fas fa-list"></i> <span data-translate="toggle_playlist">Show/Hide Playlist</span>
-          </button>
-          <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#urlModal">
-            <i class="fas fa-cogs"></i> <span data-translate="customize_playlist">Customize Playlist</span>
-          </button>
-          <button class="btn btn-outline-primary" id="clearStorageBtn">
-            <i class="fas fa-trash-alt"></i> <span data-translate="clear_playback_settings">Clear Playback Settings</span>
-          </button>
-          <button class="btn btn-outline-primary" id="pinLyricsButton">
-            <i class="fas fa-thumbtack"></i> <span data-translate="pin_lyrics">Pin Lyrics</span>
-          </button>
+          <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#playlistCollapse" aria-expanded="true" data-translate-title="toggle_playlist"><i class="fas fa-list"></i> </button>
+          <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#urlModal" data-translate-title="customize_playlist"><i class="fas fa-cogs"></i> </button>
+          <button class="btn btn-outline-primary" id="clearStorageBtn" data-translate-title="clear_playback_settings"><i class="fas fa-trash-alt"></i> </button>
+          <button class="btn btn-outline-primary" id="pinLyricsButton" data-translate-title="pin_lyrics"><i class="fas fa-thumbtack"></i> </button>
         </div>
         <div id="playlistCollapse" class="collapse mt-3 w-100">
           <h3 data-translate="playlist">Playlist</h3>
@@ -2917,10 +2918,6 @@ function extractSongName(url) {
     return lastDotIndex === -1 ? decoded : decoded.substring(0, lastDotIndex);
 }
 
-function updateTrackName() {
-    document.getElementById('trackName').textContent = extractSongName(songs[currentSongIndex]);
-}
-
 function highlightCurrentSong() {
     document.querySelectorAll('.track-item').forEach((item, index) => {
         item.classList.toggle('active', index === currentSongIndex);
@@ -2933,10 +2930,12 @@ function highlightCurrentSong() {
 function loadSong(index) {
     if (index >= 0 && index < songs.length) {
         audioPlayer.src = songs[index];
+        audioPlayer.currentTime = 0; 
         audioPlayer.addEventListener('loadedmetadata', () => {
             const savedState = JSON.parse(localStorage.getItem('playerState'));
             if (savedState && savedState.timestamp) {
                 audioPlayer.currentTime = savedState.currentTime || 0;
+                updateTrackName(); 
                 if (savedState.isPlaying) {
                     audioPlayer.play().catch(error => {
                         console.error(translations['restore_play_error'], error); 
@@ -2959,7 +2958,8 @@ playPauseButton.addEventListener('click', function() {
             console.log(translations['start_playing']); 
             showLogMessage(translations['start_playing']); 
             speakMessage(translations['start_playing']); 
-            playPauseButton.textContent = '⏸️ ' + translations['pause']; 
+            playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+            playPauseButton.title = translations['pause']; 
             updateTrackName();
         }).catch(error => {
             console.log(translations['play_error'], error);
@@ -2971,13 +2971,15 @@ playPauseButton.addEventListener('click', function() {
         console.log(translations['paused']); 
         showLogMessage(translations['paused']); 
         speakMessage(translations['paused']); 
-        playPauseButton.textContent = '' + translations['play']; 
+        playPauseButton.innerHTML = '<i class="fas fa-play"></i>'; 
+        playPauseButton.title = translations['play']; 
     }
 });
 
 document.getElementById('modalPrevButton').addEventListener('click', () => {
     currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
     loadSong(currentSongIndex);
+    updateTrackName();
     savePlayerState();
     if (isPlaying) {
         audioPlayer.play();
@@ -2992,6 +2994,7 @@ document.getElementById('modalPrevButton').addEventListener('click', () => {
 document.getElementById('modalNextButton').addEventListener('click', () => {
     currentSongIndex = (currentSongIndex + 1) % songs.length;
     loadSong(currentSongIndex);
+    updateTrackName();
     savePlayerState();
     if (isPlaying) {
         audioPlayer.play();
@@ -3004,7 +3007,7 @@ document.getElementById('modalNextButton').addEventListener('click', () => {
 });
 
 function updateTrackName() {
-    if (songs.length > 0) {
+    if (songs.length > 0 && currentSongIndex >= 0 && currentSongIndex < songs.length) {
         const currentSongUrl = songs[currentSongIndex];
         const trackName = extractSongName(currentSongUrl);
         document.getElementById('trackName').textContent = trackName || translations['unknown_song'];
@@ -3049,18 +3052,21 @@ loopButton.addEventListener('click', () => {
     isLooping = !isLooping;
     
     if (isLooping) {
-        loopButton.textContent = "" + translations['loop']; 
+        loopButton.innerHTML = '<i class="fas fa-repeat"></i>';
+        loopButton.title = translations['loop'];
         console.log(translations['looping']); 
         showLogMessage(translations['looping']); 
         speakMessage(translations['looping']); 
         audioPlayer.loop = true;
     } else {
-        loopButton.textContent = "🔄" + translations['sequential']; 
+        loopButton.innerHTML = '<i class="fas fa-list-ol"></i>'; 
+        loopButton.title = translations['sequential']; 
         console.log(translations['sequential_playing']); 
         showLogMessage(translations['sequential_playing']); 
         speakMessage(translations['sequential_playing']); 
         audioPlayer.loop = false;
     }
+    savePlayerState(); 
 });
 
 function getSongName(url) {
@@ -3108,10 +3114,14 @@ function updateDateTime() {
     const langsWithDash = ['en', 'vn', 'ru', 'ar', 'es', 'de', 'fr'];
 
     let dateDisplay;
-    if (langsWithDash.includes(currentLang)) {
+    if (currentLang === 'ko') {
+        dateDisplay = `${yearText} ${month}${monthLabel} ${day}${dayLabel} ${weekDay}${weekdayLabel}`;
+    } else if (currentLang === 'ja') {
+        dateDisplay = `${yearText}${month}${monthLabel}${day}${dayLabel} ${weekDay}`;
+    } else if (langsWithDash.includes(currentLang)) {
         dateDisplay = `${yearText}${month}-${day} ${weekDay}`;
     } else {
-        dateDisplay = `${yearText}${monthLabel}${month}${dayLabel}${day} ${weekdayLabel}${weekDay}`;
+        dateDisplay = `${yearText}${month}${monthLabel}${day}${dayLabel} ${weekdayLabel}${weekDay}`;
     }
 
     document.getElementById('dateDisplay').textContent = dateDisplay;
@@ -3139,7 +3149,7 @@ function updateDateTime() {
 setInterval(updateDateTime, 1000);
 updateDateTime();
 
-function savePlayerState() {
+function savePlayerState(partial = false) {
     const state = {
         currentSongIndex,
         currentTime: audioPlayer.currentTime,
@@ -3149,35 +3159,28 @@ function savePlayerState() {
         lastPlayedSong: extractSongName(songs[currentSongIndex]),
         timestamp: Date.now()
     };
-    localStorage.setItem('playerState', JSON.stringify(state));
-}
 
-function clearExpiredPlayerState() {
-    const state = JSON.parse(localStorage.getItem('playerState'));
-
-    if (state) {
-        const currentTime = Date.now();
-        const stateAge = currentTime - state.timestamp;
-
-        const expirationTime = 60 * 60 * 1000;
-
-        if (stateAge > expirationTime) {
-            localStorage.removeItem('playerState');
-            console.log(translations['player_state_expired']); 
-        }
+    if (partial) {
+        const savedState = JSON.parse(localStorage.getItem('playerState') || '{}');
+        savedState.currentTime = state.currentTime;
+        localStorage.setItem('playerState', JSON.stringify(savedState));
+    } else {
+        localStorage.setItem('playerState', JSON.stringify(state));
     }
 }
 
-setInterval(() => {
-    localStorage.removeItem('playerState');
-}, 60 * 60 * 1000);
+setInterval(() => savePlayerState(true), 1000);
+
+document.addEventListener('DOMContentLoaded', function () {
+    clearExpiredPlayerState();
+});
 
 document.getElementById('clearStorageBtn').addEventListener('click', function() {
     localStorage.removeItem('playerState');
     localStorage.removeItem('songOrder'); 
     loadDefaultPlaylist(); 
-    document.getElementById('modalPlayPauseButton').textContent = '' + translations['play'];
-    alert('Player state cleared!');
+    document.getElementById('modalPlayPauseButton').innerHTML = '<i class="fas fa-play"></i>';
+    alert(translations["state_cleared"] || " Player state cleared.");  
 });
 
 function restorePlayerState() {
@@ -3185,21 +3188,40 @@ function restorePlayerState() {
     if (state) {
         currentSongIndex = state.currentSongIndex || 0;
         isLooping = state.isLooping || false;
-        if (state.playlistCollapsed) {
-            document.getElementById('playlistCollapse').classList.remove('show');
-        } else {
-            document.getElementById('playlistCollapse').classList.add('show');
-        }
+        audioPlayer.loop = isLooping; 
         loadSong(currentSongIndex);
+        updateTrackName();
+
+        if (isLooping) {
+            loopButton.innerHTML = '<i class="fas fa-repeat"></i>';
+            loopButton.title = translations['loop'];
+        } else {
+            loopButton.innerHTML = '<i class="fas fa-list-ol"></i>';
+            loopButton.title = translations['sequential'];
+        }
+
         if (state.isPlaying) {
             isPlaying = true;
-            playPauseButton.textContent = '⏸️ ' + translations['pause']; 
-            audioPlayer.currentTime = state.currentTime || 0;
-            audioPlayer.play().catch(error => {
-                console.error(translations['restore_play_error'], error);
-            });
+            playPauseButton.innerHTML = '<i class="fas fa-pause"></i>'; 
+            playPauseButton.title = translations['pause'];
+
+            audioPlayer.addEventListener('loadedmetadata', () => {
+                audioPlayer.currentTime = state.currentTime || 0;
+
+                audioPlayer.play().catch(error => {
+                    console.error(translations['restore_play_error'], error);
+                });
+            }, { once: true }); 
         }
+
         console.log(`恢复播放: ${state.lastPlayedSong}，时间戳: ${new Date(state.timestamp).toLocaleString()}`);
+    } else {
+        currentSongIndex = 0;
+        loadSong(currentSongIndex);
+        updateTrackName();
+        playPauseButton.innerHTML = '<i class="fas fa-play"></i>'; 
+        playPauseButton.title = translations['play']; 
+        highlightCurrentSong();
     }
 }
 
@@ -3497,6 +3519,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+    const playlistCollapse = document.getElementById('playlistCollapse');
+    const toggleButton = document.querySelector('[data-bs-target="#playlistCollapse"]');
+
+    const savedCollapseState = localStorage.getItem('playlistCollapseState');
+    if (savedCollapseState === 'collapsed') {
+        new bootstrap.Collapse(playlistCollapse, { toggle: false });
+    } else {
+        new bootstrap.Collapse(playlistCollapse, { toggle: true });
+    }
+
+    playlistCollapse.addEventListener('hidden.bs.collapse', function () {
+        localStorage.setItem('playlistCollapseState', 'collapsed'); 
+    });
+
+    playlistCollapse.addEventListener('shown.bs.collapse', function () {
+        localStorage.setItem('playlistCollapseState', 'expanded'); 
+    });
+
     const lyricsContainer = document.querySelector("#lyricsContainer");
     const floatingLyrics = document.querySelector("#floatingLyrics");
     const trackName = document.querySelector("#trackName");
@@ -6627,5 +6667,3 @@ window.addEventListener('load', function() {
     });
   });
 </script>
-
-
