@@ -167,7 +167,8 @@ const preset_outbound = {
 		['REJECT'],
 		['REJECT-DROP'],
 		['PASS'],
-		['COMPATIBLE']
+		['COMPATIBLE'],
+		['GLOBAL']
 	],
 	direct: [
 		['', _('null')],
@@ -399,6 +400,7 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 		this.title = title ?? '';
 		this.description = description ?? '';
 		this.placeholder = '';
+		this.appendcommand = '';
 	},
 
 	calcID(field, name) {
@@ -410,7 +412,7 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 		const field = this.section.hm_field;
 
 		let content = textarea.getValue().trim();
-		let command = `.["${field}"]`;
+		let command = `.["${field}"]` + this.appendcommand;
 		if (['proxy-providers', 'rule-providers'].includes(field))
 			content = content.replace(/(\s*payload:)/g, "$1 |-") /* payload to text */
 
@@ -464,8 +466,10 @@ const CBIHandleImport = baseclass.extend(/** @lends hm.HandleImport.prototype */
 		if (isEmpty(cfg))
 			return null;
 
-		cfg.hm_id = this.calcID(field, name ?? cfg.name);
-		cfg.hm_label = '%s %s'.format(name ?? cfg.name, _('(Imported)'));
+		if (typeof cfg === 'object') {
+			cfg.hm_id = this.calcID(field, name ?? cfg.name);
+			cfg.hm_label = '%s %s'.format(name ?? cfg.name, _('(Imported)'));
+		}
 
 		return cfg;
 	},
