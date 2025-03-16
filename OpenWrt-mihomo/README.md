@@ -92,6 +92,7 @@ The ipk/apk file will be found under `bin/packages/your_architecture/nikki`.
 - firewall4
 - ip-full
 - kmod-inet-diag
+- kmod-nft-socket
 - kmod-nft-tproxy
 - kmod-tun
 
