@@ -467,6 +467,9 @@ function download_file($url, $destination) {
     <link href="./assets/css/custom.css" rel="stylesheet">
     <link href="./assets/bootstrap/bootstrap-icons.css" rel="stylesheet">
     <link href="./assets/theme/<?php echo $neko_theme ?>" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" crossorigin="anonymous"></script>
+    <script src="./assets/bootstrap/beautify.min.js"></script> 
+    <script src="./assets/bootstrap/js-yaml.min.js"></script>
     <script type="text/javascript" src="./assets/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="./assets/js/feather.min.js"></script>
     <script type="text/javascript" src="./assets/bootstrap/bootstrap.bundle.min.js"></script>
@@ -783,7 +786,7 @@ function displayUpdateNotification() {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="uploadModalLabel" data-translate="uploadFile"></h5> 
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="close"> 
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="close"> 
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -807,7 +810,7 @@ function displayUpdateNotification() {
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="renameModalLabel" data-translate="rename_file"></h5>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -831,17 +834,13 @@ function displayUpdateNotification() {
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.0/beautify.min.js"></script> 
-<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editModalLabel"><?php echo $langData[$currentLang]['editFile']; ?>: <span id="editingFileName"></span></h5>
 
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -922,7 +921,7 @@ function displayUpdateNotification() {
                     <button type="button" class="btn btn-warning btn-sm mx-1" id="toggleFullscreenBtn" onclick="toggleFullscreen()" data-translate="toggleFullscreen"></button>
                 </div>
 
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeFullScreenEditor()">
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close" onclick="closeFullScreenEditor()">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -1306,7 +1305,7 @@ function initializeAceEditor() {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="downloadModalLabel" data-translate="select_database_download"></h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
                 </div>
@@ -1337,7 +1336,7 @@ function initializeAceEditor() {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="cronModalLabel" data-translate="cron_task_title"></h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
                 </div>
