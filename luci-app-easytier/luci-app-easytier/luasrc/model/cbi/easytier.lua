@@ -180,9 +180,10 @@ desvice_name.default = device_name
 desvice_name:depends("etcmd", "etcmd")
 
 instance_name = s:taboption("privacy",Value, "instance_name", translate("实例名称"),
-	translate("用于在同一台机器中标识此 VPN 节点的实例名称 （-m 参数）"))
+	translate("用于在同一台机器中标识此 VPN 节点的实例名称，启用日志需要填写，web配置时填一样的instance_name名称 （-m 参数）"))
 instance_name.placeholder = "default"
 instance_name:depends("etcmd", "etcmd")
+instance_name:depends("etcmd", "web")
 
 vpn_portal = s:taboption("privacy",Value, "vpn_portal", translate("VPN门户URL"),
 	translate("定义 VPN 门户的 URL，允许其他 VPN 客户端连接。<br> 示例：wg://0.0.0.0:11011/10.14.14.0/24，表示 VPN 门户是一个在 vpn.example.com:11010 上监听的 WireGuard 服务器，并且 VPN 客户端位于 10.14.14.0/24 网络中（--vpn-portal 参数）"))
@@ -243,17 +244,14 @@ exit_nodes:depends("etcmd", "etcmd")
 
 smoltcp = s:taboption("privacy",Flag, "smoltcp", translate("使用用户态协议栈"),
 	translate("为子网代理启用smoltcp堆栈（--use-smoltcp 参数）"))
-smoltcp.rmempty = false
 smoltcp:depends("etcmd", "etcmd")
 
 no_tun = s:taboption("privacy",Flag, "no_tun", translate("无tun模式"),
 	translate("不创建TUN设备，可以使用子网代理访问节点（ --no-tun 参数）"))
-no_tun.rmempty = false
 no_tun:depends("etcmd", "etcmd")
 
 proxy_forward = s:taboption("privacy",Flag, "proxy_forward", translate("禁用内置NAT"),
 	translate("通过系统内核转发子网代理数据包，禁用内置NAT（ --proxy-forward-by-system 参数）"))
-proxy_forward.rmempty = false
 proxy_forward:depends("etcmd", "etcmd")
 
 manual_routes = s:taboption("privacy",DynamicList, "manual_routes", translate("路由CIDR"),
@@ -263,7 +261,6 @@ manual_routes:depends("etcmd", "etcmd")
 
 relay_network = s:taboption("privacy",Flag, "relay_network", translate("转发白名单网络的流量"),
 	translate("仅转发白名单网络的流量，默认允许所有网络"))
-relay_network.rmempty = false
 relay_network:depends("etcmd", "etcmd")
 
 whitelist = s:taboption("privacy",DynamicList, "whitelist", translate("白名单网络"),
@@ -278,33 +275,27 @@ socks_port:depends("etcmd", "etcmd")
 
 disable_p2p = s:taboption("privacy",Flag, "disable_p2p", translate("禁用P2P"),
 	translate("禁用P2P通信，只通过-p指定的节点转发数据包 （ --disable-p2p 参数）"))
-disable_p2p.rmempty = false
 disable_p2p:depends("etcmd", "etcmd")
 
 disable_udp = s:taboption("privacy",Flag, "disable_udp", translate("禁用UDP"),
 	translate("禁用UDP打洞功能（ --disable-udp-hole-punching 参数）"))
-disable_udp.rmempty = false
 disable_udp:depends("etcmd", "etcmd")
 
 relay_all = s:taboption("privacy",Flag, "relay_all", translate("允许转发"),
 	translate("转发所有对等节点的RPC数据包，即使对等节点不在转发网络白名单中。<br>这可以帮助白名单外网络中的对等节点建立P2P连接。（ -relay-all-peer-rpc 参数）"))
-relay_all.rmempty = false
 relay_all:depends("etcmd", "etcmd")
 
 bind_device = s:taboption("privacy",Flag, "bind_device", translate("仅使用物理网卡"),
 	translate("将连接器的套接字绑定到物理设备以避免路由问题。<br>比如子网代理网段与某节点的网段冲突，绑定物理设备后可以与该节点正常通信。（ --bind-device 参数）"))
-bind_device.rmempty = false
 bind_device.default = "0"
 bind_device:depends("etcmd", "etcmd")
 
 kcp_proxy = s:taboption("privacy",Flag, "kcp_proxy", translate("启用KCP代理"),
 	translate("将TCP流量转为 KCP 流量，降低传输延迟，提升传输速度。<br>KCP 代理功能需要虚拟网内所有节点的 EasyTier 版本在 v2.2.0 以上。（ --enable-kcp-proxy 参数）"))
-kcp_proxy.rmempty = false
 kcp_proxy:depends("etcmd", "etcmd")
 
 kcp_input = s:taboption("privacy",Flag, "kcp_input", translate("禁用KCP输入"),
 	translate("不允许其他节点使用 KCP 代理 TCP 流到此节点。<br>开启 KCP 代理的节点访问此节点时，依然使用原始。（ --disable-kcp-input 参数）"))
-kcp_input.rmempty = false
 kcp_input:depends("etcmd", "etcmd")
 
 log = s:taboption("general",ListValue, "log", translate("程序日志"),
@@ -628,7 +619,6 @@ end
 
 db_path = s:option(Value, "db_path", translate("数据库文件路径"),
 	translate(" sqlite3 数据库文件路径, 用于保存所有数据。（ -d 参数）"))
-db_path.rmempty = false
 db_path.default = "/etc/easytier/et.db"
 db_path:depends("enabled", "1")
 
