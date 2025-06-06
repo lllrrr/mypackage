@@ -27,9 +27,9 @@ btncq.write = function()
 end
 
 etcmd = s:taboption("general",ListValue, "etcmd", translate("启动方式"),
-	translate("官方Web控制台：<a href='https://easytier.cn/web'>easytier.cn/web</a><br>官方配置文件生成器：<a href='https://easytier.cn/web/index.html#/config_generator'>easytier.cn/web/index.html#/config_generator</a><br>注意配置RPC端口为15888"))
+	translate("官方Web控制台：<a href='https://easytier.cn/web' target='_blank'>https://easytier.cn/web</a><br>官方配置文件生成器：<a href='https://easytier.cn/web/index.html#/config_generator' target='_blank'>https://easytier.cn/web/index.html#/config_generator</a><br>注意配置RPC端口为15888"))
 etcmd.default = "etcmd"
-etcmd:value("etcmd",translate("命令行"))
+etcmd:value("etcmd",translate("默认"))
 etcmd:value("config",translate("配置文件"))
 etcmd:value("web",translate("Web配置"))
 
@@ -53,7 +53,7 @@ et_config.write = function(self, section, value)
 end
 
 web_config = s:taboption("general", Value, "web_config", translate("Web服务器地址"),
-	translate("Web配置服务器地址。（-w 参数）<br>自建Web服务器 输入格式：udp://服务器地址:22020/账户名<br>官方Web服务器 输入格式：账户名 <br>官方Web控制台：<a href='https://easytier.cn/web'>easytier.cn/web</a>"))
+	translate("Web配置服务器地址。（-w 参数）<br>自建Web服务器 输入格式：udp://服务器地址:22020/账户名<br>官方Web服务器 输入格式：账户名 <br>官方Web控制台：<a href='https://easytier.cn/web' target='_blank'>https://easytier.cn/web</a>"))
 web_config.placeholder = "admin"
 web_config:depends("etcmd", "web")
 
@@ -62,7 +62,11 @@ network_name = s:taboption("general", Value, "network_name", translate("网络�
 network_name.password = true
 network_name.placeholder = "test"
 network_name:depends("etcmd", "etcmd")
-network_name:depends("etcmd", "web")
+network_name:depends("log", "error")
+network_name:depends("log", "warn")
+network_name:depends("log", "info")
+network_name:depends("log", "debug")
+network_name:depends("log", "trace")
 
 network_secret = s:taboption("general", Value, "network_secret", translate("网络密钥"),
 	translate("网络密钥，用于验证此节点是否属于 VPN 网络（--network-secret 参数）"))
@@ -83,32 +87,14 @@ ipaddr:depends("etcmd", "etcmd")
 peeradd = s:taboption("general",DynamicList, "peeradd", translate("对等节点"),
 	translate("初始连接的对等节点，和下方参数作用一样 （-p 参数）<br>公共服务器可用状态查询：<a href='https://easytier.gd.nkbpal.cn/status/easytier' target='_blank'>点此查询</a>"))
 peeradd.placeholder = "tcp://public.easytier.top:11010"
-peeradd:value("tcp://public.easytier.top:11010", translate("官方服务器-广东河源-tcp://public.easytier.top:11010"))
-peeradd:value("tcp://turn.hb.629957.xyz:11010", translate("湖北十堰电信V4-tcp://turn.hb.629957.xyz:11010"))
-peeradd:value("tcp://et.ie12vps.xyz:11010", translate("南京V4/V6-tcp://et.ie12vps.xyz:11010"))
-peeradd:value("tcp://ah.nkbpal.cn:11010", translate("安徽电信V4-tcp://ah.nkbpal.cn:11010"))
-peeradd:value("udp://ah.nkbpal.cn:11010", translate("安徽电信V4-udp://ah.nkbpal.cn:11010"))
-peeradd:value("wss://ah.nkbpal.cn:11012", translate("安徽电信V4-wss://ah.nkbpal.cn:11012"))
-peeradd:value("tcp://222.186.59.80:11113", translate("江苏镇江V4-tcp://222.186.59.80:11113"))
-peeradd:value("wss://222.186.59.80:11115", translate("江苏镇江V4-wss://222.186.59.80:11115"))
-peeradd:value("tcp://hw.gz.9z1.me:58443", translate("广州V4-tcp://hw.gz.9z1.me:58443"))
-peeradd:value("tcp://c.oee.icu:60006", translate("香港V4/V6-tcp://c.oee.icu:60006"))
-peeradd:value("udp://c.oee.icu:60006", translate("香港V4/V6-udp://c.oee.icu:60006"))
-peeradd:value("wss://c.oee.icu:60007", translate("香港V4/V6-wss://c.oee.icu:60007"))
-peeradd:value("tcp://etvm.oee.icu:31572", translate("日本V4-tcp://etvm.oee.icu:31572"))
-peeradd:value("wss://etvm.oee.icu:30845", translate("日本V4-wss://etvm.oee.icu:30845"))
-peeradd:value("tcp://et.pub.moe.gift:11010", translate("美国科罗拉多V4-tcp://et.pub.moe.gift:11010"))
-peeradd:value("wss://et.pub.moe.gift:11012", translate("美国科罗拉多V4-tcp://et.pub.moe.gift:11012"))
-peeradd:value("tcp://et.323888.xyz:11010", translate("湖北十堰V4-tcp://et.323888.xyz:11010"))
-peeradd:value("udp://et.323888.xyz:11010", translate("湖北十堰V4-udp://et.323888.xyz:11010"))
-peeradd:value("wss://et.323888.xyz:11012", translate("湖北十堰V4-wss://et.323888.xyz:11012"))
+peeradd:value("tcp://public.easytier.top:11010", translate("官方服务器-tcp://public.easytier.top:11010"))
 peeradd:depends("etcmd", "etcmd")
 
 external_node = s:taboption("general", Value, "external_node", translate("共享节点地址"),
 	translate("使用公共共享节点来发现对等节点，和上方参数作用一样 （-e 参数）"))
 external_node.default = ""
 external_node.placeholder = "tcp://public.easytier.top:11010"
-external_node:value("tcp://public.easytier.top:11010", translate("官方服务器-广东河源-tcp://public.easytier.top:11010"))
+external_node:value("tcp://public.easytier.top:11010", translate("官方服务器-tcp://public.easytier.top:11010"))
 external_node:depends("etcmd", "etcmd")
 
 proxy_network = s:taboption("general",DynamicList, "proxy_network", translate("子网代理"),
@@ -177,6 +163,19 @@ desvice_name = s:taboption("general", Value, "desvice_name", translate("主机�
 desvice_name.placeholder = device_name
 desvice_name.default = device_name
 desvice_name:depends("etcmd", "etcmd")
+desvice_name:depends("etcmd", "web")
+
+uuid = s:taboption("general", Value, "uuid", translate("uuid"),
+    translate("连接web控制台时识别此设备的唯一标识，用于下发配置文件"))
+uuid.rows = 1
+uuid.wrap = "off"
+uuid:depends("etcmd", "web")
+uuid.cfgvalue = function(self, section)
+    return nixio.fs.readfile("/etc/easytier/et_machine_id") or ""
+end
+uuid.write = function(self, section, value)
+    nixio.fs.writefile("/etc/easytier/et_machine_id", value:gsub("\r\n", "\n"))
+end
 
 instance_name = s:taboption("privacy",Value, "instance_name", translate("实例名称"),
 	translate("用于在同一台机器中标识此 VPN 节点的实例名称，启用日志需要填写，web配置时填一样的instance_name名称 （-m 参数）"))
@@ -297,10 +296,23 @@ kcp_input = s:taboption("privacy",Flag, "kcp_input", translate("禁用KCP输入"
 	translate("不允许其他节点使用 KCP 代理 TCP 流到此节点。<br>开启 KCP 代理的节点访问此节点时，依然使用原始。（ --disable-kcp-input 参数）"))
 kcp_input:depends("etcmd", "etcmd")
 
+port_forward = s:taboption("privacy",DynamicList, "port_forward", translate("端口转发"),
+	translate("将本地端口转发到虚拟网络中的远程端口。<br>例如：udp://0.0.0.0:12345/10.126.126.1:23456，表示将本地UDP端口12345转发到虚拟网络中的10.126.126.1:23456。<br>可以指定多个。 （--port-forward 参数）"))
+port_forward:depends("etcmd", "etcmd")
+
+accept_dns = s:taboption("privacy",Flag, "accept_dns", translate("启用魔法DNS"),
+	translate("使用魔法DNS，您可以使用域名访问其他节点，例如：<hostname>.et.net。魔法DNS将修改您的系统DNS设置，请谨慎启用。（--accept-dns 参数）"))
+accept_dns:depends("etcmd", "etcmd")
+
+private_mode = s:taboption("privacy",Flag, "private_mode", translate("启用私密模式"),
+	translate("启用后则不允许使用了与本网络不相同的网络名称和密码的节点通过本节点进行握手或中转。（--private-mode 参数）"))
+private_mode:depends("etcmd", "etcmd")
+
 log = s:taboption("general",ListValue, "log", translate("程序日志"),
 	translate("运行日志在/tmp/easytier.log,可在上方日志查看<br>若启动失败，请前往 状态- 系统日志 查看具体启动失败日志<br>详细程度：警告<信息<调试<跟踪"))
 log.default = "off"
 log:value("off",translate("关闭"))
+log:value("error",translate("错误"))
 log:value("warn",translate("警告"))
 log:value("info",translate("信息"))
 log:value("debug",translate("调试"))
@@ -561,14 +573,14 @@ http.setfilehandler(
                 local extracted_dir = "/tmp/easytier-linux-*/"
                 os.execute("mv " .. extracted_dir .. "easytier-cli /tmp/easytier-cli")
                 os.execute("mv " .. extracted_dir .. "easytier-core /tmp/easytier-core")
-		os.execute("mv " .. extracted_dir .. "easytier-core /tmp/easytier-web")
+		os.execute("mv " .. extracted_dir .. "easytier-web-embed /tmp/easytier-web-embed")
                if nixio.fs.access("/tmp/easytier-cli") then
                     um.value = um.value .. "\n" .. translate("-程序/tmp/easytier-cli上传成功，重启一次插件才生效")
                 end
                if nixio.fs.access("/tmp/easytier-core") then
                     um.value = um.value .. "\n" .. translate("-程序/tmp/easytier-core上传成功，重启一次插件才生效")
                 end
-		if nixio.fs.access("/tmp/easytier-web") then
+		if nixio.fs.access("/tmp/easytier-web-embed") then
                     um.value = um.value .. "\n" .. translate("-程序/tmp/easytier-web上传成功，重启一次插件才生效")
                 end
                end
@@ -578,20 +590,20 @@ http.setfilehandler(
 		local extracted_dir = "/tmp/easytier-linux-*/"
                 os.execute("mv " .. extracted_dir .. "easytier-cli /tmp/easytier-cli")
                 os.execute("mv " .. extracted_dir .. "easytier-core /tmp/easytier-core")
-		os.execute("mv " .. extracted_dir .. "easytier-core /tmp/easytier-web")
+		os.execute("mv " .. extracted_dir .. "easytier-web-embed /tmp/easytier-web-embed")
                if nixio.fs.access("/tmp/easytier-cli") then
                     um.value = um.value .. "\n" .. translate("-程序/tmp/easytier-cli上传成功，重启一次插件才生效")
                 end
                if nixio.fs.access("/tmp/easytier-core") then
                     um.value = um.value .. "\n" .. translate("-程序/tmp/easytier-core上传成功，重启一次插件才生效")
                 end
-		if nixio.fs.access("/tmp/easytier-web") then
+		if nixio.fs.access("/tmp/easytier-web-embed") then
                     um.value = um.value .. "\n" .. translate("-程序/tmp/easytier-web上传成功，重启一次插件才生效")
                 end
                end
                 os.execute("chmod +x /tmp/easytier-core")
                 os.execute("chmod +x /tmp/easytier-cli") 
-		os.execute("chmod +x /tmp/easytier-web")
+		os.execute("chmod +x /tmp/easytier-web-embed")
         end
     end
 )
@@ -619,37 +631,42 @@ end
 db_path = s:option(Value, "db_path", translate("数据库文件路径"),
 	translate(" sqlite3 数据库文件路径, 用于保存所有数据。（ -d 参数）"))
 db_path.default = "/etc/easytier/et.db"
-db_path:depends("enabled", "1")
 
 web_protocol = s:option(ListValue, "web_protocol", translate("监听协议"),
 	translate("配置服务器的监听协议，用于被 easytier-core 连接。（ -p 参数）"))
 web_protocol.default = "udp"
 web_protocol:value("udp",translate("UDP"))
 web_protocol:value("tcp",translate("TCP"))
-web_protocol:depends("enabled", "1")
 
 web_port = s:option(Value, "web_port", translate("服务端口"),
 	translate("配置服务器的监听端口，用于被 easytier-core 连接。（ -c 参数）"))
 web_port.datatype = "range(1,65535)"
 web_port.placeholder = "22020"
 web_port.default = "22020"
-web_port:depends("enabled", "1")
 
 api_port = s:option(Value, "api_port", translate("API端口"),
 	translate("restful 服务器的监听端口，作为 ApiHost 并被 web 前端使用。（ -a 参数）"))
 api_port.datatype = "range(1,65535)"
 api_port.placeholder = "11211"
 api_port.default = "11211"
-api_port:depends("enabled", "1")
+
+html_port = s:option(Value, "html_port", translate("web界面端口"),
+	translate("web dashboard 服务器的前端监听端口，留空不启用。（ -l 参数）"))
+html_port.datatype = "range(1,65535)"
+html_port.placeholder = "11210"
+
+api_host = s:option(Value, "api_host", translate("默认API服务器URL"),
+	translate("API 服务器的 URL，用于 web 前端连接。（ --api-host 参数）"))
+api_host.placeholder = "https://config-server.easytier.cn"
 
 weblog = s:option(ListValue, "weblog", translate("程序日志"),
 	translate("运行日志在/tmp/easytierweb.log,可在上方日志查看<br>若启动失败，请前往 状态- 系统日志 查看具体启动失败日志<br>详细程度：警告<信息<调试<跟踪"))
 weblog.default = "off"
 weblog:value("off",translate("关闭"))
+weblog:value("error",translate("错误"))
 weblog:value("warn",translate("警告"))
 weblog:value("info",translate("信息"))
 weblog:value("debug",translate("调试"))
 weblog:value("trace",translate("跟踪"))
-weblog:depends("enabled", "1")
 
 return m
