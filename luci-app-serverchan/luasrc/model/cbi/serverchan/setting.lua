@@ -7,9 +7,6 @@ local ifaces = sys.net:devices()
 
 m = Map("serverchan", translate("ServerChan"),
 translate("「Server酱」，英文名「ServerChan」，是一款从服务器推送报警信息和日志到微信的工具。<br /><br />如果你在使用中遇到问题，请到这里提交：")
-.. [[<a href="https://github.com/tty228/luci-app-serverchan" target="_blank">]]
-.. translate("GitHub 项目地址")
-.. [[</a>]]
 )
 
 m:section(SimpleSection).template  = "serverchan/serverchan_status"
