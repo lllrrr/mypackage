@@ -69,7 +69,7 @@ function smartdnsRenderStatus(res) {
 
 		if (uiEnable === '1') {
 			var uiLink = "http://" + window.location.hostname + ":" + uiPort + "/";
-			renderHTML += "<a class=\"cbi-button cbi-button-action\" style=\"margin-left: 10px;\" href=\"" + uiLink + "\" target=\"_blank\">" + _("Open the WebUI") + "</a>";
+			renderHTML += "&#160; <a class=\"btn cbi-button\" style=\"margin-left: 10px; background-color: black; color: white; border-color: #333;\" href=\"" + uiLink + "\" target=\"_blank\">" + _("Open the WebUI") + "</a>";
 		}
 	} else {
 		renderHTML += "<span style=\"color:red;font-weight:bold\">SmartDNS - " + _("NOT RUNNING") + "</span>";
@@ -94,8 +94,8 @@ function smartdnsRenderStatus(res) {
 }
 
 function isSmartdnsUiAvailable() {
-	return fs.exec_direct('/bin/ls', ['-l', '/usr/lib/libsmartdns_ui.so']).then(function (res) {
-		return res && res.code !== "";
+	return fs.stat('/usr/lib/smartdns_ui.so').then(function (res) {
+		return res && res.type === 'file';
 	}).catch(function () {
 		return false;
 	});

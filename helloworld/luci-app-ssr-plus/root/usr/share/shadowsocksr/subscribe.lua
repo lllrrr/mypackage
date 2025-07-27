@@ -9,7 +9,6 @@ require "nixio"
 require "luci.util"
 require "luci.sys"
 require "luci.jsonc"
-require "luci.model.ipkg"
 
 -- these global functions are accessed all the time by the event handler
 -- so caching them is worth the effort
@@ -33,7 +32,7 @@ local user_agent = ucic:get_first(name, 'server_subscribe', 'user_agent', 'v2ray
 -- 读取 ss_type 设置
 local ss_type = ucic:get_first(name, 'server_subscribe', 'ss_type', 'ss-rust')
 -- 根据 ss_type 选择对应的程序
-local ss_program = ""
+local ss_program = "sslocal"
 if ss_type == "ss-rust" then
     ss_program = "sslocal"  -- Rust 版本使用 sslocal
 elseif ss_type == "ss-libev" then
@@ -194,6 +193,11 @@ local function processData(szType, content)
 		--	log(k.."="..v)
 		-- end
 
+		-- 如果 hy2 程序未安装则跳过订阅	
+		if not hy2_type then
+		 return nil
+		end
+
 		result.alias = url.fragment and UrlDecode(url.fragment) or nil
 		result.type = hy2_type
 		result.server = url.host
@@ -352,7 +356,7 @@ local function processData(szType, content)
 		if idx_sp > 0 then
 			alias = UrlDecode(content:sub(idx_sp + 1))
 		end
-		local info = content:sub(1, idx_sp > 0 and idx_sp - 1 or #content)
+		local info = content:sub(1, idx_sp > 0 and idx_sp - 1 or #content):gsub("/%?", "?")
 
 		-- 拆 base64 主体和 ? 参数部分
 		local uri_main, query_str = info:match("^([^?]+)%??(.*)$")
@@ -407,6 +411,20 @@ local function processData(szType, content)
 		method = userinfo:sub(1, split_pos - 1)
 		password = userinfo:sub(split_pos + 1)
 
+		-- 判断密码是否经过url编码
+		local function isURLEncodedPassword(pwd)
+			if not pwd:find("%%[0-9A-Fa-f][0-9A-Fa-f]") then
+				return false
+			end
+				local ok, decoded = pcall(UrlDecode, pwd)
+				return ok and urlEncode(decoded) == pwd
+		end
+
+		local decoded = UrlDecode(password)
+			if isURLEncodedPassword(password) and decoded then
+				password = decoded
+		end
+
 		-- 解析服务器地址和端口（兼容 IPv6）
 		if host_port:find("^%[.*%]:%d+$") then
 			server, port = host_port:match("^%[(.*)%]:(%d+)$")
@@ -416,6 +434,11 @@ local function processData(szType, content)
 		if not server or not port then
 			log("SS 节点服务器信息格式错误:", host_port)
 			return nil
+		end
+		
+		-- 如果 SS 程序未安装则跳过订阅	
+		if not (v2_ss or has_ss_type) then
+		 return nil
 		end
 
 		-- 填充 result
@@ -596,6 +619,11 @@ local function processData(szType, content)
 		else
 			result.server_port = port
 		end
+		
+		-- 如果 Tojan 程序未安装则跳过订阅	
+		if not v2_tj then
+		 return nil
+		end
 
 		if v2_tj ~= "trojan" then
 			if params.fp then
@@ -682,6 +710,9 @@ local function processData(szType, content)
 		result.reality_publickey = params.pbk and UrlDecode(params.pbk) or nil
 		result.reality_shortid = params.sid
 		result.reality_spiderx = params.spx and UrlDecode(params.spx) or nil
+		-- 检查 pqv 参数是否存在且非空
+		result.enable_mldsa65verify = (params.pqv and params.pqv ~= "") and "1" or nil
+		result.reality_mldsa65verify = (params.pqv and params.pqv ~= "") and params.pqv or nil
 		if result.transport == "ws" then
 			result.ws_host = (result.tls ~= "1") and (params.host and UrlDecode(params.host)) or nil
 			result.ws_path = params.path and UrlDecode(params.path) or "/"

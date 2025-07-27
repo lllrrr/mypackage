@@ -5,8 +5,8 @@ function index()
 	if not nixio.fs.access("/etc/config/vnt") then
 		return
 	end
-                  
-        entry({"admin", "vpn", "vnt"}, alias("admin", "vpn", "vnt", "vnt"),_("VNT"), 44).dependent = true
+	
+ entry({"admin", "vpn", "vnt"}, alias("admin", "vpn", "vnt", "vnt"),_("VNT"), 44).dependent = true
 	entry({"admin", "vpn", "vnt", "vnt"}, cbi("vnt"),_("VNT"), 45).leaf = true
 	entry({"admin", "vpn",  "vnt",  "vnt_log"}, form("vnt_log"),_("客户端日志"), 46).leaf = true
 	entry({"admin", "vpn", "vnt", "get_log"}, call("get_log")).leaf = true

@@ -23,6 +23,7 @@ uci:revert(appname)
 
 local has_ss = api.is_finded("ss-redir")
 local has_ss_rust = api.is_finded("sslocal")
+local has_ssr = api.is_finded("ssr-local") and api.is_finded("ssr-redir")
 local has_trojan_plus = api.is_finded("trojan-plus")
 local has_singbox = api.finded_com("sing-box")
 local has_xray = api.finded_com("xray")
@@ -418,12 +419,6 @@ local function UrlDecode(szText)
 	end) or nil
 end
 
--- trim
-local function trim(text)
-	if not text or text == "" then return "" end
-	return (sgsub(text, "^%s*(.-)%s*$", "%1"))
-end
-
 -- 取机场信息（剩余流量、到期时间）
 local subscribe_info = {}
 local function get_subscribe_info(cfgid, value)
@@ -452,6 +447,10 @@ local function processData(szType, content, add_mode, add_from)
 	}
 	--ssr://base64(host:port:protocol:method:obfs:base64pass/?obfsparam=base64param&protoparam=base64param&remarks=base64remarks&group=base64group&udpport=0&uot=0)
 	if szType == 'ssr' then
+		if not has_ssr then
+			log("跳过 SSR 节点，因未安装 SSR 核心程序 shadowsocksr-libev。")
+			return nil
+		end
 		result.type = "SSR"
 
 		local dat = split(content, "/%?")
@@ -478,17 +477,13 @@ local function processData(szType, content, add_mode, add_from)
 		result.remarks = base64Decode(params.remarks)
 	elseif szType == 'vmess' then
 		local info = jsonParse(content)
-		if has_singbox then
-			result.type = 'sing-box'
-		end
-		if has_xray then
-			result.type = 'Xray'
-		end
 		if vmess_type_default == "sing-box" and has_singbox then
 			result.type = 'sing-box'
-		end
-		if vmess_type_default == "xray" and has_xray then
+		elseif vmess_type_default == "xray" and has_xray then
 			result.type = "Xray"
+		else
+			log("跳过 VMess 节点，因未适配到 VMess 核心程序，或未正确设置节点使用类型。")
+			return nil
 		end
 		result.alter_id = info.aid
 		result.address = info.add
@@ -596,7 +591,21 @@ local function processData(szType, content, add_mode, add_from)
 			return nil
 		end
 	elseif szType == "ss" then
-		result.type = "SS"
+		if ss_type_default == "shadowsocks-libev" and has_ss then
+			result.type = "SS"
+		elseif ss_type_default == "shadowsocks-rust" and has_ss_rust then
+			result.type = 'SS-Rust'
+		elseif ss_type_default == "xray" and has_xray then
+			result.type = 'Xray'
+			result.protocol = 'shadowsocks'
+			result.transport = 'raw'
+		elseif ss_type_default == "sing-box" and has_singbox then
+			result.type = 'sing-box'
+			result.protocol = 'shadowsocks'
+		else
+			log("跳过 SS 节点，因未适配到 SS 核心程序，或未正确设置节点使用类型。")
+			return nil
+		end
 
 		--SS-URI = "ss://" userinfo "@" hostname ":" port [ "/" ] [ "?" plugin ] [ "#" tag ]
 		--userinfo = websafe-base64-encode-utf8(method  ":" password)
@@ -627,8 +636,7 @@ local function processData(szType, content, add_mode, add_from)
 				local idx_pn = plugin_info:find(";")
 				if idx_pn then
 					result.plugin = plugin_info:sub(1, idx_pn - 1)
-					result.plugin_opts =
-						plugin_info:sub(idx_pn + 1, #plugin_info)
+					result.plugin_opts = plugin_info:sub(idx_pn + 1, #plugin_info)
 				else
 					result.plugin = plugin_info
 				end
@@ -685,19 +693,6 @@ local function processData(szType, content, add_mode, add_from)
 			result.method = method
 			result.password = password
 
-			if ss_type_default == "shadowsocks-rust" and has_ss_rust then
-				result.type = 'SS-Rust'
-			end
-			if ss_type_default == "xray" and has_xray then
-				result.type = 'Xray'
-				result.protocol = 'shadowsocks'
-				result.transport = 'raw'
-			end
-			if ss_type_default == "sing-box" and has_singbox then
-				result.type = 'sing-box'
-				result.protocol = 'shadowsocks'
-			end
-
 			if result.type ~= "Xray" then
 				result.method = (method:lower() == "chacha20-poly1305" and "chacha20-ietf-poly1305") or
 						(method:lower() == "xchacha20-poly1305" and "xchacha20-ietf-poly1305") or method
@@ -726,8 +721,7 @@ local function processData(szType, content, add_mode, add_from)
 						result.plugin = nil
 						result.plugin_opts = nil
 					end
-				end
-				if result.type == "sing-box" then
+				else
 					result.plugin_enabled = "1"
 				end
 			end
@@ -831,6 +825,7 @@ local function processData(szType, content, add_mode, add_from)
 							result.reality_publicKey = params.pbk or nil
 							result.reality_shortId = params.sid or nil
 							result.reality_spiderX = params.spx or nil
+							result.reality_mldsa65Verify = params.pqv or nil
 						end
 					end
 					params.allowinsecure = params.allowinsecure or params.insecure
@@ -867,6 +862,7 @@ local function processData(szType, content, add_mode, add_from)
 					end
 
 					if result.type == "SS-Rust" then
+						result.plugin_enabled = "1"
 						result.plugin = "shadow-tls"
 						result.plugin_opts = parseShadowTLSParams(params["shadow-tls"])
 					elseif result.type == "sing-box" then
@@ -891,10 +887,15 @@ local function processData(szType, content, add_mode, add_from)
 			result.type = "Trojan-Plus"
 		elseif trojan_type_default == "sing-box" and has_singbox then
 			result.type = 'sing-box'
+			result.protocol = 'trojan'
 		elseif trojan_type_default == "xray" and has_xray then
 			result.type = 'Xray'
+			result.protocol = 'trojan'
+		else
+			log("跳过 Trojan 节点，因未适配到 Trojan 核心程序，或未正确设置节点使用类型。")
+			return nil
 		end
-		result.protocol = 'trojan'
+		
 		local alias = ""
 		if content:find("#") then
 			local idx_sp = content:find("#")
@@ -1050,17 +1051,13 @@ local function processData(szType, content, add_mode, add_from)
 		result.group = content.airport
 		result.remarks = content.remarks
 	elseif szType == "vless" then
-		if has_singbox then
-			result.type = 'sing-box'
-		end
-		if has_xray then
-			result.type = 'Xray'
-		end
 		if vless_type_default == "sing-box" and has_singbox then
 			result.type = 'sing-box'
-		end
-		if vless_type_default == "xray" and has_xray then
+		elseif vless_type_default == "xray" and has_xray then
 			result.type = "Xray"
+		else
+			log("跳过 VLESS 节点，因未适配到 VLESS 核心程序，或未正确设置节点使用类型。")
+			return nil
 		end
 		result.protocol = "vless"
 		local alias = ""
@@ -1205,6 +1202,7 @@ local function processData(szType, content, add_mode, add_from)
 					result.reality_publicKey = params.pbk or nil
 					result.reality_shortId = params.sid or nil
 					result.reality_spiderX = params.spx or nil
+					result.reality_mldsa65Verify = params.pqv or nil
 				end
 			end
 
@@ -1223,6 +1221,14 @@ local function processData(szType, content, add_mode, add_from)
 			end
 		end
 	elseif szType == 'hysteria' then
+		if has_singbox then
+			result.type = 'sing-box'
+			result.protocol = "hysteria"
+		else
+			log("跳过 Hysteria 节点，因未安装 Hysteria 核心程序 Sing-box。")
+			return nil
+		end
+
 		local alias = ""
 		if content:find("#") then
 			local idx_sp = content:find("#")
@@ -1270,10 +1276,6 @@ local function processData(szType, content, add_mode, add_from)
 		result.hysteria_down_mbps = params.downmbps
 		result.hysteria_hop = params.mport
 
-		if has_singbox then
-			result.type = 'sing-box'
-			result.protocol = "hysteria"
-		end
 	elseif szType == 'hysteria2' or szType == 'hy2' then
 		local alias = ""
 		if content:find("#") then
@@ -1333,8 +1335,19 @@ local function processData(szType, content, add_mode, add_from)
 			if params["obfs-password"] or params["obfs_password"] then
 				result.hysteria2_obfs = params["obfs-password"] or params["obfs_password"]
 			end
+		else
+			log("跳过 Hysteria2 节点，因未适配到 Hysteria2 核心程序，或未正确设置节点使用类型。")
+			return nil
 		end
 	elseif szType == 'tuic' then
+		if has_singbox then
+			result.type = 'sing-box'
+			result.protocol = "tuic"
+		else
+			log("跳过 Tuic 节点，因未安装 Tuic 核心程序 Sing-box。")
+			return nil
+		end
+
 		local alias = ""
 		if content:find("#") then
 			local idx_sp = content:find("#")
@@ -1387,11 +1400,15 @@ local function processData(szType, content, add_mode, add_from)
 		else
 			result.tls_allowInsecure = allowInsecure_default and "1" or "0"
 		end
-		result.type = 'sing-box'
-		result.protocol = "tuic"
 	elseif szType == "anytls" then
-		result.type = 'sing-box'
-		result.protocol = "anytls"
+		if has_singbox then
+			result.type = 'sing-box'
+			result.protocol = "anytls"
+		else
+			log("跳过 AnyTLS 节点，因未安装 AnyTLS 核心程序 Sing-box 1.12。")
+			return nil
+		end
+
 		local alias = ""
 		if content:find("#") then
 			local idx_sp = content:find("#")
@@ -1766,7 +1783,7 @@ local function parse_link(raw, add_mode, add_from, cfgid)
 					if szType == 'ssd' then
 						result = processData(szType, v, add_mode, add_from)
 					elseif not szType then
-						local node = trim(v)
+						local node = api.trim(v)
 						local dat = split(node, "://")
 						if dat and dat[1] and dat[2] then
 							if dat[1] == 'ss' or dat[1] == 'trojan' then
@@ -1819,7 +1836,7 @@ local execute = function()
 	do
 		local subscribe_list = {}
 		local fail_list = {}
-		if arg[2] then
+		if arg[2] ~= "all" then
 			string.gsub(arg[2], '[^' .. "," .. ']+', function(w)
 				subscribe_list[#subscribe_list + 1] = uci:get_all(appname, w) or {}
 			end)
@@ -1828,6 +1845,8 @@ local execute = function()
 				subscribe_list[#subscribe_list + 1] = o
 			end)
 		end
+
+		local manual_sub = arg[3] == "manual"
 
 		for index, value in ipairs(subscribe_list) do
 			local cfgid = value[".name"]
@@ -1893,11 +1912,10 @@ local execute = function()
 					local f = io.open(tmp_file, "r")
 					local stdout = f:read("*all")
 					f:close()
-					local raw_data = trim(stdout)
+					local raw_data = api.trim(stdout)
 					local old_md5 = value.md5 or ""
 					local new_md5 = luci.sys.exec("md5sum " .. tmp_file .. " 2>/dev/null | awk '{print $1}'"):gsub("\n", "")
-					os.remove(tmp_file)
-					if old_md5 == new_md5 then
+					if not manual_sub and old_md5 == new_md5 then
 						log('订阅:【' .. remark .. '】没有变化，无需更新。')
 					else
 						parse_link(raw_data, "2", remark, cfgid)
@@ -1907,6 +1925,7 @@ local execute = function()
 					fail_list[#fail_list + 1] = value
 				end
 			end
+			luci.sys.call("rm -f " .. tmp_file)
 			allowInsecure_default = nil
 			filter_keyword_mode_default = uci:get(appname, "@global_subscribe[0]", "filter_keyword_mode") or "0"
 			filter_keyword_discard_list_default = uci:get(appname, "@global_subscribe[0]", "filter_discard_list") or {}
@@ -1937,7 +1956,7 @@ if arg[1] then
 			end
 			log('发生错误, 正在恢复服务')
 		end)
-		log('订阅完毕...')
+		log('订阅完毕...\n')
 	elseif arg[1] == "add" then
 		local f = assert(io.open("/tmp/links.conf", 'r'))
 		local raw = f:read('*all')

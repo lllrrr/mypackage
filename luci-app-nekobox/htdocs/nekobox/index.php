@@ -809,7 +809,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['selected_config'])) {
     });
     </script>
     <?php endif; ?>
-<div class="container-sm container-bg callout border border-3 rounded-4 col-11">
+<div class="container-sm container-bg mt-4">
     <div class="row">
         <a href="./index.php" class="col btn btn-lg text-nowrap"><i class="bi bi-house-door"></i> <span data-translate="home">Home</span></a>
         <a href="./dashboard.php" class="col btn btn-lg text-nowrap"><i class="bi bi-bar-chart"></i> <span data-translate="panel">Panel</span></a>
@@ -851,7 +851,7 @@ function startUpdateTimer() {
     const lastCheck = localStorage.getItem('lastUpdateCheck');
 
     let timeSinceLastCheck = lastCheck ? now - parseInt(lastCheck, 10) : Infinity;
-    let timeUntilNextCheck = Math.max(28800000 - timeSinceLastCheck, 0); 
+    let timeUntilNextCheck = Math.max(14400000 - timeSinceLastCheck, 0); 
 
     console.log('Time until next check:', timeUntilNextCheck / 1000 / 60, 'minutes');
 
@@ -876,7 +876,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
-<h2 id="neko-title" class="royal-style">NekoBox</h2>
+<h2 id="neko-title" class="neko-title-style" style="cursor: pointer;" onclick="toggleControlPanel()">
+    NekoBox
+    <span id="control-panel-text" class="ms-2 text-success d-none" data-translate="control_panel">Control_Panel</span>
+</h2>
 <style>
 
     .nav-pills .nav-link {
@@ -995,6 +998,12 @@ document.addEventListener('DOMContentLoaded', function () {
     .section-container .btn-group {
         gap: 15px;
     }
+}
+
+@media (max-width: 768px) {
+	#neko-title.neko-title-style {
+		font-size: 2.5rem !important;
+	}
 }
 
 </style>
@@ -1122,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
 
             <div class="mb-4">
-                <h6 class="mb-2"><i class="fas fa-cog custom-icon"></i> <span data-translate="runningMode">Running Mode</span></h6>
+                <h6 class="mb-2"><i class="bi bi-gear-fill custom-icon"></i> <span data-translate="runningMode">Running Mode</span></h6>
                 <div class="btn-group w-100">
                     <?php
                     $mode_placeholder = '';
@@ -1487,7 +1496,8 @@ window.onload = function() {
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const autoRefreshCheckbox = document.getElementById('autoRefresh');
-        const isChecked = localStorage.getItem('autoRefresh') === 'true';
+        const autoRefreshSetting = localStorage.getItem('autoRefresh');
+        const isChecked = autoRefreshSetting === null || autoRefreshSetting === 'true';
         autoRefreshCheckbox.checked = isChecked;
 
         if (isChecked) {
@@ -1529,4 +1539,3 @@ window.onload = function() {
     </footer>
 </body>
 </html>
-

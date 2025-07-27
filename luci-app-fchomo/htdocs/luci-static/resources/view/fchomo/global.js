@@ -299,7 +299,9 @@ return view.extend({
 		ss = o.subsection;
 
 		if (!res_ver_geoip || !res_ver_geosite) {
-			so = ss.option(form.Button, '_upload_initia', _('Upload initial package'));
+			so = ss.option(form.Button, '_upload_initia', _('Upload initial package'),
+				_('Click <a target="_blank" href="%s" rel="noreferrer noopener">here</a> to download the latest initial package.')
+					.format('https://raw.githubusercontent.com/fcshark-org/openwrt-fchomo/refs/heads/initialpack/initial.tgz'));
 			so.inputstyle = 'action';
 			so.inputtitle = _('Upload...');
 			so.onclick = L.bind(hm.uploadInitialPack, so);
@@ -500,7 +502,7 @@ return view.extend({
 		so.rmempty = false;
 		if (hm.less_24_10)
 			so.onchange = function(ev, section_id, value) {
-				var desc = ev.target.nextSibling;
+				let desc = ev.target.nextSibling;
 				if (value === 'mixed')
 					desc.innerHTML = _('Mixed <code>system</code> TCP stack and <code>gVisor</code> UDP stack.');
 				else if (value === 'gvisor')

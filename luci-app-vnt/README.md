@@ -33,7 +33,7 @@ apk add --allow-untrusted luci-app-vnt.apk
  
     # 下载源码
 	
-    git clone https://github.com/sirpdboy/luci-app-vnt.git package/vnt
+    git clone https://github.com/lmq8267/luci-app-vnt.git package/vnt
     make menuconfig
 	
  ``` 

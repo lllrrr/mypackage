@@ -6,8 +6,8 @@
 				"/etc/init.d/watchdog": [ "exec" ],
 				"/usr/share/watchdog/watchdog": [ "exec" ],
 				"/tmp/watchdog/*": [ "read" ],
-				"/usr/share/watchdog/api/*": [ "read" ],
-				"/usr/libexec/watchdog-call": [ "exec" ]
+				"/usr/libexec/watchdog-call": [ "exec" ],
+				"/bin/pidof": [ "exec" ]
 			},
 			"ubus": {
 				"control": [ "list" ]
@@ -16,7 +16,6 @@
 		},
 		"write": {
 			"file": {
-				"/usr/share/watchdog/api/*": [ "write" ],
 				"/tmp/watchdog/*": [ "write" ]
 			},
 			"uci": [ "watchdog" ]
