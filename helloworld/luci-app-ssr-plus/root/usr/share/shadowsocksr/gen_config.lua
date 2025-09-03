@@ -31,7 +31,7 @@ function vmess_vless()
 						id = server.vmess_id,
 						alterId = (server.v2ray_protocol == "vmess" or not server.v2ray_protocol) and tonumber(server.alter_id) or nil,
 						security = (server.v2ray_protocol == "vmess" or not server.v2ray_protocol) and server.security or nil,
-						encryption = (server.v2ray_protocol == "vless") and server.vless_encryption or nil,
+						encryption = (server.v2ray_protocol == "vless") and server.vless_encryption or "none",
 						flow = (((server.xtls == '1') or (server.tls == '1') or (server.reality == '1')) and (((server.tls_flow ~= "none") and server.tls_flow) or ((server.xhttp_tls_flow ~= "none") and server.xhttp_tls_flow))) or nil
 					}
 				}
@@ -212,7 +212,19 @@ end
 				security = (server.xtls == '1') and "xtls" or (server.tls == '1') and "tls" or (server.reality == '1') and "reality" or nil,
 				tlsSettings = (server.tls == '1') and {
 					-- tls
-					alpn = (server.transport == "xhttp" and server.xhttp_alpn ~= "") and server.xhttp_alpn or server.tls_alpn,
+					alpn = (server.transport == "xhttp") and (function()
+						local alpn = {}
+						if server.xhttp_alpn and server.xhttp_alpn ~= "" then
+							string.gsub(server.xhttp_alpn, '[^,]+', function(w)
+								table.insert(alpn, w)
+							end)
+						end
+						if #alpn > 0 then
+							return alpn
+						else
+							return nil
+						end
+					end)() or nil,
 					fingerprint = server.fingerprint,
 					allowInsecure = (server.insecure == "1"),
 					serverName = server.tls_host,
@@ -230,7 +242,6 @@ end
 					minVersion = "1.3"
 				} or nil,
 				realitySettings = (server.reality == '1') and {
-					alpn =  (server.transport == "xhttp" and server.xhttp_alpn ~= "") and server.xhttp_alpn or nil,
 					publicKey = server.reality_publickey,
 					shortId = server.reality_shortid,
 					spiderX = server.reality_spiderx,
@@ -273,12 +284,7 @@ end
 					host = (server.httpupgrade_host or server.tls_host) or nil,
 					path = server.httpupgrade_path or ""
 				} or nil,
-				splithttpSettings = (server.transport == "splithttp") and {
-					-- splithttp
-					host = (server.splithttp_host or server.tls_host) or nil,
-					path = server.splithttp_path or "/"
-				} or nil,
-				xhttpSettings = (server.transport == "xhttp") and {
+				xhttpSettings = (server.transport == "xhttp" or server.transport == "splithttp") and {
 					-- xhttp
 					mode = server.xhttp_mode or "auto",
 					host = (server.xhttp_host or server.tls_host) or nil,
@@ -388,7 +394,7 @@ local trojan = {
 		cipher = cipher,
 		cipher_tls13 = cipher13,
 		sni = server.tls_host,
-		alpn = server.tls_alpn or {"h2", "http/1.1"},
+		alpn = {"h2", "http/1.1"},
 		curve = "",
 		reuse_session = true,
 		session_ticket = (server.tls_sessionTicket == "1") and true or false
@@ -580,7 +586,19 @@ local tuic = {
 			timeout = server.timeout and server.timeout .. "s" or nil,
 			gc_interval = server.gc_interval and server.gc_interval .. "s" or nil,
 			gc_lifetime = server.gc_lifetime and server.gc_lifetime .. "s" or nil,
-			alpn = server.tls_alpn,
+			alpn = (server.type == "tuic") and (function()
+				local alpn = {}
+				if server.tls_alpn and server.tls_alpn ~= "" then
+					string.gsub(server.tls_alpn, '[^,]+', function(w)
+						table.insert(alpn, w)
+					end)
+				end
+				if #alpn > 0 then
+					return alpn
+				else
+					return nil
+				end
+			end)() or nil,
 			disable_sni = (server.disable_sni == "1") and true or false,
 			zero_rtt_handshake = (server.zero_rtt_handshake == "1") and true or false,
 			send_window = tonumber(server.send_window),

@@ -408,6 +408,7 @@ o:depends("type", "ssr")
 -- [[ Hysteria2 ]]--
 o = s:option(Value, "hy2_auth", translate("Users Authentication"))
 o:depends("type", "hysteria2")
+o.password = true
 o.rmempty = false
 
 o = s:option(Flag, "flag_port_hopping", translate("Enable Port Hopping"))
@@ -455,6 +456,7 @@ o.placeholder = "salamander"
 
 o = s:option(Value, "salamander", translate("Obfuscation Password"))
 o:depends({type = "hysteria2", flag_obfs = "1"})
+o.password = true
 o.rmempty = true
 o.placeholder = "cry_me_a_r1ver"
 
@@ -575,6 +577,7 @@ o.default="auto"
 -- [[ TUIC ]]
 -- TuicNameId
 o = s:option(Value, "tuic_uuid", translate("TUIC User UUID"))
+o.password = true
 o.rmempty = true
 o.default = uuid
 o:depends("type", "tuic")
@@ -588,6 +591,7 @@ o:depends("type", "tuic")
 
 -- Tuic Password
 o = s:option(Value, "tuic_passwd", translate("TUIC User Password"))
+o.password = true
 o.rmempty = true
 o.default = ""
 o:depends("type", "tuic")
@@ -675,6 +679,7 @@ o:depends({type = "v2ray", v2ray_protocol = "vmess"})
 
 -- VmessId
 o = s:option(Value, "vmess_id", translate("Vmess/VLESS ID (UUID)"))
+o.password = true
 o.rmempty = true
 o.default = uuid
 o:depends({type = "v2ray", v2ray_protocol = "vmess"})
@@ -684,6 +689,7 @@ o:depends({type = "v2ray", v2ray_protocol = "vless"})
 o = s:option(Value, "vless_encryption", translate("VLESS Encryption"))
 o.rmempty = true
 o.default = "none"
+o:value("none")
 o:depends({type = "v2ray", v2ray_protocol = "vless"})
 
 -- 加密方式
@@ -709,8 +715,7 @@ o:value("raw", "RAW (TCP)")
 o:value("kcp", "mKCP")
 o:value("ws", "WebSocket")
 o:value("httpupgrade", "HTTPUpgrade")
-o:value("splithttp", "SplitHTTP")
-o:value("xhttp", "XHTTP")
+o:value("xhttp", "XHTTP (SplitHTTP)")
 o:value("h2", "HTTP/2")
 o:value("quic", "QUIC")
 o:value("grpc", "gRPC")
@@ -779,30 +784,9 @@ o = s:option(Value, "httpupgrade_path", translate("Httpupgrade Path"))
 o:depends("transport", "httpupgrade")
 o.rmempty = true
 
--- [[ splithttp部分 ]]--
-
--- splithttp域名
-o = s:option(Value, "splithttp_host", translate("Splithttp Host"))
-o:depends({transport = "splithttp", tls = false})
-o.rmempty = true
-
--- splithttp路径
-o = s:option(Value, "splithttp_path", translate("Splithttp Path"))
-o:depends("transport", "splithttp")
-o.rmempty = true
-
 -- [[ XHTTP部分 ]]--
-o = s:option(ListValue, "xhttp_alpn", translate("XHTTP Alpn"))
-o.default = ""
-o:value("", translate("Default"))
-o:value("h3")
-o:value("h2")
-o:value("h3,h2")
-o:value("http/1.1")
-o:value("h2,http/1.1")
-o:value("h3,h2,http/1.1")
-o:depends("transport", "xhttp")
 
+-- XHTTP 模式
 o = s:option(ListValue, "xhttp_mode", translate("XHTTP Mode"))
 o:depends("transport", "xhttp")
 o.default = "auto"
@@ -811,15 +795,19 @@ o:value("packet-up")
 o:value("stream-up")
 o:value("stream-one")
 
+-- XHTTP 主机
 o = s:option(Value, "xhttp_host", translate("XHTTP Host"))
-o:depends({transport = "xhttp", tls = false})
+o.datatype = "hostname"
+o:depends("transport", "xhttp")
 o.rmempty = true
 
+-- XHTTP 路径
 o = s:option(Value, "xhttp_path", translate("XHTTP Path"))
 o.placeholder = "/"
 o:depends("transport", "xhttp")
 o.rmempty = true
 
+-- XHTTP 附加项
 o = s:option(Flag, "enable_xhttp_extra", translate("XHTTP Extra"))
 o.description = translate("Enable this option to configure XHTTP Extra (JSON format).")
 o.rmempty = true
@@ -862,6 +850,18 @@ o.validate = function(self, value)
 
     return value
 end
+
+-- XHTTP ALPN
+o = s:option(ListValue, "xhttp_alpn", translate("XHTTP ALPN"))
+o.default = ""
+o:value("", translate("Default"))
+o:value("h3")
+o:value("h2")
+o:value("h3,h2")
+o:value("http/1.1")
+o:value("h2,http/1.1")
+o:value("h3,h2,http/1.1")
+o:depends({transport = "xhttp", tls = true})
 
 -- [[ H2部分 ]]--
 
@@ -1179,10 +1179,13 @@ o:depends("xtls", true)
 o:depends("reality", true)
 o.rmempty = true
 
-o = s:option(DynamicList, "tls_alpn", translate("TLS ALPN"))
+o = s:option(ListValue, "tls_alpn", translate("TLS ALPN"))
+o.default = ""
+o:value("", translate("Default"))
+o:value("h3")
+o:value("spdy/3.1")
+o:value("h3,spdy/3.1")
 o:depends("type", "tuic")
-o.default = "h3"
-o.rmempty = true
 
 -- [[ allowInsecure ]]--
 o = s:option(Flag, "insecure", translate("allowInsecure"))
