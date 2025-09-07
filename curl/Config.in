@@ -4,7 +4,7 @@ comment "SSL support"
 
 choice
 	prompt "Selected SSL library"
-	default LIBCURL_MBEDTLS
+	default LIBCURL_OPENSSL
 
 	config LIBCURL_MBEDTLS
 		bool "mbed TLS"
@@ -44,6 +44,10 @@ config LIBCURL_GOPHER
 config LIBCURL_HTTP
 	bool "HTTP / HTTPS protocol"
 	default y
+
+config LIBCURL_WEBSOCKETS
+	bool "WebSockets protocol"
+	default n
 
 config LIBCURL_COOKIES
 	bool "Enable Cookies support"
@@ -111,13 +115,8 @@ config LIBCURL_NGHTTP3
 	default n
 
 config LIBCURL_NGTCP2
-	bool "QUIC protocol (ngtcp2)"
-	depends on LIBCURL_OPENSSL && LIBCURL_NGHTTP3
-	default n
-
-config LIBCURL_OPENSSL_QUIC
-	bool "QUIC protocol (openssl quic)"
-	depends on LIBCURL_OPENSSL && LIBCURL_NGHTTP3
+	bool "QUIC protocol"
+	depends on LIBCURL_OPENSSL
 	default n
 
 comment "Miscellaneous"
