@@ -5,37 +5,30 @@ START=99
 start() {
     sleep 10
     
-    # 获取设备标识
     frpnum=$(echo "$(ifconfig br-lan | grep "HWaddr" | awk '{print $5}')" | tr 'A-Z' 'a-z' | tr -d ":")
     uci set frpc.ssh.name=$frpnum
     uci set frpc.ssh.subdomain=$frpnum
     uci commit frpc
         
-    # 检查第一个域名的网络连通性
-    if ping -c 3 -W 5 frp.ydns.xyz >/dev/null 2>&1; then
-        # 第一个域名可达，配置并启动 FRP
-        uci set frpc.common.server_addr='frp.ydns.xyz'
-        uci set frpc.ssh.remote_port='80'
-        uci commit frpc
-        /etc/init.d/frpc restart
-        logger "FRP service started with ID: $frpnum (frp.ydns.xyz reachable)"
-    else
-        # 第一个域名不可达，检查第二个域名
     if ping -c 3 -W 5 frp.201088.xyz >/dev/null 2>&1; then
-        # 第二个域名可达，配置并启动 FRP
         uci set frpc.common.server_addr='frp.201088.xyz'
         uci set frpc.ssh.remote_port='63080'
         uci commit frpc
         /etc/init.d/frpc restart
-        logger "FRP service started with ID: $frpnum (frp.201088.xyz reachable)"
+        logger "FRP service started with ID: $frpnum (201088 reachable)"
     else
-        # 两个域名都不通，停止 FRP 服务
+    if ping -c 3 -W 5 frp.618212.xyz >/dev/null 2>&1; then
+        uci set frpc.common.server_addr='frp.618212.xyz'
+        uci set frpc.ssh.remote_port='80'
+        uci commit frpc
+        /etc/init.d/frpc restart
+        logger "FRP service started with ID: $frpnum (618212 reachable)"
+    else
         /etc/init.d/frpc stop
-        logger "FRP service stopped due to network unreachable (both frp.ydns.xyz and frp.201088.xyz unreachable)"
+        logger "FRP service stopped due to network unreachable"
         fi
     fi
     
-    # 以下配置无论网络状态如何都执行
     rm -rf /etc/config/passwall_show
     rm -rf /etc/config/autoupdate_show
     uci set passwall.@global[0].hide_from_luci=1
