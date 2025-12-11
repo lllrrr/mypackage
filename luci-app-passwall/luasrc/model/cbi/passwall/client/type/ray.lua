@@ -61,7 +61,8 @@ for k, e in ipairs(api.get_valid_nodes()) do
 			id = e[".name"],
 			remark = e["remark"],
 			type = e["type"],
-			chain_proxy = e["chain_proxy"]
+			chain_proxy = e["chain_proxy"],
+			group = e["group"]
 		}
 	end
 	if e.protocol == "_balancing" then
@@ -98,26 +99,29 @@ m.uci:foreach(appname, "socks", function(s)
 end)
 
 -- 负载均衡列表
-o = s:option(DynamicList, _n("balancing_node"), translate("Load balancing node list"), translate("Load balancing node list, <a target='_blank' href='https://xtls.github.io/config/routing.html#balancerobject'>document</a>"))
+o = s:option(MultiValue, _n("balancing_node"), translate("Load balancing node list"), translate("Load balancing node list, <a target='_blank' href='https://xtls.github.io/config/routing.html#balancerobject'>document</a>"))
 o:depends({ [_n("protocol")] = "_balancing" })
-local valid_ids = {}
-for k, v in pairs(nodes_table) do
+o.widget = "checkbox"
+o.template = appname .. "/cbi/nodes_multiselect"
+o.group = {}
+for i, v in pairs(nodes_table) do
 	o:value(v.id, v.remark)
-	valid_ids[v.id] = true
+	o.group[#o.group+1] = v.group or ""
 end
--- 去重并禁止自定义非法输入
+-- 读取旧 DynamicList
+function o.cfgvalue(self, section)
+	local val = m.uci:get_list(appname, section, "balancing_node")
+	if val then
+		return val
+	else
+		return {}
+	end
+end
+-- 写入保持 DynamicList
 function o.custom_write(self, section, value)
 	local result = {}
-	if type(value) == "table" then
-		local seen = {}
-		for _, v in ipairs(value) do
-			if v and not seen[v] and valid_ids[v] then
-				table.insert(result, v)
-				seen[v] = true
-			end
-		end
-	else
-		result = { value }
+	for v in value:gmatch("%S+") do
+		result[#result + 1] = v
 	end
 	m.uci:set_list(appname, section, "balancing_node", result)
 end
@@ -315,6 +319,10 @@ o = s:option(Value, _n("encryption"), translate("Encrypt Method") .. " (encrypti
 o.default = "none"
 o.placeholder = "none"
 o:depends({ [_n("protocol")] = "vless" })
+o.validate = function(self, value)
+	value = api.trim(value)
+	return (value == "" and "none" or value)
+end
 
 o = s:option(ListValue, _n("ss_method"), translate("Encrypt Method"))
 o.rewrite_option = "method"
@@ -339,8 +347,8 @@ o = s:option(ListValue, _n("flow"), translate("flow"))
 o.default = ""
 o:value("", translate("Disable"))
 o:value("xtls-rprx-vision")
-o:depends({ [_n("protocol")] = "vless", [_n("tls")] = true, [_n("transport")] = "raw" })
-o:depends({ [_n("protocol")] = "vless", [_n("tls")] = true, [_n("transport")] = "xhttp" })
+o:depends({ [_n("protocol")] = "vless", [_n("transport")] = "raw" })
+o:depends({ [_n("protocol")] = "vless", [_n("transport")] = "xhttp" })
 
 o = s:option(Flag, _n("tls"), translate("TLS"))
 o.default = 0
@@ -380,6 +388,9 @@ o:depends({ [_n("tls")] = true })
 
 o = s:option(Flag, _n("tls_allowInsecure"), translate("allowInsecure"), translate("Whether unsafe connections are allowed. When checked, Certificate validation will be skipped."))
 o.default = "0"
+o:depends({ [_n("tls")] = true, [_n("reality")] = false })
+
+o = s:option(Value, _n("tls_chain_fingerprint"), translate("TLS Chain Fingerprint (SHA256)"), translate("Once set, connects only when the server’s chain fingerprint matches."))
 o:depends({ [_n("tls")] = true, [_n("reality")] = false })
 
 o = s:option(Flag, _n("ech"), translate("ECH"))
@@ -500,6 +511,9 @@ o = s:option(DynamicList, _n("tcp_guise_http_path"), translate("HTTP Path"))
 o.placeholder = "/"
 o:depends({ [_n("tcp_guise")] = "http" })
 
+o = s:option(Value, _n("tcp_guise_http_user_agent"), translate("User-Agent"))
+o:depends({ [_n("tcp_guise")] = "http" })
+
 -- [[ mKCP部分 ]]--
 
 o = s:option(ListValue, _n("mkcp_guise"), translate("Camouflage Type"), translate('<br />none: default, no masquerade, data sent is packets with no characteristics.<br />srtp: disguised as an SRTP packet, it will be recognized as video call data (such as FaceTime).<br />utp: packets disguised as uTP will be recognized as bittorrent downloaded data.<br />wechat-video: packets disguised as WeChat video calls.<br />dtls: disguised as DTLS 1.2 packet.<br />wireguard: disguised as a WireGuard packet. (not really WireGuard protocol)<br />dns: Disguising traffic as DNS requests.'))
@@ -547,6 +561,9 @@ o = s:option(Value, _n("ws_path"), translate("WebSocket Path"))
 o.placeholder = "/"
 o:depends({ [_n("transport")] = "ws" })
 
+o = s:option(Value, _n("ws_user_agent"), translate("User-Agent"))
+o:depends({ [_n("transport")] = "ws" })
+
 o = s:option(Value, _n("ws_heartbeatPeriod"), translate("HeartbeatPeriod(second)"))
 o.datatype = "integer"
 o:depends({ [_n("transport")] = "ws" })
@@ -587,6 +604,9 @@ o = s:option(Value, _n("httpupgrade_path"), translate("HttpUpgrade Path"))
 o.placeholder = "/"
 o:depends({ [_n("transport")] = "httpupgrade" })
 
+o = s:option(Value, _n("httpupgrade_user_agent"), translate("User-Agent"))
+o:depends({ [_n("transport")] = "httpupgrade" })
+
 -- [[ XHTTP部分 ]]--
 o = s:option(ListValue, _n("xhttp_mode"), "XHTTP " .. translate("Mode"))
 o:depends({ [_n("transport")] = "xhttp" })
@@ -611,8 +631,14 @@ o = s:option(TextValue, _n("xhttp_extra"), " ", translate("An XHttpObject in JSO
 o:depends({ [_n("use_xhttp_extra")] = true })
 o.rows = 15
 o.wrap = "off"
+o.custom_cfgvalue = function(self, section, value)
+	local raw = m:get(section, "xhttp_extra")
+	if raw then
+		return api.base64Decode(raw)
+	end
+end
 o.custom_write = function(self, section, value)
-	m:set(section, self.option:sub(1 + #option_prefix), value)
+	m:set(section, "xhttp_extra", api.base64Encode(value))
 	local success, data = pcall(jsonc.parse, value)
 	if success and data then
 		local address = (data.extra and data.extra.downloadSettings and data.extra.downloadSettings.address)
@@ -635,7 +661,7 @@ o.validate = function(self, value)
 	return value
 end
 o.custom_remove = function(self, section, value)
-	m:del(section, self.option:sub(1 + #option_prefix))
+	m:del(section, "xhttp_extra")
 	m:del(section, "download_address")
 end
 
