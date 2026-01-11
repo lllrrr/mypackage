@@ -289,9 +289,9 @@ function url(...)
 end
 
 function trim(s)
-	local len = #s
-	local i, j = 1, len
-	while i <= len and s:byte(i) <= 32 do i = i + 1 end
+	if type(s) ~= "string" then return "" end
+	local i, j = 1, #s
+	while i <= j and s:byte(i) <= 32 do i = i + 1 end
 	while j >= i and s:byte(j) <= 32 do j = j - 1 end
 	if i > j then return "" end
 	return s:sub(i, j)
@@ -421,7 +421,7 @@ function is_ipv6(val)
 end
 
 function is_local_ip(ip)
-	ip = tostring(ip or ""):lower()
+	ip = trim(ip):lower()
 	ip = ip:gsub("^[%w%d]+://", "")   -- 去掉协议头
 		:gsub("/.*$", "")          -- 去掉路径
 		:gsub("^%[", ""):gsub("%]$", "") -- 去掉IPv6方括号
@@ -1229,7 +1229,7 @@ function get_version()
 end
 
 function to_check_self()
-	local url = "https://raw.githubusercontent.com/xiaorouji/openwrt-passwall/main/luci-app-passwall/Makefile"
+	local url = "https://raw.githubusercontent.com/Openwrt-Passwall/openwrt-passwall/main/luci-app-passwall/Makefile"
 	local tmp_file = "/tmp/passwall_makefile"
 	local return_code, result = curl_auto(url, tmp_file, curl_args)
 	result = return_code == 0

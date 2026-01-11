@@ -202,24 +202,36 @@ gen_lanlist_6() {
 }
 
 get_wan_ip() {
-	local NET_IF
 	local NET_ADDR
-	
-	network_flush_cache
-	network_find_wan NET_IF
-	network_get_ipaddr NET_ADDR "${NET_IF}"
-	
+	local iface
+	local INTERFACES=$(ubus call network.interface dump | jsonfilter -e '@.interface[@.route[0]].interface')
+	for iface in $INTERFACES; do
+		local ipv4
+		network_get_ipaddr ipv4 "$iface"
+		if [ -n "$ipv4" ] && [ "$ipv4" != "0.0.0.0" ]; then
+			case " $NET_ADDR " in
+				*" $ipv4 "*) ;;
+				*) NET_ADDR="${NET_ADDR:+$NET_ADDR }$ipv4" ;;
+			esac
+		fi
+	done
 	echo $NET_ADDR
 }
 
 get_wan6_ip() {
-	local NET_IF
 	local NET_ADDR
-	
-	network_flush_cache
-	network_find_wan6 NET_IF
-	network_get_ipaddr6 NET_ADDR "${NET_IF}"
-	
+	local iface
+	local INTERFACES=$(ubus call network.interface dump | jsonfilter -e '@.interface[@.route[0]].interface')
+	for iface in $INTERFACES; do
+		local ipv6
+		network_get_ipaddr6 ipv6 "$iface"
+		if [ -n "$ipv6" ] && ! echo "$ipv6" | grep -q "^fe80:"; then
+			case " $NET_ADDR " in
+				*" $ipv6 "*) ;;
+				*) NET_ADDR="${NET_ADDR:+$NET_ADDR }$ipv6" ;;
+			esac
+		fi
+	done
 	echo $NET_ADDR
 }
 
@@ -256,8 +268,20 @@ load_acl() {
 			[ -n "$(get_cache_var "ACL_${sid}_udp_node")" ] && udp_node=$(get_cache_var "ACL_${sid}_udp_node")
 			[ -n "$(get_cache_var "ACL_${sid}_udp_redir_port")" ] && udp_port=$(get_cache_var "ACL_${sid}_udp_redir_port")
 			[ -n "$(get_cache_var "ACL_${sid}_dns_port")" ] && dns_redirect_port=$(get_cache_var "ACL_${sid}_dns_port")
-			[ -n "$tcp_node" ] && tcp_node_remark=$(config_n_get $tcp_node remarks)
-			[ -n "$udp_node" ] && udp_node_remark=$(config_n_get $udp_node remarks)
+			[ -n "$tcp_node" ] && {
+				if is_socks_wrap "$tcp_node"; then
+					tcp_node_remark="Socks 配置($(config_n_get ${tcp_node#Socks_} port) 端口)"
+				else
+					tcp_node_remark=$(config_n_get $tcp_node remarks)
+				fi
+			}
+			[ -n "$udp_node" ] && {
+				if is_socks_wrap "$udp_node"; then
+					udp_node_remark="Socks 配置($(config_n_get ${udp_node#Socks_} port) 端口)"
+				else
+					udp_node_remark=$(config_n_get $udp_node remarks)
+				fi
+			}
 
 			use_shunt_tcp=0
 			use_shunt_udp=0
@@ -265,8 +289,16 @@ load_acl() {
 			[ -n "$udp_node" ] && [ "$(config_n_get $udp_node protocol)" = "_shunt" ] && use_shunt_udp=1
 
 			[ "${use_global_config}" = "1" ] && {
-				tcp_node_remark=$(config_n_get $TCP_NODE remarks)
-				udp_node_remark=$(config_n_get $UDP_NODE remarks)
+				if is_socks_wrap "$TCP_NODE"; then
+					tcp_node_remark="Socks 配置($(config_n_get ${TCP_NODE#Socks_} port) 端口)"
+				else
+					tcp_node_remark=$(config_n_get $TCP_NODE remarks)
+				fi
+				if is_socks_wrap "$UDP_NODE"; then
+					udp_node_remark="Socks 配置($(config_n_get ${UDP_NODE#Socks_} port) 端口)"
+				else
+					udp_node_remark=$(config_n_get $UDP_NODE remarks)
+				fi
 				use_direct_list=${USE_DIRECT_LIST}
 				use_proxy_list=${USE_PROXY_LIST}
 				use_block_list=${USE_BLOCK_LIST}
@@ -638,7 +670,11 @@ load_acl() {
 		#  加载TCP默认代理模式
 		if [ -n "${TCP_PROXY_MODE}" ]; then
 			[ -n "$TCP_NODE" ] && {
-				msg2="${msg}使用 TCP 节点[$(config_n_get $TCP_NODE remarks)]"
+				if is_socks_wrap "$TCP_NODE"; then
+					msg2="${msg}使用 TCP 节点[Socks 配置($(config_n_get ${TCP_NODE#Socks_} port) 端口)]"
+				else
+					msg2="${msg}使用 TCP 节点[$(config_n_get $TCP_NODE remarks)]"
+				fi
 				if [ -n "${is_tproxy}" ]; then
 					msg2="${msg2}(TPROXY:${TCP_REDIR_PORT})"
 					ipt_j="-j PSW_RULE"
@@ -693,7 +729,11 @@ load_acl() {
 		#  加载UDP默认代理模式
 		if [ -n "${UDP_PROXY_MODE}" ]; then
 			[ -n "$UDP_NODE" -o "$TCP_UDP" = "1" ] && {
-				msg2="${msg}使用 UDP 节点[$(config_n_get $UDP_NODE remarks)](TPROXY:${UDP_REDIR_PORT})"
+				if is_socks_wrap "$UDP_NODE"; then
+					msg2="${msg}使用 UDP 节点[Socks 配置($(config_n_get ${UDP_NODE#Socks_} port) 端口)](TPROXY:${UDP_REDIR_PORT})"
+				else
+					msg2="${msg}使用 UDP 节点[$(config_n_get $UDP_NODE remarks)](TPROXY:${UDP_REDIR_PORT})"
+				fi
 
 				$ipt_m -A PSW $(comment "默认") -p udp -d $FAKE_IP -j PSW_RULE
 				[ "${USE_PROXY_LIST}" = "1" ] && add_port_rules "$ipt_m -A PSW $(comment "默认") -p udp" $UDP_REDIR_PORTS "$(dst $IPSET_BLACK) -j PSW_RULE"
@@ -961,7 +1001,11 @@ add_firewall_rule() {
 	$ipt_n -A PSW $(dst $IPSET_VPS) -j RETURN
 
 	WAN_IP=$(get_wan_ip)
-	[ ! -z "${WAN_IP}" ] && $ipt_n -A PSW $(comment "WAN_IP_RETURN") -d "${WAN_IP}" -j RETURN
+	[ ! -z "${WAN_IP}" ] && {
+		for wan_ip in $WAN_IP; do
+			$ipt_n -A PSW $(comment "WAN_IP_RETURN") -d "${wan_ip}" -j RETURN
+		done
+	}
 	
 	[ "$accept_icmp" = "1" ] && insert_rule_after "$ipt_n" "PREROUTING" "prerouting_rule" "-p icmp -j PSW"
 	[ -z "${is_tproxy}" ] && insert_rule_after "$ipt_n" "PREROUTING" "prerouting_rule" "-p tcp -j PSW"
@@ -996,10 +1040,12 @@ add_firewall_rule() {
 	$ipt_m -A PSW $(dst $IPSET_VPS) -j RETURN
 	
 	[ ! -z "${WAN_IP}" ] && {
-		$ipt_m -A PSW $(comment "WAN_IP_RETURN") -d "${WAN_IP}" -j RETURN
-		echolog "  - [$?]追加WAN IP到iptables：${WAN_IP}"
+		for wan_ip in $WAN_IP; do
+			$ipt_m -A PSW $(comment "WAN_IP_RETURN") -d "${wan_ip}" -j RETURN
+			echolog "  - [$?]追加WAN IPv4到iptables：${wan_ip}"
+		done
 	}
-	unset WAN_IP
+	unset WAN_IP wan_ip
 
 	insert_rule_before "$ipt_m" "PREROUTING" "mwan3" "-j PSW"
 	insert_rule_before "$ipt_m" "PREROUTING" "PSW" "-p tcp -m socket -j PSW_DIVERT"
@@ -1069,8 +1115,13 @@ add_firewall_rule() {
 	$ip6t_m -A PSW $(dst $IPSET_VPS6) -j RETURN
 	
 	WAN6_IP=$(get_wan6_ip)
-	[ ! -z "${WAN6_IP}" ] && $ip6t_m -A PSW $(comment "WAN6_IP_RETURN") -d ${WAN6_IP} -j RETURN
-	unset WAN6_IP
+	[ ! -z "${WAN6_IP}" ] && {
+		for wan6_ip in $WAN6_IP; do
+			$ip6t_m -A PSW $(comment "WAN6_IP_RETURN") -d ${wan6_ip} -j RETURN
+			echolog "  - [$?]追加WAN IPv6到iptables：${wan6_ip}"
+		done
+	}
+	unset WAN6_IP wan6_ip
 
 	insert_rule_before "$ip6t_m" "PREROUTING" "mwan3" "-j PSW"
 	insert_rule_before "$ip6t_m" "PREROUTING" "PSW" "-p tcp -m socket -j PSW_DIVERT"
@@ -1396,12 +1447,20 @@ gen_include() {
 
 			PR_INDEX=\$(${MY_PATH} RULE_LAST_INDEX "$ipt_n" PSW WAN_IP_RETURN -1)
 			if [ \$PR_INDEX -ge 0 ]; then
-				[ ! -z "\${WAN_IP}" ] && $ipt_n -R PSW \$PR_INDEX $(comment "WAN_IP_RETURN") -d "\${WAN_IP}" -j RETURN
+				[ ! -z "\${WAN_IP}" ] && {
+					for wan_ip in \$WAN_IP; do
+						$ipt_n -R PSW \$PR_INDEX $(comment "WAN_IP_RETURN") -d "\${wan_ip}" -j RETURN
+					done
+				}
 			fi
 
 			PR_INDEX=\$(${MY_PATH} RULE_LAST_INDEX "$ipt_m" PSW WAN_IP_RETURN -1)
 			if [ \$PR_INDEX -ge 0 ]; then
-				[ ! -z "\${WAN_IP}" ] && $ipt_m -R PSW \$PR_INDEX $(comment "WAN_IP_RETURN") -d "\${WAN_IP}" -j RETURN
+				[ ! -z "\${WAN_IP}" ] && {
+					for wan_ip in \$WAN_IP; do
+						$ipt_m -R PSW \$PR_INDEX $(comment "WAN_IP_RETURN") -d "\${wan_ip}" -j RETURN
+					done
+				}
 			fi
 		EOF
 		)
@@ -1428,7 +1487,11 @@ gen_include() {
 			PR_INDEX=\$(${MY_PATH} RULE_LAST_INDEX "$ip6t_m" PSW WAN6_IP_RETURN -1)
 			if [ \$PR_INDEX -ge 0 ]; then
 				WAN6_IP=\$(${MY_PATH} get_wan6_ip)
-				[ ! -z "\${WAN6_IP}" ] && $ip6t_m -R PSW \$PR_INDEX $(comment "WAN6_IP_RETURN") -d "\${WAN6_IP}" -j RETURN
+				[ ! -z "\${WAN6_IP}" ] && {
+					for wan6_ip in \$WAN6_IP; do
+						$ip6t_m -R PSW \$PR_INDEX $(comment "WAN6_IP_RETURN") -d "\${wan6_ip}" -j RETURN
+					done
+				}
 			fi
 		EOF
 		)

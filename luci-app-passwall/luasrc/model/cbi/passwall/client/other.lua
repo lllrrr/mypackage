@@ -94,10 +94,10 @@ o.validate = port_validate
 
 ---- TCP Redir Ports
 o = s:option(Value, "tcp_redir_ports", translate("TCP Redir Ports"))
-o.default = "22,25,53,80,143,443,465,587,853,873,993,995,5222,8080,8443,9418"
 o:value("1:65535", translate("All"))
 o:value("22,25,53,80,143,443,465,587,853,873,993,995,5222,8080,8443,9418", translate("Common Use"))
 o:value("80,443", translate("Only Web"))
+o.default = o.keylist[2]
 o.validate = port_validate
 
 ---- UDP Redir Ports
@@ -250,27 +250,17 @@ if has_xray then
 end
 
 if has_singbox then
-	local version = api.get_app_version("sing-box"):match("[^v]+")
-	local version_ge_1_12_0 = api.compare_versions(version, ">=", "1.12.0")
-
 	s = m:section(TypedSection, "global_singbox", "Sing-Box " .. translate("Settings"))
 	s.anonymous = true
 	s.addremove = false
 
-	o = s:option(Flag, "sniff_override_destination", translate("Override the connection destination address"))
+	o = s:option(Flag, "record_fragment", "TLS Record " .. translate("Fragment"),
+		translate("Split handshake data into multiple TLS records for better censorship evasion. Low overhead. Recommended to enable first."))
 	o.default = 0
-	o.rmempty = false
-	o.description = translate("Override the connection destination address with the sniffed domain.<br />When enabled, traffic will match only by domain, ignoring IP rules.<br />If using shunt nodes, configure the domain shunt rules correctly.")
 
-	if version_ge_1_12_0 then
-		o = s:option(Flag, "record_fragment", "TLS Record " .. translate("Fragment"),
-			translate("Split handshake data into multiple TLS records for better censorship evasion. Low overhead. Recommended to enable first."))
-		o.default = 0
-
-		o = s:option(Flag, "fragment", "TLS TCP " .. translate("Fragment"),
-			translate("Split handshake into multiple TCP segments. Enhances obfuscation. May increase delay. Use only if needed."))
-		o.default = 0
-	end
+	o = s:option(Flag, "fragment", "TLS TCP " .. translate("Fragment"),
+		translate("Split handshake into multiple TCP segments. Enhances obfuscation. May increase delay. Use only if needed."))
+	o.default = 0
 end
 
 return m
