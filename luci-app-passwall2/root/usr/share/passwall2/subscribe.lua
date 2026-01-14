@@ -837,6 +837,22 @@ local function processData(szType, content, add_mode, group)
 						if params.serviceName then result.grpc_serviceName = params.serviceName end
 						result.grpc_mode = params.mode or "gun"
 					end
+					if params.type == 'xhttp' then
+						if result.type ~= "Xray" then
+							result.error_msg = "请更换 Xray 以支持 xhttp 传输方式."
+						end
+						result.xhttp_host = params.host
+						result.xhttp_path = params.path
+						result.xhttp_mode = params.mode or "auto"
+						result.use_xhttp_extra = (params.extra and params.extra ~= "") and "1" or nil
+						result.xhttp_extra = (params.extra and params.extra ~= "") and api.base64Encode(params.extra) or nil
+						local success, Data = pcall(jsonParse, params.extra)
+						if success and Data then
+							local address = (Data.extra and Data.extra.downloadSettings and Data.extra.downloadSettings.address)
+									or (Data.downloadSettings and Data.downloadSettings.address)
+							result.download_address = (address and address ~= "") and address:gsub("^%[", ""):gsub("%]$", "") or nil
+						end
+					end
 					result.tls = "0"
 					if params.security == "tls" or params.security == "reality" then
 						result.tls = "1"
@@ -1208,8 +1224,6 @@ local function processData(szType, content, add_mode, group)
 					local address = (Data.extra and Data.extra.downloadSettings and Data.extra.downloadSettings.address)
 							or (Data.downloadSettings and Data.downloadSettings.address)
 					result.download_address = (address and address ~= "") and address:gsub("^%[", ""):gsub("%]$", "") or nil
-				else
-					result.download_address = nil
 				end
 			end
 			if params.type == 'httpupgrade' then
@@ -1527,8 +1541,10 @@ local function curl(url, file, ua, mode)
 		"-skL", "-w %{http_code}", "--retry 3", "--connect-timeout 3"
 	}
 	if ua and ua ~= "" and ua ~= "curl" then
+		ua = (ua == "passwall2") and ("passwall2/" .. api.get_version()) or ua
 		curl_args[#curl_args + 1] = '--user-agent "' .. ua .. '"'
 	end
+	curl_args[#curl_args + 1] = get_headers()
 	local return_code, result
 	if mode == "direct" then
 		return_code, result = api.curl_direct(url, file, curl_args)
@@ -1538,6 +1554,57 @@ local function curl(url, file, ua, mode)
 		return_code, result = api.curl_auto(url, file, curl_args)
 	end
 	return tonumber(result)
+end
+
+function get_headers()
+	local cache_file = "/tmp/etc/" .. appname .. "_tmp/sub_curl_headers"
+	if fs.access(cache_file) then
+		return luci.sys.exec("cat " .. cache_file)
+	end
+	local headers = {}
+
+	local function readfile(path)
+		local f = io.open(path, "r")
+		if not f then return nil end
+		local c = f:read("*a")
+		f:close()
+		return api.trim(c)
+	end
+
+	headers[#headers + 1] = "x-device-os: OpenWrt"
+
+	local rel = readfile("/etc/openwrt_release")
+	local os_ver = rel and rel:match("DISTRIB_RELEASE='([^']+)'")
+	if os_ver then
+		headers[#headers + 1] = "x-ver-os: " .. os_ver
+	end
+
+	local model = readfile("/tmp/sysinfo/model")
+	if model then
+		headers[#headers + 1] = "x-device-model: " .. model
+	end
+
+	local mac = readfile("/sys/class/net/eth0/address")
+	if mac and model then
+		local raw = mac .. "-" .. model
+		local p = io.popen("printf '%s' '" .. raw:gsub("'", "'\\''") .. "' | sha256sum")
+		if p then
+			local hash = p:read("*l")
+			p:close()
+			hash = hash and hash:match("^%w+")
+			if hash then
+				headers[#headers + 1] = "x-hwid: " .. hash
+			end
+		end
+	end
+
+	local out = {}
+	for i = 1, #headers do
+		out[i] = "-H '" .. headers[i]:gsub("'", "'\\''") .. "'"
+	end
+	local headers_str = table.concat(out, " ")
+	local f = io.open(cache_file, "w"); if f then f:write(headers_str); f:close() end
+	return headers_str
 end
 
 local function truncate_nodes(group)
