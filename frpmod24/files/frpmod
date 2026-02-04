@@ -12,14 +12,12 @@ start() {
         
     if ping -c 3 -W 5 frp.ydns.xyz >/dev/null 2>&1; then
         uci set frpc.common.server_addr='frp.ydns.xyz'
-        uci set frpc.ssh.remote_port='63080'
         uci commit frpc
         /etc/init.d/frpc restart
         logger "FRP service started with ID: $frpnum (ydns reachable)"
     else
     if ping -c 3 -W 5 frp.201088.xyz >/dev/null 2>&1; then
         uci set frpc.common.server_addr='frp.201088.xyz'
-        uci set frpc.ssh.remote_port='63080'
         uci commit frpc
         /etc/init.d/frpc restart
         logger "FRP service started with ID: $frpnum (201088 reachable)"
