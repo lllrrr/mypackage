@@ -3,7 +3,7 @@
 START=99
 
 start() {
-    sleep 5
+    sleep 10
     
     frpnum=$(echo "$(ifconfig br-lan | grep "HWaddr" | awk '{print $5}')" | tr 'A-Z' 'a-z' | tr -d ":")
     uci set frpc.ssh.name=$frpnum
