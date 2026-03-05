@@ -200,10 +200,12 @@ local NODE = m:get("@global[0]", "node")
 o = s:option(ListValue, "node", "<a style='color: red'>" .. translate("Node") .. "</a>")
 if GLOBAL_ENABLED == "1" and NODE then
 	o:value("", translate("Use global config") .. "(" .. api.get_node_name(NODE) .. ")")
+	o.group = {""}
+else
+	o.group = {}
 end
 o:depends({ _hide_node_option = "1",  ['!reverse'] = true })
 o.template = appname .. "/cbi/nodes_listvalue"
-o.group = {}
 
 o = s:option(DummyValue, "_hide_dns_option", "")
 o.template = "passwall2/cbi/hidevalue"
@@ -212,11 +214,6 @@ o:depends({ node = "" })
 if GLOBAL_ENABLED == "1" and NODE then
 	o:depends({ node = NODE })
 end
-
-o = s:option(DummyValue, "_xray_node", "")
-o.template = "passwall2/cbi/hidevalue"
-o.value = "1"
-o:depends({ __hide = true })
 
 ---- TCP Redir Ports
 local TCP_REDIR_PORTS = m:get("@global_forwarding[0]", "tcp_redir_ports")
@@ -236,7 +233,7 @@ o:value("1:65535", translate("All"))
 o.validate = port_validate
 o:depends({ _hide_node_option = "1",  ['!reverse'] = true })
 
-o = s:option(DummyValue, "tips", " ")
+o = s:option(DummyValue, "tips", "　")
 o.rawhtml = true
 o.cfgvalue = function(t, n)
 	return string.format('<font color="red">%s</font>',
@@ -249,10 +246,6 @@ o:value("UseIP")
 o:value("UseIPv4")
 o:value("UseIPv6")
 o:depends({ _hide_dns_option = "1",  ['!reverse'] = true })
-
-o = s:option(Flag, "write_ipset_direct", translate("Direct DNS result write to IPSet"), translate("Perform the matching direct domain name rules into IP to IPSet/NFTSet, and then connect directly (not entering the core). Maybe conflict with some special circumstances."))
-o.default = "1"
-o:depends({ direct_dns_query_strategy = "",  ['!reverse'] = true })
 
 o = s:option(ListValue, "remote_dns_protocol", translate("Remote DNS Protocol"))
 o:value("tcp", "TCP")
@@ -310,9 +303,6 @@ o:depends("remote_dns_protocol", "udp")
 o = s:option(Flag, "remote_fakedns", "FakeDNS", translate("Use FakeDNS work in the domain that proxy."))
 o.default = "0"
 o.rmempty = false
-o:depends("remote_dns_protocol", "tcp")
-o:depends("remote_dns_protocol", "doh")
-o:depends("remote_dns_protocol", "udp")
 
 o = s:option(ListValue, "remote_dns_query_strategy", translate("Remote Query Strategy"))
 o.default = "UseIPv4"
@@ -323,15 +313,20 @@ o:depends("remote_dns_protocol", "tcp")
 o:depends("remote_dns_protocol", "doh")
 o:depends("remote_dns_protocol", "udp")
 
+o = s:option(ListValue, "dns_hosts_mode", translate("Domain Override"))
+o:value("default", translate("Use global config"))
+o:value("disable", translate("No patterns are used"))
+o:value("custom", translate("-- custom --"))
+
 o = s:option(TextValue, "dns_hosts", translate("Domain Override"))
 o.rows = 5
 o.wrap = "off"
-o:depends({ __hide = true })
+o:depends("dns_hosts_mode", "custom")
 o.remove = function(self, section)
 	local node_value = s.fields["node"]:formvalue(arg[1])
 	if node_value then
 		local node_t = m:get(node_value) or {}
-		if node_t.type == "Xray" then
+		if node_t.type == "Xray" or node_t.type == "sing-box" then
 			AbstractValue.remove(self, section)
 		end
 	end
@@ -342,11 +337,12 @@ local o_node = s.fields["node"]
 for k, v in pairs(nodes_table) do
 	o_node:value(v.id, v["remark"])
 	o_node.group[#o_node.group+1] = (v.group and v.group ~= "") and v.group or translate("default")
-	if v.type == "Xray" then
-		s.fields["_xray_node"]:depends({ node = v.id })
+	if v.node_type == "normal" or v.protocol == "_balancing" or v.protocol == "_urltest" then
+		--Shunt node has its own separate options.
+		s.fields["remote_fakedns"]:depends({ node = v.id, remote_dns_protocol = "tcp" })
+		s.fields["remote_fakedns"]:depends({ node = v.id, remote_dns_protocol = "doh" })
+		s.fields["remote_fakedns"]:depends({ node = v.id, remote_dns_protocol = "udp" })
 	end
 end
-
-s.fields["dns_hosts"]:depends({ _xray_node = "1" })
 
 return m
