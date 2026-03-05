@@ -21,6 +21,11 @@ table .cbi-button-down {
 	line-height: inherit;
 	user-select: none;
 	align-self: stretch;
+	background-color: transparent;
+}
+
+.drag-handle:hover {
+	background: transparent;
 }
 
 .dragging-row {
@@ -137,7 +142,7 @@ table .cbi-button-down {
 	}
 
 	//订阅列表添加拖拽排序
-	(function () {
+	document.addEventListener("DOMContentLoaded", function () {
 		function initSortableForTable() {
 			var section = document.getElementById("cbi-<%=api.appname%>-subscribe_list");
 			if (!section) return;
@@ -252,12 +257,12 @@ table .cbi-button-down {
 
 				last = count;
 				if (stable >= THRESHOLD)
-					initSortableForTable();
+					setTimeout(initSortableForTable, 200);
 				else
 					requestAnimationFrame(tick);
 			}
 			tick();
 		})();
-	})();
+	});
 	//]]>
 </script>
