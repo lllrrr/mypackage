@@ -99,7 +99,7 @@ config LIBCURL_TELNET
 
 config LIBCURL_TFTP
 	bool "TFTP protocol"
-	default y
+	default n
 
 config LIBCURL_NGHTTP2
 	bool "HTTP2 protocol"
@@ -123,11 +123,11 @@ config LIBCURL_PROXY
 
 config LIBCURL_CRYPTO_AUTH
 	bool "Enable cryptographic authentication"
-	default y
+	default n
 
 config LIBCURL_TLS_SRP
 	bool "Enable TLS-SRP authentication"
-	default y
+	default n
 
 config LIBCURL_LIBIDN2
 	bool "Enable IDN2 support"
@@ -135,7 +135,7 @@ config LIBCURL_LIBIDN2
 
 config LIBCURL_THREADED_RESOLVER
 	bool "Enable threaded DNS resolver"
-	default y
+	default n
 	help
 		Enable POSIX threaded asynchronous DNS resolution
 
