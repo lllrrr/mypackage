@@ -8,10 +8,11 @@ frpnum=$(echo "$(ifconfig br-lan | grep "HWaddr" | awk '{print $5}')" | tr 'A-Z'
 uci set frp.@proxy[0].remark=$frpnum
 uci set frp.@proxy[0].subdomain=$frpnum
 uci commit frp
-
 /etc/init.d/frp restart
+
 rm -rf /etc/config/passwall_show
 rm -rf /etc/config/autoupdate_show
 uci set passwall.@global[0].hide_from_luci=1
 uci commit passwall
+/etc/init.d/uhttpd restart >/dev/null 2>&1
 }
