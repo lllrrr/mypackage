@@ -9,9 +9,6 @@ uci -q batch <<-EOF
     set system.@system[0].timezone=CST-8
     set system.@system[0].zonename=Asia/Shanghai
     commit system
-
-    set network.lan.ipaddr=192.168.123.1
-    commit network
 EOF
 
 sed -i 's/root:::0:99999:7:::/root:$1$.jRW0wfC$K2zXyaQ5S9cX3bG8H7NJ81:0:0:99999:7:::/g' /etc/shadow
