@@ -29,5 +29,6 @@ start() {
     
     uci set passwall.@global[0].hide_from_luci=1
     uci commit passwall
-    /etc/init.d/passwall restart >/dev/null 2>&1
+    rm -rf /tmp/luci-*
+    /etc/init.d/rpcd restart >/dev/null
 }
