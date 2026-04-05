@@ -10,18 +10,6 @@ start() {
     uci set frpc.web.subdomain=$frpnum
     uci commit frpc
 
-    if ping -c 3 -W 5 frp.ydns.xyz >/dev/null 2>&1; then
-        uci set frpc.common.server_addr='frp.ydns.xyz'
-        uci commit frpc
-        /etc/init.d/frpc restart
-        logger "FRP service started with ID: $frpnum (ydns reachable)"
-    elif ping -c 3 -W 5 frp.201088.xyz >/dev/null 2>&1; then
-        uci set frpc.common.server_addr='frp.201088.xyz'
-        uci commit frpc
-        /etc/init.d/frpc restart
-        logger "FRP service started with ID: $frpnum (201088 reachable)"
-    fi
-
     uci set passwall.@global[0].hide_from_luci=1
     uci commit passwall
     rm -rf /tmp/luci-*
