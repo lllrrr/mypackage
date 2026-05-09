@@ -118,6 +118,12 @@ msgstr "0為不使用"
 msgid "Current node: %s"
 msgstr "當前節點：%s"
 
+msgid "Direct domain DNS routing"
+msgstr "直連網域 DNS 分流"
+
+msgid "Please note that the program will not start if the format is incorrect!"
+msgstr "請注意，格式不正確將無法啟動！"
+
 msgid "IP:Port mode acceptable, multi value split with english comma."
 msgstr "接受 IP:Port 形式的輸入，多個以英文逗号分隔。"
 
@@ -738,6 +744,12 @@ msgstr "劫持ICMP (PING)"
 
 msgid "Hijacking ICMPv6 (IPv6 PING)"
 msgstr "劫持ICMPv6 (IPv6 PING)"
+
+msgid "Force Proxy LAN IP"
+msgstr "強制代理內網IP段"
+
+msgid "By default, commonly used internal network IP ranges will be connect directly (not entering the core). If you want a certain network range to go through a proxy, please add it here."
+msgstr "預設情況下，常用內網IP網段將直連（不進入核心），如果你希望某個網段走代理，請在此新增。"
 
 msgid "Sniffing"
 msgstr "流量嗅探"
@@ -1624,14 +1636,14 @@ msgstr "缓衝区大小"
 msgid "Buffer size for every connection (kB)"
 msgstr "每一個連接的缓衝区大小（kB）"
 
-msgid "Handshake Timeout"
-msgstr "握手超時 "
-
 msgid "Idle Timeout"
-msgstr "空闲超時 "
+msgstr "空闲超時"
 
-msgid "Hop Interval"
-msgstr "端口跳跃時間 "
+msgid "Hop Interval(second)"
+msgstr "端口跳躍間隔（秒）"
+
+msgid "Supports a fixed value or a random range (e.g., 30, 5-30), minimum 5."
+msgstr "支援固定值或隨機範圍（如 30 或 5-30），最小 5 秒。"
 
 msgid "HeartbeatPeriod(second)"
 msgstr "心跳周期（單位：秒）"
@@ -1750,6 +1762,15 @@ msgstr "延迟（ms）"
 msgid "If is domain name, The requested domain name will be resolved to IP before connect."
 msgstr "如果是域名，域名將在請求發出之前解析為 IP。"
 
+msgid "Domain DNS Resolve"
+msgstr "域名 DNS 解析"
+
+msgid "If the node address is a domain name, this DNS will be used for resolution."
+msgstr "如果節點地址是域名，則將使用此 DNS 進行解析。"
+
+msgid "Supports only Xray or Sing-box node types."
+msgstr "僅支援 Xray 或 Sing-box 類型節點。"
+
 msgid "Chain Proxy"
 msgstr "鏈式代理"
 
@@ -1763,11 +1784,8 @@ msgid ""
 "Chained proxy works only with Xray or Sing-box nodes.<br>"
 "You can only use manual or imported nodes as chained nodes."
 msgstr ""
-"鏈式代理仅支持 Xray 与 Sing-box 節點。<br>"
+"鏈式代理仅支持 Xray 或 Sing-box 節點。<br>"
 "仅支持手動添加或導入的節點用作鏈式節點。"
-
-msgid "Set the default domain resolution strategy for the sing-box node."
-msgstr "為 sing-box 節點設置默認的域名解析策略。"
 
 msgid "Prefer IPv4"
 msgstr "IPv4 優先"
@@ -2204,6 +2222,12 @@ msgstr "入口 %s:%s"
 msgid "Node: %s:%s, Weight: %s"
 msgstr "節點：%s:%s，權重：%s"
 
+msgid "[Rule update] instance is running; please try again later."
+msgstr "[規則更新]實例正在運行，請稍後再試..."
+
+msgid "[Subscription] instance is running; [Rule Update] queue and wait."
+msgstr "[訂閱]實例正在運行，[規則更新]進入隊列等待..."
+
 msgid "Start updating the rules..."
 msgstr "開始更新規則..."
 
@@ -2356,6 +2380,12 @@ msgstr "獲取到的【%s】訂閱內容為空，可能是訂閱地址無效，�
 
 msgid "Proxy"
 msgstr "代理"
+
+msgid "[Subscription] instance is running; please try again later."
+msgstr "[訂閱]實例正在運行，請稍後再試..."
+
+msgid "[Rule Update] instance is running; [Subscription] queue and wait."
+msgstr "[規則更新]實例正在運行，[訂閱]進入隊列等待..."
 
 msgid "Start subscribing..."
 msgstr "開始訂閱..."

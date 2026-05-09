@@ -1,0 +1,818 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Network Wizard"
+msgstr "網路設定"
+
+msgid "Netwiz NETWORK SETUP"
+msgstr "Netwiz 網路設定精靈"
+
+msgid "Pure · Secure · Non-destructive Minimalist Config"
+msgstr "純粹 · 安全 · 無損的極簡設定"
+
+msgid "Secondary Router Mode"
+msgstr "二級路由模式"
+
+msgid "Upstream network dials up, this device acts as a secondary router."
+msgstr "上級網路負責撥號，本設備作為二級路由使用。"
+
+msgid "PPPoE Dial-up"
+msgstr "PPPoE 撥號"
+
+msgid "Dial up directly using account and password on this device."
+msgstr "在本設備上直接使用寬頻帳號和密碼進行撥號。"
+
+msgid "LAN Settings"
+msgstr "區域網路設定"
+
+msgid "Change device LAN IP, or switch to AP Wired Relay mode."
+msgstr "修改設備的區域網路 IP，或切換至旁路由（AP有線中繼）模式。"
+
+msgid "Reading underlying config..."
+msgstr "正在讀取底層設定..."
+
+msgid "Back to Home"
+msgstr "返回首頁"
+
+msgid "Configure WAN"
+msgstr "設定外網 (WAN)"
+
+msgid "Connection Type"
+msgstr "連線方式"
+
+msgid "DHCP (Auto)"
+msgstr "自動取得 IP (DHCP)"
+
+msgid "Static IP"
+msgstr "靜態 IP"
+
+msgid "Gateway"
+msgstr "閘道器"
+
+msgid "e.g., 192.168.1.2"
+msgstr "例如：192.168.1.2"
+
+msgid "e.g., 192.168.1.1"
+msgstr "例如：192.168.1.1"
+
+msgid "PPPoE Credentials"
+msgstr "PPPoE 撥號資訊"
+
+msgid "PPPoE Username"
+msgstr "寬頻帳號"
+
+msgid "Enter PPPoE username"
+msgstr "請輸入寬頻帳號"
+
+msgid "PPPoE Password"
+msgstr "寬頻密碼"
+
+msgid "Enter PPPoE password"
+msgstr "請輸入寬頻密碼"
+
+msgid "Configure LAN"
+msgstr "設定區域網路 (LAN)"
+
+msgid "Safe Mode (Recommended ON)"
+msgstr "安全模式 (建議開啟，防失聯)"
+
+msgid "Enable AP Wired Relay"
+msgstr "啟用旁路由（AP有線中繼）模式"
+
+msgid "<b style=\"font-size: 16px;\">AP Wired Relay Enabled:</b><br>1. DHCP will be disabled. <b style=\"color: #059669;\">Devices must use static IPs or get IPs from upstream.</b><br>2. If LAN IP changes, ensure your client is in the same subnet to avoid <b style=\"color: #059669;\">losing access</b>."
+msgstr "<b style=\"font-size: 16px;\">AP 有線中繼模式已開啟：</b><br>1. DHCP 將被禁用。<b style=\"color: #059669;\">設備必須使用靜態 IP 或由上級路由分配 IP。</b><br>2. 若修改了區域網 IP，請確保設備與新 IP 處於同一網段，以免<b style=\"color: #059669;\">防失聯回滾觸發</b>。"
+
+msgid "<b style=\"font-size: 16px;\">Main Router Mode Enabled:</b><br>1. DHCP will be enabled. This device assigns IPs.<br>2. If LAN IP changes, ensure your client is in the same subnet to avoid <b style=\"color: #ef4444;\">losing access</b>."
+msgstr "<b style=\"font-size: 16px;\">主路由模式已開啟：</b><br>1. DHCP 服務將開啟，由本設備負責分配區域網 IP。<br>2. 若修改了區域網 IP，請確保設備與新 IP 處於同一網段，以免<b style=\"color: #ef4444;\">防失聯回滾觸發</b>。"
+
+msgid "Device LAN IP"
+msgstr "設備區域網路 IP"
+
+msgid "LAN Gateway"
+msgstr "區域網路閘道器"
+
+msgid "Blank for Main, required for AP Wired Relay"
+msgstr "主路由留空，旁路由（AP有線中繼）必填"
+
+msgid "Back"
+msgstr "上一步"
+
+msgid "Next Step"
+msgstr "下一步"
+
+msgid "Back to Edit"
+msgstr "返回修改"
+
+msgid "Confirm Configuration"
+msgstr "確認設定資訊"
+
+msgid "The following settings will be applied, please verify:"
+msgstr "即將套用以下網路設定，請仔細核對："
+
+msgid "Application Notes:"
+msgstr "套用須知："
+
+msgid "After confirmation, the network will restart and apply new settings."
+msgstr "確認後，系統將重啟網路服務以套用新設定。"
+
+msgid "The system will auto-refresh or redirect in 15 seconds."
+msgstr "大約 15 秒後，頁面將自動重新整理或跳轉。"
+
+msgid "Apply Settings"
+msgstr "確認並套用"
+
+msgid "AP Wired Relay"
+msgstr "旁路由（AP有線中繼）模式"
+
+msgid "Main Router (PPPoE)"
+msgstr "主路由 (PPPoE 撥號)"
+
+msgid "Secondary Router (DHCP)"
+msgstr "二級路由 (自動取得)"
+
+msgid "Secondary Router (Static IP)"
+msgstr "二級路由 (靜態 IP)"
+
+msgid "LAN Mode"
+msgstr "區域網路模式"
+
+msgid "Device IP:"
+msgstr "設備 IP："
+
+msgid "Upstream GW:"
+msgstr "上級閘道器："
+
+msgid "Public IP:"
+msgstr "公網 IP："
+
+msgid "Remote GW:"
+msgstr "遠端閘道器："
+
+msgid "LAN IP:"
+msgstr "區域網路 IP："
+
+msgid "Status:"
+msgstr "狀態："
+
+msgid "Waiting for remote response"
+msgstr "等待遠端回應..."
+
+msgid "WAN IP:"
+msgstr "外網 IP："
+
+msgid "Getting IP..."
+msgstr "正在取得 IP..."
+
+msgid "DHCP Service:"
+msgstr "DHCP 服務："
+
+msgid "Enabled"
+msgstr "已開啟"
+
+msgid "Disabled"
+msgstr "已停用"
+
+msgid "Dial Success"
+msgstr "撥號成功"
+
+msgid "Dialing / Disconnected"
+msgstr "撥號中 / 未連線"
+
+msgid "IP Acquired"
+msgstr "已取得 IP"
+
+msgid "Waiting for IP..."
+msgstr "等待分配 IP..."
+
+msgid "Interface Connected"
+msgstr "介面已連線"
+
+msgid "Cable Unplugged"
+msgstr "網路線未插入"
+
+msgid "Getting..."
+msgstr "取得中..."
+
+msgid "Not acquired"
+msgstr "未取得"
+
+msgid "Not set"
+msgstr "未設定"
+
+msgid "Incomplete info"
+msgstr "資訊不完整"
+
+msgid "Device IP cannot be empty."
+msgstr "設備 IP 不能為空。"
+
+msgid "Static IP and Gateway cannot be empty."
+msgstr "靜態 IP 和閘道器不能為空。"
+
+msgid "PPPoE username and password cannot be empty."
+msgstr "寬頻帳號和密碼不能為空。"
+
+msgid "Format Error"
+msgstr "格式錯誤"
+
+msgid "The device IP is invalid, please check!"
+msgstr "設備 IP 格式不正確，請檢查！"
+
+msgid "WAN IP is invalid, please check!"
+msgstr "外網 IP 格式不正確，請檢查！"
+
+msgid "Gateway IP is invalid, please check!"
+msgstr "閘道器 IP 格式不正確，請檢查！"
+
+msgid "Logic Error"
+msgstr "邏輯錯誤"
+
+msgid "AP Wired Relay requires an upstream gateway IP."
+msgstr "旁路由（AP有線中繼）模式下，閘道器為必填項。"
+
+msgid "WAN Static IP MUST NOT be the same as the gateway!"
+msgstr "WAN 靜態 IP 絕對不能和閘道器一模一樣！"
+
+msgid "The AP Wired Relay Device IP MUST NOT be the same as the Gateway!"
+msgstr "旁路由（AP有線中繼）的設備 IP 絕對不能和上級閘道器一模一樣！"
+
+msgid "No Changes Needed"
+msgstr "未發生更改"
+
+msgid "Your settings match the current router config exactly."
+msgstr "您的設定與底層設定完全一致，無需重複下發。"
+
+msgid "Exit to Home"
+msgstr "返回首頁"
+
+msgid "Conflict Blocked"
+msgstr "設定衝突攔截"
+
+msgid "The WAN IP cannot be the same as the current LAN IP ({ip})!"
+msgstr "WAN 埠 IP 不能與目前區域網路 IP ({ip}) 相同！"
+
+msgid "The WAN port cannot be in the same subnet as the LAN ({ip})!"
+msgstr "WAN 埠不能與區域網路 ({ip}) 處於同一網段！"
+
+msgid "This causes a routing loop."
+msgstr "這會導致嚴重的路由迴圈。"
+
+msgid "Suggestion: Your upstream network uses the same IP subnet. Please go to [LAN Settings] first and change your Device LAN IP (e.g. to 192.168.10.1) to prevent network crash."
+msgstr "建議：您的上級網路使用了相同的 IP 網段。請先前往【區域網路設定】，修改本設備的區域網路 IP（例如改為 192.168.10.1）以防止網路癱瘓。"
+
+msgid "Subnet Error"
+msgstr "網段錯誤"
+
+msgid "The WAN Static IP must be in the same subnet as the Gateway!"
+msgstr "WAN 靜態 IP 必須與閘道器處於同一網段！"
+
+msgid "e.g., if gateway is {gw}, the IP must be {ip}.x"
+msgstr "例如：如果閘道器是 {gw}，則 IP 必須是 {ip}.x"
+
+msgid "The AP Wired Relay Device IP must be in the same subnet as the Gateway!"
+msgstr "旁路由（AP有線中繼）的設備 IP 必須與上級閘道器處於同一網段！"
+
+msgid "Config Warning"
+msgstr "高危操作警告"
+
+msgid "You selected [Main Router Mode] but filled in the [Gateway].<br><br><b>For a standard main router, the gateway must be blank.</b> Entering a gateway may cause the device to fail at distributing network, leading to a total outage!<br><br>Are you sure you want to do this?"
+msgstr "您選擇了【主路由模式】，但填寫了【閘道器】。<br><br><b>作為主路由，閘道器必須留空。</b>強行指定閘道器極易導致底層路由表錯亂，全屋斷網！<br><br>您確定要繼續強行保存嗎？"
+
+msgid "Force Apply"
+msgstr "確認強行保存"
+
+msgid "System Exception"
+msgstr "系統異常"
+
+msgid "Cannot read underlying config for validation, please refresh."
+msgstr "無法讀取底層設定進行防呆校驗，請重新整理頁面重試。"
+
+msgid "Applying Configuration"
+msgstr "正在套用設定"
+
+msgid "Close"
+msgstr "關閉"
+
+msgid "Account"
+msgstr "帳號"
+
+msgid "Password"
+msgstr "密碼"
+
+msgid "IP & Gateway"
+msgstr "IP 與閘道器"
+
+msgid "Auto-assigned by upstream router"
+msgstr "由上級路由自動分配"
+
+msgid "Target:"
+msgstr "目標："
+
+msgid "Modifying LAN IP"
+msgstr "正在修改區域網路 IP"
+
+msgid "Switching to AP Wired Relay"
+msgstr "正在切換至旁路由（AP有線中繼）模式"
+
+msgid "Switching WAN to DHCP"
+msgstr "正在切換 WAN 埠為 DHCP (自動取得)"
+
+msgid "Switching WAN to Static IP"
+msgstr "正在切換 WAN 埠為靜態 IP"
+
+msgid "Applying PPPoE Dial-up"
+msgstr "正在套用 PPPoE 撥號"
+
+msgid "Writing configuration to system, please do not close the page..."
+msgstr "正在將設定寫入系統，請勿關閉頁面..."
+
+msgid "Connecting to new IP... Config will auto-rollback upon timeout."
+msgstr "正在嘗試連接新 IP... 失聯超時將會自動回滾配置"
+
+msgid "Waiting for network service to restart... Elapsed: {sec}s"
+msgstr "正在等待網路服務重啟... 已耗時：{sec}秒"
+
+msgid "Waiting for router to safely restore... Elapsed: {sec}s"
+msgstr "正在等待舊 IP 恢復... 已耗時：{sec}秒"
+
+msgid "Rollback countdown: <b style=\"color:#f59e0b;\">{sec}</b> / {total} s"
+msgstr "防失聯倒數計時：<b style=\"color:#f59e0b;\">{sec}</b> / {total} 秒"
+
+msgid "If enabled, the system will auto-revert if you lose connection within 120s."
+msgstr "開啟後，若修改 IP 導致失聯，系統將在 120 秒後自動回退恢復。"
+
+msgid "Safe mode disabled. Applying immediately without rollback protection..."
+msgstr "已關閉防失聯保護，配置立刻生效。"
+
+msgid "If IP changed, please update PC IP. Auto-redirecting when connected..."
+msgstr "若 IP 修改引發失聯，將設備 IP 改為同網段即可正常存取路由器，網路連通後將自動跳轉…"
+
+msgid "Waiting for router to abort changes and restore network..."
+msgstr "正在等待路由器放棄修改並恢復網絡..."
+
+msgid "Wi-Fi Settings"
+msgstr "Wi-Fi 設定"
+
+msgid "Configure wireless network, SSID, and password."
+msgstr "設定無線網路名稱、密碼及加密方式。"
+
+msgid "Configure Wi-Fi"
+msgstr "設定 Wi-Fi"
+
+msgid "Smart Connect (All Bands)"
+msgstr "多頻合一 (智能漫遊)"
+
+msgid "Enable Wi-Fi"
+msgstr "啟用 Wi-Fi"
+
+msgid "Enable 2.4G Wi-Fi"
+msgstr "啟用 2.4G Wi-Fi"
+
+msgid "Enable 5G Wi-Fi"
+msgstr "啟用 5G/雙路 Wi-Fi"
+
+msgid "Network Name (SSID)"
+msgstr "無線網路名稱 (SSID)"
+
+msgid "Wi-Fi Password"
+msgstr "Wi-Fi 密碼"
+
+msgid "Encryption"
+msgstr "加密方式"
+
+msgid "Enable 802.11b (Legacy Mode)"
+msgstr "啟用 802.11b (舊版相容模式)"
+
+msgid "Only enable if very old IoT devices cannot connect."
+msgstr "僅在極舊的智慧家電/物聯網設備無法連線時才建議開啟。"
+
+msgid "No Password (Open)"
+msgstr "無密碼 (開放)"
+
+msgid "WPA2-PSK (Stable)"
+msgstr "WPA2-PSK (穩定相容)"
+
+msgid "WPA3-SAE (Secure)"
+msgstr "WPA3-SAE (高安全性)"
+
+msgid "WPA2/WPA3 Mixed (Recommended)"
+msgstr "WPA2/WPA3 混合 (建議)"
+
+msgid "2.4G Wi-Fi"
+msgstr "2.4G Wi-Fi"
+
+msgid "5G Wi-Fi"
+msgstr "5G/雙路 Wi-Fi"
+
+msgid "SSID cannot be empty."
+msgstr "網路名稱 (SSID) 不能為空。"
+
+msgid "Wi-Fi password must be at least 8 characters."
+msgstr "Wi-Fi 密碼長度必須至少為 8 個字元。"
+
+msgid "Applying Wi-Fi Settings"
+msgstr "正在套用 Wi-Fi 設定"
+
+msgid "Advanced Settings"
+msgstr "進階設定"
+
+msgid "Hide Advanced"
+msgstr "收起進階設定"
+
+msgid "Hide Wi-Fi Name (SSID)"
+msgstr "隱藏 Wi-Fi 名稱"
+
+msgid "Channel"
+msgstr "頻道 (Channel)"
+
+msgid "Channel Width"
+msgstr "通道寬度 (頻寬)"
+
+msgid "Auto"
+msgstr "自動"
+
+msgid "Wireless Mode"
+msgstr "無線模式 (Mode)"
+
+msgid "⚠️ Severe Warning"
+msgstr "⚠️ 嚴重警告"
+
+msgid "Forcibly modifying the wireless physical mode may cause the hardware driver to crash or the Wi-Fi to disappear permanently if the chip does not support it! It is highly recommended to keep it on [Auto].<br><br>Are you absolutely sure you want to change this?"
+msgstr "如果強行指定的物理模式與網卡晶片實際支援的能力不匹配，將導致<b>底層驅動直接崩潰、Wi-Fi 永久消失！</b>強烈建議保持為【自動 (推薦)】。<br><br>您確定要強行修改模式嗎？"
+
+msgid "Enable IPv6 (DHCPv6)"
+msgstr "啟用 IPv6 (DHCPv6)"
+
+msgid "Wi-Fi Status"
+msgstr "Wi-Fi 狀態"
+
+msgid "5G Wi-Fi Account"
+msgstr "5G/雙路 Wi-Fi 帳號"
+
+msgid "2.4G Wi-Fi Account"
+msgstr "2.4G Wi-Fi 帳號"
+
+msgid "No Password"
+msgstr "無密碼"
+
+msgid "Enable Wireless Relay (WISP)"
+msgstr "啟用無線中繼 (WISP)"
+
+msgid "Receive upstream Wi-Fi and broadcast your own network."
+msgstr "接收上級 Wi-Fi 信號，並廣播您自己的專屬網絡。"
+
+msgid "WISP Enabled"
+msgstr "已開啟無線中繼"
+
+msgid "Scan Nearby Wi-Fi"
+msgstr "掃描附近 Wi-Fi"
+
+msgid "Select Upstream Network"
+msgstr "選擇上級網絡"
+
+msgid "Password for upstream:"
+msgstr "上級 Wi-Fi 密碼："
+
+msgid "Scanning..."
+msgstr "正在掃描..."
+
+msgid "No networks found."
+msgstr "未找到任何網絡。"
+
+msgid "Scan failed. Driver might be busy."
+msgstr "掃描失敗。無線驅動可能繁忙，請重試。"
+
+msgid "Target Wi-Fi"
+msgstr "目標 Wi-Fi 名稱"
+
+msgid "Upstream Wi-Fi Password"
+msgstr "請輸入上級 Wi-Fi 的密碼"
+
+msgid "802.11k/v/r Fast Roaming"
+msgstr "802.11k/v/r 無縫漫遊"
+
+msgid "Enable seamless roaming between routers with one click (Prerequisite: Same SSID, password, and LAN). Note: May cause connection issues with older smart home (IoT) devices."
+msgstr "一鍵開啟路由器間的無縫切換（基本前提：帳號、密碼一樣 + 同一區域網路）。注意：可能導致老舊的智慧家庭（IoT）設備無法連線。"
+
+msgid "⚠️ Manual Configuration Warning"
+msgstr "⚠️ 手動設定警告"
+
+msgid "Underlying parameter mismatch detected, which may cause roaming failures. Please toggle this switch off and on again, then save to apply the standard seamless roaming profile."
+msgstr "檢測到底層參數與預設不一致，可能會導致漫遊失敗。建議將開關關閉後重新開啟，儲存後即可加入多設備全空間「絲滑」跳轉的「朋友圈」。"
+
+msgid "Roaming"
+msgstr "漫遊"
+
+msgid "Roaming Enabled"
+msgstr "已開通漫遊"
+
+msgid "Click to Fix"
+msgstr "點擊修復"
+
+msgid "Click to Settings"
+msgstr "點擊直達設定"
+
+msgid "WAN Blind-Switch: Unplug the WAN cable for 10 seconds and reconnect to auto-detect and switch the connection type (takes about 2 mins)."
+msgstr "<b style=\"color: #ef4444;\">盲切WAN 口上網方式：斷開 WAN 網線 10 秒再插回，系統會自動偵測並切換上網方式（過程約 2 分鐘）</b>"
+
+msgid "New Config"
+msgstr "新建"
+
+msgid "Modified"
+msgstr "新修改"
+
+msgid "Security Warning"
+msgstr "⚠️ 無密碼安全警告"
+
+msgid "You are setting up an Open Wi-Fi network without a password. Anyone nearby will be able to connect and access your network.<br><br>Are you sure you want to continue?"
+msgstr "您正在設定無密碼的開放 Wi-Fi，附近任何人都可以隨意連線並存取您的區域網路設備。<br><br>您確定要繼續嗎？"
+
+msgid "✨ Quick Setup Wizard"
+msgstr "✨ 新機首次運行引導"
+
+msgid "Step 1: Internet Setup"
+msgstr "第一步：上網設定"
+
+msgid "Step 2: Wi-Fi Setup"
+msgstr "第二步：Wi-Fi 設定"
+
+msgid "Set your wireless network name and password."
+msgstr "設定您的無線網路名稱與密碼。"
+
+msgid "Step 3: Confirm & Apply"
+msgstr "第三步：確認與套用"
+
+msgid "Skip this time"
+msgstr "略過本次引導"
+
+msgid "Don't show this again"
+msgstr "不再提示"
+
+msgid "✨ Reopen Wizard"
+msgstr "✨ 初始精靈"
+
+msgid "Skip Wi-Fi Setup (Keep current)"
+msgstr "暫不設定 Wi-Fi (保持現狀)"
+
+msgid "Not configured (Keep current)"
+msgstr "暫不設定 (保持當前狀態)"
+
+msgid "Not set"
+msgstr "未設定"
+
+msgid "No Password (Open)"
+msgstr "無密碼 (Open)"
+
+msgid "Wizard execution failed"
+msgstr "向導執行失敗"
+
+msgid "Configuration data processing failed"
+msgstr "配置數據處理失敗"
+
+msgid "Input validation failed"
+msgstr "輸入校驗失敗"
+
+msgid "Device Network Manager"
+msgstr "裝置網路管家"
+
+msgid "Terminal Device Monitoring & Static IP Management"
+msgstr "終端裝置狀態監控與固定 IP 管理"
+
+msgid "Rescan Network"
+msgstr "重新掃描網路"
+
+msgid "Refresh"
+msgstr "重新整理"
+
+msgid "Starting 3D radar detection..."
+msgstr "正在啟動三維雷達偵測..."
+
+msgid "All"
+msgstr "全部"
+
+msgid "Mobile/Tablet"
+msgstr "手機平板"
+
+msgid "PC/Work"
+msgstr "電腦辦公"
+
+msgid "Smart Home"
+msgstr "智慧家電"
+
+msgid "Others"
+msgstr "其它"
+
+msgid "Select all available devices"
+msgstr "全選可用裝置"
+
+msgid "Selected"
+msgstr "已選擇"
+
+msgid "items"
+msgstr "項"
+
+msgid "Batch Unbind"
+msgstr "批次解除綁定"
+
+msgid "Batch Assign"
+msgstr "批次分配"
+
+msgid "Device Alias"
+msgstr "裝置備註名"
+
+msgid "e.g., John's PC"
+msgstr "例如: 小明的電腦"
+
+msgid "Quick Assign Strategy (Click to auto-fill)"
+msgstr "快速分配策略 (點擊自動計算填入)"
+
+msgid "Keep Original IP"
+msgstr "保持原 IP"
+
+msgid "Smart Categorization"
+msgstr "智慧分類"
+
+msgid "Sequential Memory"
+msgstr "記憶順延"
+
+msgid "Assign Static IP (Auto anti-conflict)"
+msgstr "分配固定 IP (自動防衝突)"
+
+msgid "e.g., 192.168.1.50"
+msgstr "例如: 192.168.1.50"
+
+msgid "Select Assign Strategy"
+msgstr "選擇分配策略"
+
+msgid "Keep Current IP (Recommended)"
+msgstr "保持目前 IP (安全推薦)"
+
+msgid "Convert the device's current random IP to a permanent static IP"
+msgstr "直接將裝置目前的隨機 IP 轉為永久固定"
+
+msgid "Smart Subnet (By Device Type)"
+msgstr "智慧分段 (按裝置類型)"
+
+msgid "Auto-identify mobile/PC, assign to exclusive subnets"
+msgstr "自動識別手機/電腦等，分別放入專屬網段"
+
+msgid "Specify Starting IP (Sequential)"
+msgstr "指定起始 IP (順延分配)"
+
+msgid "Enter starting suffix, sequentially assign to all selected devices"
+msgstr "填寫起始後綴，所有選中裝置依序順延分配"
+
+msgid "Starting IP"
+msgstr "分配起始 IP"
+
+msgid "Others:"
+msgstr "其它裝置:"
+
+msgid "Mobile/Tablet:"
+msgstr "手機平板:"
+
+msgid "PC/Work:"
+msgstr "電腦辦公:"
+
+msgid "Smart Home:"
+msgstr "智慧家電:"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "OK"
+msgstr "確定"
+
+msgid "No device records in this category"
+msgstr "該分類下沒有裝置紀錄"
+
+msgid "Online"
+msgstr "連線"
+
+msgid "Offline"
+msgstr "離線"
+
+msgid "Static"
+msgstr "靜態"
+
+msgid "Upstream Gateway"
+msgstr "上層閘道"
+
+msgid "Local System"
+msgstr "本機系統"
+
+msgid "System Core Route"
+msgstr "系統核心路由"
+
+msgid "System Reserved Device"
+msgstr "系統保留裝置"
+
+msgid "Edit"
+msgstr "修改"
+
+msgid "Unbind"
+msgstr "解除綁定"
+
+msgid "Quick Bind"
+msgstr "一鍵固定"
+
+msgid "Unknown Device"
+msgstr "未知裝置"
+
+msgid "Unknown IP"
+msgstr "未知 IP"
+
+msgid "Terminal Addressed IP"
+msgstr "終端尋址IP"
+
+msgid "Edit Device Info"
+msgstr "修改裝置資訊"
+
+msgid "Quick Bind IP"
+msgstr "一鍵固定 IP"
+
+msgid "Configuring MAC: "
+msgstr "正在為 MAC: "
+
+msgid "Save Changes"
+msgstr "儲存修改"
+
+msgid "Bind Device"
+msgstr "綁定此裝置"
+
+msgid "Safely writing and restarting services..."
+msgstr "正在安全寫入並無感重啟服務..."
+
+msgid "Unbind IP"
+msgstr "解除 IP 綁定"
+
+msgid "Are you sure you want to unbind the static IP for device (<b>{mac}</b>)?"
+msgstr "確定要解除對該裝置 (<b>{mac}</b>) 的靜態 IP 綁定嗎？"
+
+msgid "Confirm Unbind"
+msgstr "確認解綁"
+
+msgid "Releasing static binding..."
+msgstr "正在釋放靜態綁定..."
+
+msgid "Batch Unbind Devices"
+msgstr "批次解綁裝置"
+
+msgid "Among the {total} selected devices, <b>{valid}</b> have fixed IPs.<br><br>Are you sure you want to unbind them?"
+msgstr "選中的 {total} 台裝置中，有 <b>{valid}</b> 台目前已固定 IP。<br><br>確定要解除它們的綁定嗎？"
+
+msgid "Batch releasing IPs, please wait..."
+msgstr "正在批次釋放 IP，請稍候..."
+
+msgid "Batch Assign Settings"
+msgstr "批次分配設定"
+
+msgid "Select Assign Strategy <span style=\"font-weight:normal; font-size:13.5px; color:#64748b;\">(Selected <b style=\"color:#3b82f6;\">{count}</b> devices)</span>"
+msgstr "選擇分配策略 <span style=\"font-weight:normal; font-size:13.5px; color:#64748b;\">(已選取 <b style=\"color:#3b82f6;\">{count}</b> 台裝置)</span>"
+
+msgid "Start Assign"
+msgstr "開始分配"
+
+msgid "Avoiding conflicts and silently writing rules..."
+msgstr "正在雷達避衝突並靜默寫入規則..."
+
+msgid "No device records found in current LAN"
+msgstr "目前區域網路內未發現任何裝置紀錄"
+
+msgid "❌ Scan failed: Cannot retrieve underlying data"
+msgstr "❌ 掃描失敗：無法獲取底層資料"
+
+msgid "❌ The IP pool for this type is full. Please expand the range or choose another strategy!"
+msgstr "❌ 該類型的 IP 分段池已全部被佔滿，請擴大範圍或選擇其它策略！"
+
+msgid "IP address cannot be empty!"
+msgstr "IP 位址不能為空！"
+
+msgid "❌ IP Conflict Blocked!\n\nThe IP [{ip}] is occupied by device [{name}].\nPlease modify the strategy or enter a free IP!"
+msgstr "❌ IP 衝突攔截！\n\n您輸入的 IP [{ip}] 已被區域網路中的裝置【{name}】占用。\n請修改策略或輸入一個未被占用的空閒 IP！"
+
+msgid "💡 Tip: The device is already fixed at this IP. No changes needed!"
+msgstr "💡 提示：該裝置已經是目前 IP 且已固定，設定未發生任何改變，無需重複提交！"
+
+msgid "💡 Tip: The {count} selected devices are all [Unbound]. No unbind action needed!"
+msgstr "💡 提示：您選取的 {count} 台裝置目前全是【未綁定】狀態，無需執行解綁操作！"
+
+msgid "Starting suffix must be between 2 and 254!"
+msgstr "起始後綴必須在 2 到 254 之間！"
+
+msgid "❌ IP pool insufficient!\nOnly {avail} IPs left from .{suf}, but {count} devices selected."
+msgstr "❌ IP 池容量不足！\n從 .{suf} 開始順延僅剩 {avail} 個可用 IP，但您選取了 {count} 台裝置。"
+
+msgid "❌ [{name}] assignment failed!\nSelected {req} devices, but only {avail} IPs available in the preset range.\nPlease expand the IP range for this category!"
+msgstr "❌ 【{name}】分配失敗！\n選取了 {req} 台裝置，但預設的 IP 段內只有 {avail} 個可用 IP。\n請擴大該類別的 IP 段範圍！"
+
+msgid "💡 Smart block: According to your strategy, the {count} selected devices are already fixed with unchanged IPs. No need to rewrite rules!"
+msgstr "💡 智慧攔截：根據您的策略計算，選取的 {count} 台裝置【均已固定且 IP 未改變】，無需重複下發規則！"
+
+msgid "Infinite"
+msgstr "永久"
+
+msgid "Expired"
+msgstr "已過期"
+
+msgid "Terminal Device & IP Binding"
+msgstr "終端裝置與 IP 綁定"

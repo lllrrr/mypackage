@@ -1,0 +1,569 @@
+#!/bin/sh
+# Copyright (C) 2026 huchd0 <https://github.com/huchd0/luci-app-netwiz>
+# Licensed under the GNU General Public License v3.0
+
+LOG_FILE="/tmp/netwiz.log"
+
+log() {
+    logger -t Netwiz "$1"
+    echo "$(date '+%F %T') [RPC] $1" >> "$LOG_FILE"
+    # 日志控制 防止文件过大撑爆内存
+    if [ $(wc -l < "$LOG_FILE" 2>/dev/null || echo 0) -gt 600 ]; then
+        tail -n 500 "$LOG_FILE" > "$LOG_FILE.tmp"
+        mv "$LOG_FILE.tmp" "$LOG_FILE"
+    fi
+}
+
+# 重启依赖网络的高级应用
+restart_depend_apps() {
+    log ">>> 正在检测并唤醒高级网络应用..."
+
+    # 定义需要唤醒的插件池 (按业务逻辑分类，方便以后随时添加)
+    local proxy_apps="openclash passwall shadowsocksr bypass vssr homeproxy mihomo"
+    local dns_apps="adguardhome smartdns mosdns"
+    local vpn_apps="tailscale zerotier ipsec"
+    local route_apps="mwan3 sqm ddns miniupnpd socat"
+
+    # 唤醒: 代理网关、DNS处理、异地组网、路由流控
+    for app in $proxy_apps $dns_apps $vpn_apps $route_apps; do
+        if [ -f "/etc/init.d/$app" ] && /etc/init.d/$app enabled 2>/dev/null; then
+            # 中继正在运行，强行跳过 mwan3，防止它阻断网络
+            if [ "$app" = "mwan3" ] && uci -q get network.wwan >/dev/null; then
+                log "拦截: 检测到 WISP 开启，阻止唤醒 mwan3 以防流量被阻断"
+                continue
+            fi
+            log "唤醒 $app"
+            /etc/init.d/$app restart >/dev/null 2>&1 &
+        fi
+    done
+
+    # 特殊处理: Docker 容器服务 (网络重启常导致 Docker 虚拟网桥失效)
+    if [ -f "/etc/init.d/dockerd" ] && /etc/init.d/dockerd enabled 2>/dev/null; then
+        log "唤醒 Docker 守护进程"
+        /etc/init.d/dockerd restart >/dev/null 2>&1 &
+    fi
+}
+# 结束
+
+case "$1" in
+    list)
+        echo '{ "set_network": { "mode": "string", "arg1": "string", "arg2": "string", "arg3": "string", "arg4": "string", "arg5": "string", "arg6": "string" }, "confirm": {}, "check_wifi": {} }'
+        exit 0
+        ;;
+    call)
+        case "$2" in
+            check_wifi)
+                has_wifi="false"
+                if [ -f /etc/config/wireless ] && grep -q "wifi-device" /etc/config/wireless; then
+                    has_wifi="true"
+                elif [ -n "$(ls -A /sys/class/net/wlan* 2>/dev/null)" ] || [ -n "$(ls -A /sys/class/net/ra* 2>/dev/null)" ] || [ -n "$(ls -A /sys/class/net/wl* 2>/dev/null)" ] || [ -n "$(ls -A /sys/class/net/ath* 2>/dev/null)" ]; then
+                    wifi config > /etc/config/wireless 2>/dev/null
+                    [ -f /etc/config/wireless ] && has_wifi="true"
+                fi
+                echo "{\"has_wifi\":$has_wifi}"
+                exit 0
+                ;;
+            confirm)
+                # 检查是否存在任何类型的备份或临时记录
+                if [ -f /tmp/netwiz_rollback_time ] || [ -f /tmp/netwiz_target_ip ] || \
+                   [ -f /etc/config/network.netwiz_bak ] || [ -f /etc/config/network.netwiz_wan_bak ]; then
+                    
+                    # 连通性确认成功：一键清理所有 LAN 备份、WAN 探测备份以及回滚计时器
+                    rm -f /tmp/netwiz_rollback_time \
+                          /tmp/netwiz_target_ip \
+                          /etc/config/network.netwiz_bak \
+                          /etc/config/dhcp.netwiz_bak \
+                          /etc/config/network.netwiz_wan_bak
+                    
+                    log "前端已连接：拆除防失联回滚装置并清空所有探测备份"
+                fi
+                echo '{"result":0}'
+                exit 0
+                ;;
+            set_network)
+                set +e
+                
+                log "接收到前端下发的新配置，删除所有历史备份记录"
+                rm -f /etc/config/network.netwiz_wan_bak /etc/config/network.netwiz_bak /etc/config/dhcp.netwiz_bak
+                # ====================================================================
+
+                input=$(cat)
+                mode=$(echo "$input" | jsonfilter -e '@.mode')
+                arg1=$(echo "$input" | jsonfilter -e '@.arg1')
+                arg2=$(echo "$input" | jsonfilter -e '@.arg2')
+                arg3=$(echo "$input" | jsonfilter -e '@.arg3')
+                arg4=$(echo "$input" | jsonfilter -e '@.arg4')
+                arg5=$(echo "$input" | jsonfilter -e '@.arg5')
+                arg6=$(echo "$input" | jsonfilter -e '@.arg6')
+
+                validate_strict_ip() {
+                    if [ -n "$1" ] && ! echo "$1" | awk -F. 'NF==4 && $1>=0 && $1<=255 && $2>=0 && $2<=255 && $3>=0 && $3<=255 && $4>=0 && $4<=255 {print "ok"}' | grep -q "ok"; then
+                        log "安全拦截 IP格式非法"
+                        echo '{"result":1,"error":"Invalid format"}'
+                        exit 1
+                    fi
+                }
+
+                if [ "$mode" = "wan_static" ] || [ "$mode" = "lan" ]; then
+                    validate_strict_ip "$arg1"
+                    validate_strict_ip "$arg2"
+                    validate_strict_ip "$arg3"
+                fi
+
+                cleanup_lan_for_wan_modes() {
+                    uci delete network.lan.gateway 2>/dev/null || true
+                    uci delete network.lan.dns 2>/dev/null || true
+                    uci set dhcp.lan.ignore='0'
+                }
+
+                CURRENT_LAN_IP=$(uci -q get network.lan.ipaddr | cut -d/ -f1)
+
+                # 局域网修改与防失联机制
+                if [ "$mode" = "lan" ] && [ -n "$arg1" ] && [ "$arg1" != "$CURRENT_LAN_IP" ]; then
+                    if [ "$arg5" != "0" ]; then
+                        log "正在备份系统配置 启动安全倒计时"
+                        if [ ! -f /etc/config/network.netwiz_bak ]; then
+                            cp -f /etc/config/network /etc/config/network.netwiz_bak
+                            cp -f /etc/config/dhcp /etc/config/dhcp.netwiz_bak
+                        fi
+                        echo "$arg1" > /tmp/netwiz_target_ip
+                        echo $(($(date +%s) + 120)) > /tmp/netwiz_rollback_time
+                    fi
+                fi
+
+                # 各模式网络写入
+                
+                # ====== 首次开机向导模式 (Wizard) ======
+                # 一次性接收并处理上网方式与 Wi-Fi 设定，最后统一重启网络
+                if [ "$mode" = "wizard" ]; then
+                    log ">>> [向导模式] 开始执行双通道配置任务..."
+                    
+                    # 1. 提取向导中的路由/WAN参数
+                    wiz_wan_type=$(echo "$arg1" | jsonfilter -e '@.wan_type' || echo "dhcp")
+                    
+                    cleanup_lan_for_wan_modes;
+                    
+                    if [ "$wiz_wan_type" = "dhcp" ]; then
+                        log "向导: 写入 DHCP 动态获取配置"
+                        uci set network.wan.proto='dhcp'
+                    elif [ "$wiz_wan_type" = "static" ]; then
+                        log "向导: 写入静态 IP 配置"
+                        wiz_ip=$(echo "$arg1" | jsonfilter -e '@.ip')
+                        wiz_gw=$(echo "$arg1" | jsonfilter -e '@.gw')
+                        wiz_mask=$(echo "$arg1" | jsonfilter -e '@.mask')
+                        
+                        # 静默格式检查 (非法直接退回 DHCP 兜底，防止挂掉)
+                        if echo "$wiz_ip" | awk -F. 'NF==4 {print "ok"}' | grep -q "ok" && \
+                           echo "$wiz_gw" | awk -F. 'NF==4 {print "ok"}' | grep -q "ok"; then
+                            uci set network.wan.proto='static'
+                            uci set network.wan.ipaddr="$wiz_ip"
+                            uci set network.wan.gateway="$wiz_gw"
+                            uci set network.wan.netmask="$wiz_mask"
+                        else
+                            log "向导警告: 静态IP格式非法，安全回退至 DHCP"
+                            uci set network.wan.proto='dhcp'
+                        fi
+                    elif [ "$wiz_wan_type" = "pppoe" ]; then
+                        log "向导: 写入 PPPoE 拨号配置"
+                        wiz_user=$(echo "$arg1" | jsonfilter -e '@.user')
+                        wiz_pass=$(echo "$arg1" | jsonfilter -e '@.pass')
+                        
+                        uci set network.wan.proto='pppoe'
+                        [ -n "$wiz_user" ] && uci set network.wan.username="$wiz_user"
+                        [ -n "$wiz_pass" ] && uci set network.wan.password="$wiz_pass"
+                    fi
+                    
+                    uci commit network; uci commit dhcp
+                    log "向导: 上网配置已提交，准备接管并透传 Wi-Fi 配置任务..."
+                    
+
+                    # 2. 现成的 Wi-Fi 处理引擎
+                    mode="wifi"
+                    arg1="$arg2"
+                fi
+                # ==================================
+
+                if [ "$mode" = "wan_dhcp" ]; then
+                    cleanup_lan_for_wan_modes;
+                    uci set network.wan.proto='dhcp'
+                    uci commit network; uci commit dhcp
+                elif [ "$mode" = "wan_static" ]; then
+                    cleanup_lan_for_wan_modes;
+                    uci set network.wan.proto='static'
+                    uci set network.wan.ipaddr="$arg1"
+                    uci set network.wan.gateway="$arg2"
+                    uci set network.wan.netmask="$arg3"
+                    uci commit network; uci commit dhcp
+                elif [ "$mode" = "pppoe" ]; then
+                    cleanup_lan_for_wan_modes;
+                    uci set network.wan.proto='pppoe'
+                    uci set network.wan.username="$arg1"
+                    uci set network.wan.password="$arg2"
+                    uci commit network; uci commit dhcp
+
+                # ==========================================
+                # 拦截并静默处理向导状态的写入
+                elif [ "$mode" = "set_wizard" ]; then
+                    log "静默修改向导弹出状态为: $arg1"
+                    # 确保文件和节点存在，避免报错
+                    touch /etc/config/netwiz 2>/dev/null
+                    uci -q get netwiz.main >/dev/null || uci set netwiz.main=global
+                    
+                    # 写入并立刻刷入硬盘
+                    uci set netwiz.main.wizard_enable="$arg1"
+                    uci commit netwiz
+                    
+                    # 返回成功并退出，千万不能往下走去重启网络！
+                    echo '{"result":0}'
+                    exit 0
+                # ==========================================
+
+                elif [ "$mode" = "lan" ]; then
+                    uci set network.lan.proto='static';
+                    uci set network.lan.ipaddr="$arg1"; uci set network.lan.netmask="$arg3"
+                    if [ -n "$arg2" ]; then uci set network.lan.gateway="$arg2"; else uci delete network.lan.gateway 2>/dev/null || true; fi
+                    if [ "$arg4" = "1" ]; then
+                        uci set dhcp.lan.ignore='1'
+                        [ -n "$arg2" ] && uci set network.lan.dns="$arg2"
+                    else
+                        uci set dhcp.lan.ignore='0'; uci delete network.lan.dns 2>/dev/null || true
+                    fi
+                    if [ "$arg6" = "1" ]; then
+                        uci set dhcp.lan.dhcpv6='server'
+                        uci set dhcp.lan.ra='server'
+                        uci set dhcp.lan.ndp='hybrid'
+                    else
+                        uci set dhcp.lan.dhcpv6='disabled'
+                        uci set dhcp.lan.ra='disabled'
+                        uci set dhcp.lan.ndp='disabled'
+                    fi
+                    uci commit network; uci commit dhcp
+                elif [ "$mode" = "wifi" ]; then
+                    payload="$arg1"
+                    echo '{"result":0}'
+
+                    # 放入后台执行 避免前端卡死
+                    (
+                        exec >/tmp/netwiz_debug.log 2>&1 </dev/null
+                        set -x
+                        log ">>> [步骤 1/5] 无线配置子进程启动，开始解析前端 Payload"
+                        smart=$(echo "$payload" | jsonfilter -e '@.smart' || echo "false")
+                        log "识别到智能模式状态: $smart"
+
+                        list_2g=""
+                        list_5g=""
+                        dev_list=$(uci show wireless 2>/dev/null | grep '=wifi-device' | cut -d'.' -f2 | cut -d'=' -f1 || true)
+
+                        if [ -z "$dev_list" ]; then
+                            log "未找到无线网卡 终止操作"
+                            exit 1
+                        fi
+
+                        # 解析物理网卡频段
+                        for dev in $dev_list; do
+                            hwmode=$(uci -q get wireless.$dev.hwmode | tr 'A-Z' 'a-z' || true)
+                            band=$(uci -q get wireless.$dev.band | tr 'A-Z' 'a-z' || true)
+                            path=$(uci -q get wireless.$dev.path || true)
+                            is_5g=0
+                            current_channel=$(uci -q get wireless.$dev.channel || echo "0")
+                            current_ht=$(uci -q get wireless.$dev.htmode | tr 'A-Z' 'a-z' || echo "")
+
+                            if [ "$band" = "5g" ] || [ "$band" = "6g" ]; then is_5g=1
+                            elif [ "$band" = "2g" ]; then is_5g=0
+                            elif [ "$current_channel" != "0" ] && [ "$current_channel" != "auto" ] && [ "$current_channel" -ge 36 ]; then is_5g=1
+                            elif echo "$current_ht" | grep -qE "80|160|320"; then is_5g=1
+                            elif echo "$hwmode" | grep -qE "11a|11ac"; then is_5g=1
+                            elif echo "$hwmode" | grep -qE "11ax|11be"; then
+                                if echo "$dev" | grep -qE "radio0|radio1|radio2"; then is_5g=1; fi
+                            elif echo "$hwmode" | grep -qE "11b|11g"; then is_5g=0
+                            elif echo "$path" | grep -qi "pcie1" || echo "$path" | grep -qi "pcie2"; then is_5g=1; fi
+
+                            if [ "$is_5g" = "1" ]; then
+                                list_5g="$list_5g $dev"
+                            else
+                                list_2g="$list_2g $dev"
+                            fi
+                        done
+
+                        # 处理防重叠
+                        if [ $(echo "$list_5g" | wc -w) -ge 2 ] && [ -z "$list_2g" ]; then
+                            list_2g=$(echo $list_5g | awk '{print $1}')
+                            list_5g=$(echo $list_5g | cut -d' ' -f2-)
+                        elif [ $(echo "$list_2g" | wc -w) -ge 2 ] && [ -z "$list_5g" ]; then
+                            list_5g=$(echo $list_2g | awk '{print $2}')
+                            list_2g=$(echo $list_2g | awk '{print $1}')
+                        fi
+
+                        log ">>> [步骤 2/5] 网卡归类完毕。2.4G阵列: [$list_2g] | 5G阵列: [$list_5g]"
+                        log "清空所有旧的无线网络接口"
+                        while uci -q delete wireless.@wifi-iface[0]; do :; done
+
+                        # 定义写网卡函数
+                        configure_physical_radio() {
+                            local dev="$1"
+                            local ui_prefix="$2"
+                            local iface_name="$3"
+                            local intended_band="$4"
+
+                            local p_en=$(echo "$payload" | jsonfilter -e "@.${ui_prefix}.enabled" || echo "0")
+                            local p_ssid=$(echo "$payload" | jsonfilter -e "@.${ui_prefix}.ssid" || echo "")
+                            local p_key=$(echo "$payload" | jsonfilter -e "@.${ui_prefix}.key" || echo "")
+                            local p_enc=$(echo "$payload" | jsonfilter -e "@.${ui_prefix}.encryption" || echo "sae-mixed")
+                            local p_hidden=$(echo "$payload" | jsonfilter -e "@.${ui_prefix}.hidden" || echo "0")
+                            local p_mode=$(echo "$payload" | jsonfilter -e "@.${ui_prefix}.mode" || echo "auto")
+                            local p_chan=$(echo "$payload" | jsonfilter -e "@.${ui_prefix}.channel" || echo "auto")
+                            local p_bw=$(echo "$payload" | jsonfilter -e "@.${ui_prefix}.bandwidth" || echo "auto")
+                            local p_roam=$(echo "$payload" | jsonfilter -e "@.${ui_prefix}.roaming" || echo "0")
+
+                            uci set wireless.$iface_name=wifi-iface
+                            uci set wireless.$iface_name.device="$dev"
+                            uci set wireless.$iface_name.network="lan"
+                            uci set wireless.$iface_name.mode="ap"
+                            uci set wireless.$dev.country='CN'
+
+                            if [ "$p_en" = "0" ]; then
+                                uci set wireless.$iface_name.disabled='1'
+                            else
+                                uci delete wireless.$iface_name.disabled 2>/dev/null || true
+                                uci delete wireless.$dev.disabled 2>/dev/null || true
+                            fi
+
+                            [ -n "$p_ssid" ] && uci set wireless.$iface_name.ssid="$p_ssid"
+
+                            # === 只要有密码，不允许 none ===
+                            if [ "$p_enc" = "none" ] && [ -n "$p_key" ]; then
+                                p_enc="sae-mixed"
+                            fi
+                            if [ "$p_enc" = "psk2+sae" ]; then p_enc="sae-mixed"; fi
+                            
+                            [ -n "$p_enc" ] && uci set wireless.$iface_name.encryption="$p_enc"
+                            
+                            # 只有在非 none 的情况下，才允许写入密码
+                            if [ "$p_enc" != "none" ] && [ -n "$p_key" ]; then
+                                uci set wireless.$iface_name.key="$p_key"
+                            else
+                                uci delete wireless.$iface_name.key 2>/dev/null || true
+                            fi
+                            # ==================================================
+
+                            if echo "$p_enc" | grep -q "sae"; then uci set wireless.$iface_name.ieee80211w='1'
+                            else uci delete wireless.$iface_name.ieee80211w 2>/dev/null || true; fi
+
+                            if [ "$p_roam" = "1" ] && [ "$p_enc" != "none" ] && [ -n "$p_enc" ]; then
+                                uci set wireless.$iface_name.ieee80211r='1'
+                                uci set wireless.$iface_name.ieee80211k='1'
+                                uci set wireless.$iface_name.ieee80211v='1'
+                                uci delete wireless.$iface_name.ft_psk_generate_local 2>/dev/null || true
+                                uci set wireless.$iface_name.ft_over_ds='0'
+                                uci set wireless.$iface_name.mobility_domain='e4d1'
+                                uci set wireless.$iface_name.ocv='0'
+                            else
+                                uci delete wireless.$iface_name.ieee80211r 2>/dev/null || true
+                                uci delete wireless.$iface_name.ieee80211k 2>/dev/null || true
+                                uci delete wireless.$iface_name.ieee80211v 2>/dev/null || true
+                                uci delete wireless.$iface_name.ft_psk_generate_local 2>/dev/null || true
+                                uci delete wireless.$iface_name.ft_over_ds 2>/dev/null || true
+                                uci delete wireless.$iface_name.mobility_domain 2>/dev/null || true
+                                uci delete wireless.$iface_name.ocv 2>/dev/null || true
+                            fi
+
+                            if [ "$p_hidden" = "1" ]; then uci set wireless.$iface_name.hidden='1'; else uci delete wireless.$iface_name.hidden 2>/dev/null || true; fi
+
+                            if [ "$p_en" = "1" ] || [ "$smart" = "true" ]; then
+                                if [ "$p_chan" != "auto" ] && [ -n "$p_chan" ]; then uci set wireless.$dev.channel="$p_chan"; else uci set wireless.$dev.channel='auto'; fi
+
+                                # ===== 显式写入硬件模式 (hwmode)，解决空白及不激活 Bug =====
+                                uci set wireless.$dev.band="$intended_band"
+                                if [ "$intended_band" = "5g" ]; then
+                                    uci set wireless.$dev.hwmode="11a"
+                                else
+                                    if [ "$p_mode" = "11b" ]; then
+                                        uci set wireless.$dev.hwmode="11b"
+                                    else
+                                        uci set wireless.$dev.hwmode="11g"
+                                    fi
+                                fi
+
+                                local current_ht=$(uci -q get wireless.$dev.htmode || echo "")
+                                local final_bw="40"
+                                if [ "$intended_band" = "5g" ]; then final_bw="80"; fi
+                                if [ "$p_bw" != "auto" ] && [ -n "$p_bw" ]; then final_bw="$p_bw"; fi
+
+                                # =====  htmode ，防止旧协议参数冲突 =====
+                                if [ "$p_mode" = "11b" ]; then
+                                    # 纯 11b 模式下不能有 htmode 参数，否则底层驱动会报错冲突
+                                    uci delete wireless.$dev.htmode 2>/dev/null || true
+                                else
+                                    if [ "$p_mode" != "auto" ] && [ -n "$p_mode" ]; then
+                                        if [ "$p_mode" = "11be" ]; then uci set wireless.$dev.htmode="EHT${final_bw}"
+                                        elif [ "$p_mode" = "11ax" ]; then uci set wireless.$dev.htmode="HE${final_bw}"
+                                        elif [ "$p_mode" = "11ac" ]; then uci set wireless.$dev.htmode="VHT${final_bw}"
+                                        elif [ "$p_mode" = "11n" ] || [ "$p_mode" = "11g" ]; then uci set wireless.$dev.htmode="HT${final_bw}"
+                                        else uci set wireless.$dev.htmode="HT20"; fi
+                                    else
+                                        # auto 模式下保留原生协议头
+                                        if echo "$current_ht" | grep -qEi "eht|he|vht|ht"; then
+                                            local prefix=$(echo "$current_ht" | grep -oEi "eht|he|vht|ht" | tr 'a-z' 'A-Z')
+                                            uci set wireless.$dev.htmode="${prefix}${final_bw}"
+                                        else
+                                            uci set wireless.$dev.htmode="HE${final_bw}"
+                                        fi
+                                    fi
+                                fi
+                            fi
+                        }
+
+                        log ">>> [步骤 3/5] 开始将新配置写入无线物理网卡..."
+                        chip_count=$(echo "$dev_list" | wc -w)
+
+                        if [ "$chip_count" -le 1 ]; then
+                            single_dev=$(echo "$dev_list" | awk '{print $1}')
+                            if [ "$smart" = "true" ]; then 
+                                configure_physical_radio "$single_dev" "merged" "wifinet_0" "2g"
+                            else
+                                configure_physical_radio "$single_dev" "radio_2g" "wifinet_2g" "2g"
+                                configure_physical_radio "$single_dev" "radio_5g" "wifinet_5g" "5g"
+                            fi
+                        else
+                            if [ "$smart" = "true" ]; then
+                                log "采用多频合一配置策略"
+                                idx=0
+                                for dev in $dev_list; do
+                                    if echo " $list_5g " | grep -q " $dev "; then
+                                        configure_physical_radio "$dev" "merged" "wifinet_$idx" "5g"
+                                    else
+                                        configure_physical_radio "$dev" "merged" "wifinet_$idx" "2g"
+                                    fi
+                                    idx=$((idx + 1))
+                                done
+                            else
+                                log "采用独立频段配置策略"
+                                idx=0
+                                for dev in $list_2g; do
+                                    configure_physical_radio "$dev" "radio_2g" "wifinet_2g_$idx" "2g"
+                                    idx=$((idx + 1))
+                                done
+                                idx=0
+                                for dev in $list_5g; do
+                                    configure_physical_radio "$dev" "radio_5g" "wifinet_5g_$idx" "5g"
+                                    idx=$((idx + 1))
+                                done
+                            fi
+                        fi
+
+                        # 中继配置解析与挂载
+                        log ">>> [步骤 4/5] 检查并处理 WISP 无线中继配置..."
+                        wisp_en=$(echo "$payload" | jsonfilter -e "@.wisp.enabled" || echo "0")
+                        if [ "$wisp_en" = "1" ]; then
+                            wisp_ssid=$(echo "$payload" | jsonfilter -e "@.wisp.ssid" || echo "")
+                            wisp_key=$(echo "$payload" | jsonfilter -e "@.wisp.key" || echo "")
+                            wisp_enc=$(echo "$payload" | jsonfilter -e "@.wisp.encryption" || echo "psk2")
+                            wisp_dev=$(echo "$payload" | jsonfilter -e "@.wisp.device" || echo "radio0")
+                            wisp_bssid=$(echo "$payload" | jsonfilter -e "@.wisp.bssid" || echo "")
+                            log "WISP 开启：正在将网卡 $wisp_dev 桥接至上级网络 [$wisp_ssid]"
+
+                            uci delete wireless.$wisp_dev.disabled 2>/dev/null || true
+                            uci set wireless.$wisp_dev.channel='auto'
+
+                            uci set network.wwan=interface
+                            uci set network.wwan.proto='dhcp'
+                            uci set network.wwan.metric='20'
+
+                            uci set wireless.wisp_sta=wifi-iface
+                            uci set wireless.wisp_sta.device="$wisp_dev"
+                            uci set wireless.wisp_sta.network="wwan"
+                            uci set wireless.wisp_sta.mode="sta"
+                            uci set wireless.wisp_sta.ssid="$wisp_ssid"
+                            uci set wireless.wisp_sta.key="$wisp_key"
+
+                            # 适配加密格式
+                            if [ "$wisp_enc" = "none" ] && [ -n "$wisp_key" ]; then
+                                wisp_enc="psk2"
+                            elif [ "$wisp_enc" = "psk2+sae" ]; then
+                                wisp_enc="sae-mixed"
+                            fi
+                            uci set wireless.wisp_sta.encryption="$wisp_enc"
+
+                            # 没有传入 BSSID，强行清空底层历史残留，避免 MAC 绑定死锁
+                            if [ -n "$wisp_bssid" ]; then 
+                                uci set wireless.wisp_sta.bssid="$wisp_bssid"
+                            else 
+                                uci delete wireless.wisp_sta.bssid 2>/dev/null || true
+                            fi
+
+                            # 官方标准的 add_list 操作防火墙，避免字符串截取错误
+                            wan_zone=$(uci show firewall | grep "\.name='wan'" | cut -d'.' -f2 | head -n1 || echo "")
+                            if [ -n "$wan_zone" ]; then
+                                uci add_list firewall.$wan_zone.network='wwan' 2>/dev/null || uci set firewall.$wan_zone.network='wan wan6 wwan'
+                                uci commit firewall
+                            fi
+
+                            # 强制停止并禁用 mwan3 (负载均衡会100%拦截 wwan 接口的流量导致没网)
+                            if [ -f "/etc/init.d/mwan3" ]; then
+                                /etc/init.d/mwan3 stop 2>/dev/null
+                                /etc/init.d/mwan3 disable 2>/dev/null
+                            fi
+
+                            # 中继自愈守护进程（Watchdog）写入系统的计划任务
+                            # 如果中继接口获取不到 IP (假死)，每 2 分钟自动重连
+                            touch /etc/crontabs/root
+                            grep -v "netwiz_wisp_check" /etc/crontabs/root > /tmp/cron.tmp || true
+                            echo "*/2 * * * * ifstatus wwan | grep -q '\"up\": true' || (ifdown wwan; sleep 2; ifup wwan) #netwiz_wisp_check" >> /tmp/cron.tmp
+                            mv /tmp/cron.tmp /etc/crontabs/root
+                            /etc/init.d/cron restart 2>/dev/null
+
+                        else
+                            log "清理无线中继虚拟接口及防火墙残留"
+                            uci delete wireless.wisp_sta 2>/dev/null || true
+                            uci delete network.wwan 2>/dev/null || true
+                            
+                            # 官方标准的 del_list 清理防火墙
+                            wan_zone=$(uci show firewall | grep "\.name='wan'" | cut -d'.' -f2 | head -n1 || echo "")
+                            if [ -n "$wan_zone" ]; then
+                                uci del_list firewall.$wan_zone.network='wwan' 2>/dev/null
+                                uci commit firewall
+                            fi
+
+                            # 关闭中继时，清理掉自愈守护进程
+                            if [ -f "/etc/crontabs/root" ]; then
+                                grep -v "netwiz_wisp_check" /etc/crontabs/root > /tmp/cron.tmp || true
+                                mv /tmp/cron.tmp /etc/crontabs/root
+                                /etc/init.d/cron restart 2>/dev/null
+                            fi
+                        fi
+
+                        log ">>> [步骤 5/5] 所有配置已就绪，正在执行系统 Commit 并重启网络服务..."
+                        uci commit wireless
+                        uci commit network
+                        log "无线数据写入完毕 准备重启网络"
+
+                        sleep 3
+                        /etc/init.d/network restart
+
+                        # 唤醒调用1
+                        restart_depend_apps
+
+                        log "✅ 无线配置流程全部安全执行完毕！"
+                        exit 0
+                    ) &
+
+                    exit 0
+                fi
+
+                echo '{"result":0}'
+                    (
+                    exec >/dev/null 2>&1 </dev/null
+                    sleep 3
+                    /etc/init.d/network restart
+                    /etc/init.d/dnsmasq restart
+                    /etc/init.d/uhttpd restart
+
+                    # 唤醒调用2
+                    restart_depend_apps
+                    ) &
+                exit 0
+                ;;
+        esac
+        ;;
+esac
+exit 1

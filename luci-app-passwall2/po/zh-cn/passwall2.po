@@ -118,6 +118,12 @@ msgstr "0为不使用"
 msgid "Current node: %s"
 msgstr "当前节点：%s"
 
+msgid "Direct domain DNS routing"
+msgstr "直连域名 DNS 分流"
+
+msgid "Please note that the program will not start if the format is incorrect!"
+msgstr "请注意，格式不正确将无法启动！"
+
 msgid "IP:Port mode acceptable, multi value split with english comma."
 msgstr "接受 IP:Port 形式的输入，多个以英文逗号分隔。"
 
@@ -738,6 +744,12 @@ msgstr "劫持ICMP (PING)"
 
 msgid "Hijacking ICMPv6 (IPv6 PING)"
 msgstr "劫持ICMPv6 (IPv6 PING)"
+
+msgid "Force Proxy LAN IP"
+msgstr "强制代理内网IP段"
+
+msgid "By default, commonly used internal network IP ranges will be connect directly (not entering the core). If you want a certain network range to go through a proxy, please add it here."
+msgstr "默认情况下，常用内网IP网段将直连（不进入内核），如果你希望某个网段走代理，请在此添加。"
 
 msgid "Sniffing"
 msgstr "流量嗅探"
@@ -1624,14 +1636,14 @@ msgstr "缓冲区大小"
 msgid "Buffer size for every connection (kB)"
 msgstr "每一个连接的缓冲区大小（kB）"
 
-msgid "Handshake Timeout"
-msgstr "握手超时 "
-
 msgid "Idle Timeout"
-msgstr "空闲超时 "
+msgstr "空闲超时"
 
-msgid "Hop Interval"
-msgstr "端口跳跃时间 "
+msgid "Hop Interval(second)"
+msgstr "端口跳跃间隔（秒）"
+
+msgid "Supports a fixed value or a random range (e.g., 30, 5-30), minimum 5."
+msgstr "支持固定值或随机范围（如 30 或 5-30），最小 5 秒。"
 
 msgid "HeartbeatPeriod(second)"
 msgstr "心跳周期（单位：秒）"
@@ -1671,12 +1683,6 @@ msgstr "ECH 配置"
 
 msgid "ECH Key"
 msgstr "ECH 密钥"
-
-msgid "ECH Query Policy"
-msgstr "ECH 查询策略"
-
-msgid "Controls the policy used when performing DNS queries for ECH configuration."
-msgstr "控制使用 DNS 查询 ECH 配置时的策略。"
 
 msgid "ECH Query Domain"
 msgstr "ECH 查询域名"
@@ -1750,6 +1756,15 @@ msgstr "延迟（ms）"
 msgid "If is domain name, The requested domain name will be resolved to IP before connect."
 msgstr "如果是域名，域名将在请求发出之前解析为 IP。"
 
+msgid "Domain DNS Resolve"
+msgstr "域名 DNS 解析"
+
+msgid "If the node address is a domain name, this DNS will be used for resolution."
+msgstr "如果节点地址是域名，则将使用此 DNS 进行解析。"
+
+msgid "Supports only Xray or Sing-box node types."
+msgstr "仅支持 Xray 或 Sing-box 类型节点。"
+
 msgid "Chain Proxy"
 msgstr "链式代理"
 
@@ -1763,11 +1778,8 @@ msgid ""
 "Chained proxy works only with Xray or Sing-box nodes.<br>"
 "You can only use manual or imported nodes as chained nodes."
 msgstr ""
-"链式代理仅支持 Xray 与 Sing-box 节点。<br>"
+"链式代理仅支持 Xray 或 Sing-box 节点。<br>"
 "仅支持手动添加或导入的节点用作链式节点。"
-
-msgid "Set the default domain resolution strategy for the sing-box node."
-msgstr "为 sing-box 节点设置默认的域名解析策略。"
 
 msgid "Prefer IPv4"
 msgstr "IPv4 优先"
@@ -2204,6 +2216,12 @@ msgstr "入口 %s:%s"
 msgid "Node: %s:%s, Weight: %s"
 msgstr "节点：%s:%s，权重：%s"
 
+msgid "[Rule update] instance is running; please try again later."
+msgstr "[规则更新]实例正在运行，请稍后再试..."
+
+msgid "[Subscription] instance is running; [Rule Update] queue and wait."
+msgstr "[订阅]实例正在运行，[规则更新]进入队列等待..."
+
 msgid "Start updating the rules..."
 msgstr "开始更新规则..."
 
@@ -2356,6 +2374,12 @@ msgstr "获取到的【%s】订阅内容为空，可能是订阅地址无效，�
 
 msgid "Proxy"
 msgstr "代理"
+
+msgid "[Subscription] instance is running; please try again later."
+msgstr "[订阅]实例正在运行，请稍后再试..."
+
+msgid "[Rule Update] instance is running; [Subscription] queue and wait."
+msgstr "[规则更新]实例正在运行，[订阅]进入队列等待..."
 
 msgid "Start subscribing..."
 msgstr "开始订阅..."
