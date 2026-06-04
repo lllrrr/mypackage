@@ -232,6 +232,7 @@ function gen_outbound(flag, node, tag, proxy_table)
 				--max_version = "1.3",
 				fragment = fragment,
 				record_fragment = record_fragment,
+				certificate = (node.tls_certificate == "1" and node.tls_certificate_pem ~= "") and split(node.tls_certificate_pem, "\n") or nil,
 				ech = (node.ech == "1") and (function()
 					local function get_ech_domain(s) --兼容xray "域名+DNS" 格式ech
 						local domain, dns = s:match("^([^+]+)%+(.+)$")
@@ -1438,6 +1439,10 @@ function gen_config(var)
 					end
 				end
 			end
+			if node.chain_proxy == "3" and node.outbound_iface then
+				outbound.detour = nil
+				outbound.bind_interface = node.outbound_iface
+			end
 			return default_outTag, last_insert_outbound
 		end
 
@@ -1661,7 +1666,8 @@ function gen_config(var)
 							invert = e.invert == "1" and true or nil
 						}
 						string.gsub(e.domain_list, '[^' .. "\r\n" .. ']+', function(w)
-							if w:find("#") == 1 then return end
+							w = api.trim(w)
+							if w == "" or w:find("#") == 1 then return end
 							if w:find("geosite:") == 1 then
 								local _geosite = w:sub(1 + #"geosite:")  --适配srs
 								local t = geo_rule_set("geosite", _geosite)
@@ -1698,7 +1704,7 @@ function gen_config(var)
 							domain_table.fakedns = true
 						end
 
-						if outboundTag then
+						if outboundTag and (rule.domain or rule.domain_suffix or rule.domain_keyword or rule.domain_regex or rule.rule_set) then
 							table.insert(dns_domain_rules, api.clone(domain_table))
 						end
 					end
@@ -1707,7 +1713,8 @@ function gen_config(var)
 						local ip_cidr = {}
 						local is_private = false
 						string.gsub(e.ip_list, '[^' .. "\r\n" .. ']+', function(w)
-							if w:find("#") == 1 then return end
+							w = api.trim(w)
+							if w == "" or w:find("#") == 1 then return end
 							if w:find("geoip:") == 1 then
 								local _geoip = w:sub(1 + #"geoip:")     --适配srs
 								if _geoip == "private" then
@@ -2006,6 +2013,10 @@ function gen_config(var)
 		}
 	end
 
+	route.default_domain_resolver = {
+		server = "direct"
+	}
+
 	if not dns.rules then dns.rules = {} end
 
 	for i, v in pairs(GLOBAL.DNS_SERVER) do
@@ -2102,16 +2113,12 @@ function gen_config(var)
 			type = "direct",
 			tag = "direct",
 			routing_mark = 255,
-			domain_resolver = {
-				server = "direct",
-				strategy = "prefer_ipv6"
-			}
 		})
 		for index, value in ipairs(config.outbounds) do
 			if not value["_flag_proxy_tag"] and not value.detour and value["_id"] and value.server and (value.server_port or value.server_ports) and not no_run then
 				sys.call(string.format("echo '%s' >> %s", value["_id"], api.TMP_PATH .. "/direct_node_list"))
 			end
-			if not value.detour and value.server then
+			if not value.detour and not value.bind_interface and value.server then
 				value.detour = "direct"
 			end
 			if (value.server and not api.datatypes.hostname(value.server)) and not value.realm then

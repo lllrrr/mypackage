@@ -91,6 +91,7 @@ if not arg_select_proto:find("_") then
 	load_normal_options = true
 end
 
+local netdev_list = api.get_network_devices()
 local node_list = api.get_node_list()
 
 if load_urltest_options then -- [[ URLTest Start ]]
@@ -196,8 +197,10 @@ end -- [[ URLTest End ]]
 
 if load_iface_options then -- [[ 自定义接口 Start ]]
 	o = s:option(Value, _n("iface"), translate("Interface"))
-	o.default = "eth1"
 	o:depends({ [_n("protocol")] = "_iface" })
+	for _, d in ipairs(netdev_list) do
+		o:value(d.name, d.label)
+	end
 end
 
 
@@ -383,10 +386,12 @@ if singbox_tags:find("with_quic") then
 	o = s:option(ListValue, _n("hysteria2_obfs_type"), translate("Obfs Type"))
 	o:value("", translate("Disable"))
 	o:value("salamander")
+	o:value("gecko")
 	o:depends({ [_n("protocol")] = "hysteria2" })
 
 	o = s:option(Value, _n("hysteria2_obfs_password"), translate("Obfs Password"))
 	o:depends({ [_n("hysteria2_obfs_type")] = "salamander" })
+	o:depends({ [_n("hysteria2_obfs_type")] = "gecko" })
 
 	o = s:option(Value, _n("hysteria2_up_mbps"), translate("Max upload Mbps"))
 	o:depends({ [_n("protocol")] = "hysteria2" })
@@ -491,6 +496,24 @@ o:depends({ [_n("protocol")] = "hysteria"})
 o:depends({ [_n("protocol")] = "tuic" })
 o:depends({ [_n("protocol")] = "hysteria2" })
 
+o = s:option(Flag, _n("tls_certificate"), translate("TLS Certificate (PEM)"))
+o.default = "0"
+o:depends({ [_n("tls")] = true, [_n("reality")] = false })
+o:depends({ [_n("protocol")] = "hysteria"})
+o:depends({ [_n("protocol")] = "tuic" })
+o:depends({ [_n("protocol")] = "hysteria2" })
+o:depends({ [_n("protocol")] = "naive" })
+
+o = s:option(TextValue, _n("tls_certificate_pem"), "　", translate("Full certificate (chain), PEM format."))
+o.default = ""
+o.rows = 5
+o.wrap = "off"
+o:depends({ [_n("tls_certificate")] = true })
+o.validate = function(self, value)
+	value = api.trim(value):gsub("\r\n", "\n"):gsub("[ \t]*\n[ \t]*", "\n"):gsub("\n+", "\n")
+	return value
+end
+
 o = s:option(Flag, _n("ech"), translate("ECH"))
 o.default = "0"
 o:depends({ [_n("tls")] = true, [_n("flow")] = "", [_n("reality")] = false })
@@ -537,7 +560,6 @@ if singbox_tags:find("with_utls") then
 	o:depends({ [_n("protocol")] = "vless", [_n("tls")] = true })
 	o:depends({ [_n("protocol")] = "vmess", [_n("tls")] = true })
 	o:depends({ [_n("protocol")] = "shadowsocks", [_n("tls")] = true })
-	o:depends({ [_n("protocol")] = "socks", [_n("tls")] = true })
 	o:depends({ [_n("protocol")] = "trojan", [_n("tls")] = true })
 	o:depends({ [_n("protocol")] = "anytls", [_n("tls")] = true })
 	
@@ -562,7 +584,6 @@ else o:value("grpc", "gRPC-lite")
 end
 o:depends({ [_n("protocol")] = "vmess" })
 o:depends({ [_n("protocol")] = "vless" })
-o:depends({ [_n("protocol")] = "socks" })
 o:depends({ [_n("protocol")] = "shadowsocks" })
 o:depends({ [_n("protocol")] = "trojan" })
 
@@ -824,17 +845,24 @@ if not load_shunt_options then
 	if not (load_iface_options or load_urltest_options) then
 		-- Special node cannot be use pre-proxy.
 		o:value("1", translate("Preproxy Node"))
+		o:value("3", translate("Outbound Interface"))
 	end
 	o:value("2", translate("Landing Node"))
-	o:depends({ [_n("hysteria2_realms")] = false })
 
 	o1 = s:option(ListValue, _n("preproxy_node"), translate("Preproxy Node"), translate("Only support a layer of proxy."))
-	o1:depends({ [_n("chain_proxy")] = "1" })
+	o1:depends({ [_n("chain_proxy")] = "1", [_n("hysteria2_realms")] = false })
 	o1.template = appname .. "/cbi/nodes_listvalue"
 	o1.group = {}
 
+	o3 = s:option(Value, _n("outbound_iface"), translate("Outbound Interface"))
+	o3:depends({ [_n("chain_proxy")] = "3" })
+	o3:value("", translate("All"))
+	for _, d in ipairs(netdev_list) do
+		o3:value(d.name, d.label)
+	end
+
 	o2 = s:option(ListValue, _n("to_node"), translate("Landing Node"), translate("Only support a layer of proxy."))
-	o2:depends({ [_n("chain_proxy")] = "2" })
+	o2:depends({ [_n("chain_proxy")] = "2", [_n("hysteria2_realms")] = false })
 	o2.template = appname .. "/cbi/nodes_listvalue"
 	o2.group = {}
 

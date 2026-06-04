@@ -132,12 +132,14 @@ function base64Encode(text)
 end
 
 function UrlEncode(szText)
+	if type(szText) ~= "string" then return "" end
 	return szText:gsub("([^%w%-_%.%~])", function(c)
 		return string.format("%%%02X", string.byte(c))
 	end)
 end
 
 function UrlDecode(szText)
+	if type(szText) ~= "string" then return "" end
 	return szText and szText:gsub("%+", " "):gsub("%%(%x%x)", function(h)
 		return string.char(tonumber(h, 16))
 	end) or nil
@@ -1293,6 +1295,11 @@ function to_check_self()
 end
 
 function luci_types(id, m, s, type_name, option_prefix)
+	local fv_type
+	local field_type = s.fields["type"]
+	if field_type then
+		fv_type = field_type:formvalue(id)
+	end
 	local rewrite_option_table = {}
 	for key, value in pairs(s.fields) do
 		if key:find(option_prefix) == 1 then
@@ -1360,6 +1367,10 @@ function luci_types(id, m, s, type_name, option_prefix)
 				end
 			else
 				s.fields[key]:depends({ type = type_name })
+			end
+
+			if fv_type and fv_type ~= type_name then
+				s.fields[key].rmempty = true
 			end
 		end
 	end
@@ -1559,31 +1570,23 @@ function cleanEmptyTables(t)
 	return next(t) and t or nil
 end
 
-function fetch_cert_sha256(host, port, timeout)
-	if not host or not datatypes.hostname(host) then return "" end
+function fetch_cert_sha256(host, port, sni, timeout)
+	if not host then return "" end
 	port = tonumber(port) or 443
+	sni = sni or host
 	timeout = tonumber(timeout) or 5
-	local xray = finded_com("xray")
-	local cmd
-	if xray then
-		cmd = string.format(
-			"timeout %d %q tls ping %s:%d 2>/dev/null " ..
-			"| awk 'tolower($0) ~ /without sni/ {f=1} tolower($0) ~ /with sni/ {f=0} " ..
-			"f && tolower($0) ~ /cert.*leaf.*sha256/ {sub(/.*:/,\"\"); gsub(/[[:space:]]/,\"\"); print; exit}'",
-			timeout, xray, host, port
-		)
-	else
-		cmd = string.format(
-			"timeout %d openssl s_client -connect %s:%d -servername %s -showcerts </dev/null 2>/dev/null " ..
-			"| awk 'BEGIN{c=0}/BEGIN CERT/{c++} c==1{print} /END CERT/{if(c==1)exit}' " ..
-			"| openssl x509 -outform der 2>/dev/null " ..
-			"| sha256sum 2>/dev/null",
-			timeout, host, port, host
-		)
-	end
+	local cmd = string.format(
+		"timeout %d openssl s_client -connect %s:%d -servername %s -showcerts </dev/null 2>/dev/null " ..
+		"| awk 'BEGIN{c=0}/BEGIN CERT/{c++} c==1{print} /END CERT/{if(c==1)exit}' " ..
+		"| openssl x509 -outform der 2>/dev/null " ..
+		"| sha256sum 2>/dev/null",
+		timeout, host, port, sni
+	)
 	local out = trim(sys.exec(cmd))
 	local fp = out:match("^([0-9a-fA-F]+)")
-	if not fp then return "" end
+	if not fp or fp:lower():match("^e3b0c44298fc1c149afbf4c8996fb924") then
+		return ""
+	end
 	return fp:upper()
 end
 
@@ -1625,4 +1628,84 @@ function parse_realm_uri(uri)
 		end
 	end
 	return realm
+end
+
+function get_network_devices()
+	local _sysnet = "/sys/class/net/"
+	-- Map UCI interface names to their device names and vice versa
+	local _iface_to_dev = {}
+	local _dev_to_ifaces = {}
+	local _iface_proto = {}
+	uci:foreach("network", "interface", function(sec)
+		local name = sec[".name"]
+		if name ~= "loopback" then
+			_iface_proto[name] = sec.proto
+			if sec.device then
+				_iface_to_dev[name] = sec.device
+				_dev_to_ifaces[sec.device] = _dev_to_ifaces[sec.device] or {}
+				table.insert(_dev_to_ifaces[sec.device], name)
+			end
+		end
+	end)
+	-- Classify device type using sysfs attributes
+	local function classify_sysfs(dev)
+		if fs.stat(_sysnet .. dev .. "/bridge", "type") == "dir" then
+			return i18n.translate("Bridge")
+		elseif fs.stat(_sysnet .. dev .. "/wireless", "type") == "dir" then
+			return i18n.translate("Wireless Adapter")
+		elseif dev:match("^tun") or dev:match("^tap") or dev:match("^wg") or dev:match("^ppp") then
+			return i18n.translate("Tunnel Interface")
+		else
+			return i18n.translate("Ethernet Adapter")
+		end
+	end
+	-- Classify offline UCI interfaces by config hints
+	local function classify_uci(dev_name, proto)
+		if dev_name and dev_name:match("^br%-") then
+			return i18n.translate("Bridge")
+		elseif proto == "wireguard" or proto == "pppoe" or proto == "pptp" or proto == "l2tp" then
+			return i18n.translate("Tunnel Interface")
+		else
+			return i18n.translate("Interface")
+		end
+	end
+
+	local _seen = {}
+	local _devices = {}
+	-- Active kernel devices from /sys/class/net/
+	-- Skip bridge member ports (/master) and DSA master devices (/dsa)
+	local _iter = fs.dir(_sysnet)
+	if _iter then
+		for dev in _iter do
+			if dev ~= "lo"
+				and not dev:match("^veth")
+				and not dev:match("^ifb")
+				and not dev:match("^gre")
+				and not dev:match("^sit")
+				and not dev:match("^ip6tnl")
+				and not dev:match("^erspan")
+				and not fs.stat(_sysnet .. dev .. "/master", "type")
+				and not fs.stat(_sysnet .. dev .. "/dsa", "type")
+			then
+				local dtype = classify_sysfs(dev)
+				local label = dtype .. ': "' .. dev .. '"'
+				if _dev_to_ifaces[dev] then
+					label = label .. " (" .. table.concat(_dev_to_ifaces[dev], ", ") .. ")"
+				end
+				_devices[#_devices + 1] = { name = dev, label = label, sort = dtype .. ":" .. dev }
+				_seen[dev] = true
+			end
+		end
+	end
+	-- UCI interfaces whose device does not currently exist
+	for iface, dev in pairs(_iface_to_dev) do
+		if not _seen[dev] then
+			local dtype = classify_uci(dev, _iface_proto[iface])
+			local label = dtype .. ': "' .. iface .. '"'
+			_devices[#_devices + 1] = { name = iface, label = label, sort = "zzz:" .. iface }
+			_seen[dev] = true
+		end
+	end
+	table.sort(_devices, function(a, b) return a.sort < b.sort end)
+	return _devices
 end
