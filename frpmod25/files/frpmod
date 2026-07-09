@@ -12,7 +12,7 @@ start() {
 
     uci set passwall.@global[0].hide_from_luci=1
     uci commit passwall
-    uci set passwall.@global[0].hide_from_luci=1
+    uci set passwall2.@global[0].hide_from_luci=1
     uci commit passwall2
     rm -rf /tmp/luci-*
     /etc/init.d/frpc restart >/dev/null
