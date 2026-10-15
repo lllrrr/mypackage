@@ -1,0 +1,656 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-lucky\n"
+"Language: zh_Hans\n"
+"Language-Team: Chinese (Simplified)\n"
+"PO-Revision-Date: 2026-09-16 00:00+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Lucky"
+msgstr "Lucky"
+
+msgid "Status"
+msgstr "运行状态"
+
+msgid "Settings"
+msgstr "基本设置"
+
+msgid "Download & Update"
+msgstr "下载与更新"
+
+msgid "Installing LuCI…"
+msgstr "正在安装 LuCI…"
+
+msgid "Ready"
+msgstr "就绪"
+
+msgid "Complete"
+msgstr "完成"
+
+msgid "Downloaded file is empty"
+msgstr "下载的文件为空"
+
+msgid "SHA256 verification failed"
+msgstr "SHA256 校验失败"
+
+msgid "Download URL not found"
+msgstr "未找到下载地址"
+
+msgid "Extract failed"
+msgstr "解压失败"
+
+msgid "Unsupported format"
+msgstr "不支持的文件格式"
+
+msgid "Lucky binary not found in archive"
+msgstr "压缩包中未找到 Lucky 程序"
+
+msgid "Installation failed"
+msgstr "安装失败"
+
+msgid "Package manager not found"
+msgstr "未找到包管理器"
+
+msgid "No releases found"
+msgstr "未找到版本"
+
+msgid "No %s variant files"
+msgstr "无%s变体文件"
+
+msgid "Update check failed"
+msgstr "更新检查失败"
+
+msgid "Unknown mirror"
+msgstr "未知镜像"
+
+msgid "Invalid update request"
+msgstr "更新请求无效"
+
+msgid "File not found"
+msgstr "文件未找到"
+
+msgid "Config directory is not set"
+msgstr "未设置配置目录"
+
+msgid "Language pack installation failed"
+msgstr "语言包安装失败"
+
+msgid "Failed to start check"
+msgstr "启动检查失败"
+
+msgid "Please select version and file first"
+msgstr "请先选择版本和文件"
+
+msgid "Failed to start install"
+msgstr "启动安装失败"
+
+msgid "Found %d version(s)"
+msgstr "找到 %d 个版本"
+
+msgid "Installation complete: %s"
+msgstr "安装完成：%s"
+
+msgid "Switch to light theme"
+msgstr "切换到浅色主题"
+
+msgid "Switch to dark theme"
+msgstr "切换到深色主题"
+
+msgid "Turn off background decoration"
+msgstr "关闭背景装饰"
+
+msgid "Turn on background decoration"
+msgstr "开启背景装饰"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Loading…"
+msgstr "正在加载…"
+
+msgid "Success"
+msgstr "成功"
+
+msgid "Failed"
+msgstr "失败"
+
+msgid "OK"
+msgstr "确定"
+
+msgid "Checking upstream…"
+msgstr "正在检查上游版本…"
+
+msgid "Downloading…"
+msgstr "正在下载…"
+
+msgid "Installing…"
+msgstr "正在安装…"
+
+msgid "Download failed"
+msgstr "下载失败"
+
+msgid "Error"
+msgstr "错误"
+
+msgid "Saved"
+msgstr "已保存"
+
+msgid "Save Failed"
+msgstr "保存失败"
+
+msgid "Settings saved successfully."
+msgstr "设置保存成功。"
+
+msgid "Save failed"
+msgstr "保存失败"
+
+msgid "No Backups"
+msgstr "无备份"
+
+msgid "No backup files found."
+msgstr "未找到备份文件。"
+
+msgid "Restore backup: %s ?"
+msgstr "恢复备份：%s？"
+
+msgid "Restored"
+msgstr "已恢复"
+
+msgid "Backup restored successfully."
+msgstr "备份恢复成功。"
+
+msgid "Restore failed"
+msgstr "恢复失败"
+
+msgid "Select Backup to Restore"
+msgstr "选择要恢复的备份"
+
+msgid "Click a file to restore it:"
+msgstr "点击文件进行恢复："
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Restore Backup"
+msgstr "恢复备份"
+
+msgid "Reset credentials to 666? Service will restart."
+msgstr "将凭据重置为 666？服务将重启。"
+
+msgid "Reset Success"
+msgstr "重置成功"
+
+msgid "Reset Failed"
+msgstr "重置失败"
+
+msgid "Credentials reset to 666, service restarting…"
+msgstr "凭据已重置为 666，服务正在重启…"
+
+msgid "Reset failed, please check the log."
+msgstr "重置失败，请检查日志。"
+
+msgid "Reset password"
+msgstr "重置密码"
+
+msgid "Uptime > 0s always resets the retry counter"
+msgstr "运行时间 > 0 秒时始终重置重试计数器"
+
+msgid "Uptime exceeds %ss, retry counter resets"
+msgstr "运行时间超过 %s 秒后重置重试计数器"
+
+msgid "Wait %ss before restarting after a crash"
+msgstr "崩溃后等待 %s 秒再重启"
+
+msgid "Unlimited retries"
+msgstr "无限重试"
+
+msgid "Stop after %s restart(s), 0 No limits"
+msgstr "%s 次重启后停止，0 表示不限制"
+
+msgid "Lucky — Settings"
+msgstr "Lucky — 设置"
+
+msgid "Basic Service"
+msgstr "基本服务"
+
+msgid "Web UI Port"
+msgstr "Web UI 端口"
+
+msgid "Default: 16601"
+msgstr "默认：16601"
+
+msgid "Safe Entrance"
+msgstr "安全入口"
+
+msgid "URL path prefix, e.g.: mysecret"
+msgstr "URL 路径前缀，例如：mysecret"
+
+msgid "Allow Internet Access"
+msgstr "允许互联网访问"
+
+msgid "Allow access to the Web UI from the internet"
+msgstr "允许从互联网访问 Web UI"
+
+msgid "Delayed Start (s)"
+msgstr "延迟启动（秒）"
+
+msgid "Delay before starting after boot (only when uptime < 120s)"
+msgstr "启动后延迟启动（仅当运行时间 < 120 秒时）"
+
+msgid "Restore Lucky config from a previous backup"
+msgstr "从以前的备份恢复 Lucky 配置"
+
+msgid "Reset Credentials"
+msgstr "重置凭据"
+
+msgid "Reset username and password back to 666"
+msgstr "将用户名和密码重置为 666"
+
+msgid "Path & Architecture"
+msgstr "路径与架构"
+
+msgid "Data Directory"
+msgstr "数据目录"
+
+msgid "Lucky runtime data directory"
+msgstr "Lucky 运行时数据目录"
+
+msgid "Binary Path"
+msgstr "程序路径"
+
+msgid "Full path to the Lucky executable"
+msgstr "Lucky 可执行文件的完整路径"
+
+msgid "Architecture"
+msgstr "架构"
+
+msgid "Detected:"
+msgstr "检测到："
+
+msgid "Leave \"auto\" to detect automatically"
+msgstr "保留“auto”以自动检测"
+
+msgid "Download Mirror"
+msgstr "下载镜像"
+
+msgid "GitHub (github.com/gdy666/lucky)"
+msgstr "GitHub（github.com/gdy666/lucky）"
+
+msgid "Official (release.66666.host)"
+msgstr "官方版（release.66666.host）"
+
+msgid "Release Channel"
+msgstr "发布渠道"
+
+msgid "Beta only available with Official mirror"
+msgstr "仅官方镜像支持测试版"
+
+msgid "Stable"
+msgstr "稳定版"
+
+msgid "Beta"
+msgstr "测试版"
+
+msgid "Lucky Variant"
+msgstr "Lucky 变体"
+
+msgid "Standard Edition (Lucky)"
+msgstr "标准版（Lucky）"
+
+msgid "Full-featured Edition (Wanji)"
+msgstr "全功能版（Wanji）"
+
+msgid "Basic Lite (XiaoJV)"
+msgstr "基础精简版（XiaoJV）"
+
+msgid "Lite + WAF (XiaoJV WAF)"
+msgstr "精简版 + WAF（XiaoJV WAF）"
+
+msgid "Wanji Lite (xiaoman)"
+msgstr "万吉精简版（xiaoman）"
+
+msgid "Lucky Docker Edition"
+msgstr "Lucky Docker 版"
+
+msgid "Wanji Docker Edition"
+msgstr "Wanji Docker 版"
+
+msgid "Choose the variant that suits your needs"
+msgstr "选择适合你需求的变体"
+
+msgid "Compare variants"
+msgstr "查看各变体区别"
+
+msgid "Common features"
+msgstr "共有功能"
+
+msgid "FTP / WebDAV / storage / WOL / terminal"
+msgstr "FTP / WebDAV / 存储 / 网络唤醒 / Web 终端"
+
+msgid "Coraza WAF / gRPC"
+msgstr "Coraza WAF / gRPC"
+
+msgid "FileBrowser / Rclone"
+msgstr "FileBrowser / Rclone"
+
+msgid "DLNA / Cloudflared / FRP / Samba"
+msgstr "DLNA / Cloudflared / FRP / Samba"
+
+msgid "Passkey / LuckyID"
+msgstr "Passkey / LuckyID"
+
+msgid "Docker management"
+msgstr "Docker 管理"
+
+msgid "Recommended for"
+msgstr "适用场景"
+
+msgid "Included"
+msgstr "包含"
+
+msgid "Not included"
+msgstr "不包含"
+
+msgid "Everyday use with standard features"
+msgstr "日常使用，需要标准版功能"
+
+msgid "Full feature set"
+msgstr "需要完整功能"
+
+msgid "Lightweight, core features"
+msgstr "只需基础功能，追求轻量"
+
+msgid "Lightweight WAF and gRPC"
+msgstr "轻量使用，同时需要 WAF 和 gRPC"
+
+msgid "Wanji features without FileBrowser and Rclone"
+msgstr "需要万吉功能，但不需要 FileBrowser 和 Rclone"
+
+msgid "Standard features plus Docker management"
+msgstr "标准版功能，并管理 Docker 容器"
+
+msgid "Wanji features plus Docker management"
+msgstr "万吉版功能，并管理 Docker 容器"
+
+msgid "Docker management is a module and is separate from the Docker image used to run Lucky."
+msgstr "Docker 管理是功能模块，与运行 Lucky 的 Docker 镜像是两回事。"
+
+msgid "Lucky variant comparison"
+msgstr "Lucky 变体功能对比"
+
+msgid "Feature availability may vary by platform and build."
+msgstr "功能支持可能因平台和构建版本而异。"
+
+msgid "Scrollable variant comparison table"
+msgstr "可滚动的变体对比表格"
+
+msgid "All variants include: Web service, ACME certificates, DDNS, port forwarding, STUN, scheduled tasks, third-party authentication, IP database, icon library, log center and embedded admin interface."
+msgstr "所有版本均包含：Web 服务、ACME 证书、DDNS、端口转发、STUN、计划任务、第三方认证、IP 地址库、图标库、日志中心及内嵌管理界面。"
+
+msgid "✓ Included; — not included."
+msgstr "✓ 包含；— 不包含。"
+
+msgid "Respawn Policy"
+msgstr "重启策略"
+
+msgid "Crash Threshold (s)"
+msgstr "崩溃阈值（秒）"
+
+msgid "Respawn Delay (s)"
+msgstr "重启延迟（秒）"
+
+msgid "Max Retries"
+msgstr "最大重试次数"
+
+msgid "Auto Update"
+msgstr "自动更新"
+
+msgid "Enable Auto Update"
+msgstr "启用自动更新"
+
+msgid "Periodically check and install the latest version"
+msgstr "定期检查并安装最新版本"
+
+msgid "Check Interval (days)"
+msgstr "检查间隔（天）"
+
+msgid "Range: 1 – 365 days"
+msgstr "范围：1 – 365 天"
+
+msgid "N/A"
+msgstr "不适用"
+
+msgid "d"
+msgstr "天"
+
+msgid "h"
+msgstr "小时"
+
+msgid "m"
+msgstr "分钟"
+
+msgid "s"
+msgstr "秒"
+
+msgid "Starting download…"
+msgstr "正在开始下载…"
+
+msgid "Failed to start, please check the log."
+msgstr "启动失败，请检查日志。"
+
+msgid "Lucky core downloaded successfully. Service is starting…"
+msgstr "Lucky 核心下载成功，服务正在启动…"
+
+msgid "Download Lucky Core"
+msgstr "下载 Lucky 核心"
+
+msgid "Lucky core binary not found"
+msgstr "未找到 Lucky 核心程序"
+
+msgid "The Lucky executable is missing. Download it to start the service."
+msgstr "缺少 Lucky 可执行文件。请下载后启动服务。"
+
+msgid "Restart Lucky"
+msgstr "重启 Lucky"
+
+msgid "Enable Lucky"
+msgstr "启用 Lucky"
+
+msgid "Checking…"
+msgstr "正在检查…"
+
+msgid "CPU Usage"
+msgstr "CPU 使用率"
+
+msgid "Memory"
+msgstr "内存"
+
+msgid "Process"
+msgstr "进程"
+
+msgid "Version Info"
+msgstr "版本信息"
+
+msgid "Variant"
+msgstr "变体"
+
+msgid "Arch"
+msgstr "架构"
+
+msgid "Access Info"
+msgstr "访问信息"
+
+msgid "Port"
+msgstr "端口"
+
+msgid "Internet Access"
+msgstr "互联网访问"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Entrance"
+msgstr "入口"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Official Website"
+msgstr "官方网站"
+
+msgid "GitHub Lucky"
+msgstr "GitHub Lucky"
+
+msgid "GitHub LuCI"
+msgstr "GitHub LuCI"
+
+msgid "Lucky — Status"
+msgstr "Lucky — 状态"
+
+msgid "RUNNING"
+msgstr "运行中"
+
+msgid "STARTING"
+msgstr "正在启动"
+
+msgid "NOT RUNNING"
+msgstr "未运行"
+
+msgid "Please wait for Lucky to start…"
+msgstr "Lucky 正在启动，请稍候…"
+
+msgid "Still starting. Check the log if this takes much longer."
+msgstr "仍在启动；若持续时间较长，请检查日志。"
+
+msgid "Uptime:"
+msgstr "运行时间："
+
+msgid "Open Lucky Web UI"
+msgstr "打开 Lucky Web UI"
+
+msgid "Cores:"
+msgstr "核心数："
+
+msgid "Threads:"
+msgstr "线程数："
+
+msgid "Lucky Version"
+msgstr "Lucky 版本"
+
+msgid "LuCI Version"
+msgstr "LuCI 版本"
+
+msgid "Data Dir"
+msgstr "数据目录"
+
+msgid "Current Installation"
+msgstr "当前安装信息"
+
+msgid "Switch mirror and retry:"
+msgstr "切换镜像后重试："
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Official"
+msgstr "官方版"
+
+msgid "Retry"
+msgstr "重试"
+
+msgid "Click to check for updates"
+msgstr "点击检查更新"
+
+msgid "Version:"
+msgstr "版本："
+
+msgid "File:"
+msgstr "文件："
+
+msgid "Install Now"
+msgstr "立即安装"
+
+msgid "(No log)"
+msgstr "（无日志）"
+
+msgid "Lucky — Download & Update"
+msgstr "Lucky — 下载与更新"
+
+msgid "Lucky Core Update"
+msgstr "Lucky 核心更新"
+
+msgid "Check Upstream"
+msgstr "检查上游版本"
+
+msgid "LuCI App Update"
+msgstr "LuCI 应用更新"
+
+msgid "Check LuCI"
+msgstr "检查 LuCI"
+
+msgid "Auto Update Log"
+msgstr "自动更新日志"
+
+msgid "Runtime Log"
+msgstr "运行日志"
+
+msgid "Clear all update cache and logs?"
+msgstr "清除所有更新缓存和日志？"
+
+msgid "Done"
+msgstr "完成"
+
+msgid "Cache cleared."
+msgstr "缓存已清除。"
+
+msgid "Clear failed."
+msgstr "清除失败。"
+
+msgid "Clear Cache"
+msgstr "清除缓存"
+
+msgid "Starting…"
+msgstr "正在启动…"
+
+msgid "Color Customization"
+msgstr "颜色自定义"
+
+msgid "Drag to adjust colors. Changes apply in real-time."
+msgstr "拖动调节颜色，更改即时生效。"
+
+msgid "Primary Color"
+msgstr "主题色"
+
+msgid "Text Color"
+msgstr "文字色"
+
+msgid "Card Background"
+msgstr "卡片背景"
+
+msgid "Page Background"
+msgstr "页面背景"
+
+msgid "Custom"
+msgstr "自定义"
+
+msgid "Reset"
+msgstr "重置"
+
+msgid "Restore All Defaults"
+msgstr "恢复全部默认"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Release Tag"
+msgstr "发布标签"
+
+msgid "Build Date"
+msgstr "构建日期"
+
