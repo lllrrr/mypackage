@@ -2,17 +2,65 @@
 
 START=99
 
+# 读取 MAC 地址并去掉分隔符：优先 br-lan，其次 eth0；直接读 sysfs，
+# 无需 ifconfig | grep | awk | tr 管道，且天然为小写、无冒号格式
+getmac() {
+    local iface
+    for iface in br-lan eth0; do
+        if [ -r "/sys/class/net/$iface/address" ]; then
+            read -r mac < "/sys/class/net/$iface/address"
+            [ -n "$mac" ] && { echo "$mac"; return 0; }
+        fi
+    done
+    return 1
+}
+
+restart() {
+    # 手动 restart 强制重跑，不做"已配置"检查
+    local mac
+    mac=$(getmac) && apply "$mac"
+}
+
 start() {
     sleep 10
+    reconf
+}
 
-    frpnum=$(ifconfig br-lan | grep "HWaddr" | awk '{print $5}' | tr 'A-Z' 'a-z' | tr -d ":")
-    uci set frpc.web.name=$frpnum
-    uci set frpc.web.subdomain=$frpnum
-    uci commit frpc
+# 系统启动实际只会走 boot()，start() 只在手动调用时生效
+boot() {
+    sleep 10
+    reconf
+}
 
-    uci set passwall.@global[0].hide_from_luci=1
-    uci commit passwall
-    rm -rf /tmp/luci-*
-    /etc/init.d/frpc restart >/dev/null
-    /etc/init.d/rpcd restart >/dev/null
+# 判断是否已经配置过（第一次启动时必然是"否"，之后每次重启都会命中并跳过）
+already_done() {
+    local mac="$1"
+    [ "$(uci -q get frpc.web.name)" = "$mac" ] &&
+    [ "$(uci -q get frpc.web.subdomain)" = "$mac" ] &&
+    [ "$(uci -q get passwall.@global[0].hide_from_luci)" = "1" ]
+}
+
+reconf() {
+    local mac
+    mac=$(getmac) || return 0
+
+    already_done "$mac" && return 0
+    apply "$mac"
+}
+
+apply() {
+    local mac="$1"
+
+    # 以 br-lan 的 MAC 作为 web 名称/子域名，写入 frpc 配置
+    uci -q set frpc.web.name="$mac"
+    uci -q set frpc.web.subdomain="$mac"
+    uci -q commit frpc
+
+    # 在 LuCI 中隐藏 passwall 入口
+    uci -q set passwall.@global[0].hide_from_luci=1
+    uci -q commit passwall
+    rm -rf /tmp/luci-* 2>/dev/null
+
+    /etc/init.d/frpc restart >/dev/null 2>&1
+    /etc/init.d/rpcd restart >/dev/null 2>&1
 }

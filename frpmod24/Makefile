@@ -2,7 +2,8 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=frpmod
 PKG_VERSION:=24
-PKG_RELEASE:=1
+PKG_RELEASE:=2
+PKGARCH:=all
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -34,8 +35,7 @@ endef
 
 define Package/$(PKG_NAME)/postinst
 #!/bin/sh
-chmod 0755 /etc/init.d/frpmod >/dev/null 2>&1
-/etc/init.d/frpmod enable >/dev/null 2>&1
+[ -x /etc/init.d/frpmod ] && /etc/init.d/frpmod enable
 exit 0
 endef
 
