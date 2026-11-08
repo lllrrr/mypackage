@@ -2,14 +2,15 @@
 
 START=99
 
-# 读取 MAC 地址并去掉分隔符：优先 br-lan，其次 eth0；直接读 sysfs，
-# 无需 ifconfig | grep | awk | tr 管道，且天然为小写、无冒号格式
+# 读取 MAC 地址并去掉冒号：优先 br-lan，其次 eth0；直接读 sysfs，
+# 无需 ifconfig | grep "HWaddr" | awk 管道（新版 OpenWrt 已无 ifconfig）；
+# 注意 sysfs 读出的形如 aa:bb:cc:dd:ee:ff（含冒号），需用 tr 去掉
 getmac() {
     local iface
     for iface in br-lan eth0; do
         if [ -r "/sys/class/net/$iface/address" ]; then
             read -r mac < "/sys/class/net/$iface/address"
-            [ -n "$mac" ] && { echo "$mac"; return 0; }
+            [ -n "$mac" ] && { echo "$mac" | tr -d ':'; return 0; }
         fi
     done
     return 1
